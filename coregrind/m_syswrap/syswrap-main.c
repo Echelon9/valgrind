@@ -1638,6 +1638,7 @@ void VG_(clear_syscallInfo) ( Int tid )
 
 Bool VG_(is_in_syscall) ( Int tid )
 {
+   vg_assert(syscallInfo);
    vg_assert(tid >= 0 && tid < VG_N_THREADS);
    return (syscallInfo[tid].status.what != SsIdle);
 }
