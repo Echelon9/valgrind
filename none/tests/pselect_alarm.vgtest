@@ -1,3 +1,4 @@
+prereq: ! ../../tests/os_test darwin
 prog: pselect_alarm
 vgopts: -q
 stderr_filter: filter_stderr
