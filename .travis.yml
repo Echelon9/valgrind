@@ -1,0 +1,37 @@
+language: cpp
+
+os:
+  - linux
+# Add macOS to build matrix directly via the below matrix.include keys:
+# - osx
+
+# Documented matrix of osx_image -> macOS and Xcode version available at:
+# https://docs.travis-ci.com/user/reference/osx/
+# valgrind targets only the most recent Xcode environment on each macOS family
+matrix:
+  include:
+    - os: osx
+      osx_image: xcode8    # macOS 10.11 and Xcode  8.0
+    - os: osx
+      osx_image: xcode9.2  # macOS 10.12 and Xcode  9.2
+    - os: osx
+      osx_image: xcode10.1 # macOS 10.13 and Xcode 10.1
+
+compiler:
+  - gcc
+  - clang
+
+addons:
+  apt:
+    packages:
+    - gdb
+    update: true
+  homebrew:
+    packages:
+    update: true
+
+install: # Add dependencies install here
+
+script:
+  - ./autogen.sh && ./configure && make && make regtest
+  - make dist
