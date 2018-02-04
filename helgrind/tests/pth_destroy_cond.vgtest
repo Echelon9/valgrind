@@ -1,3 +1,4 @@
+prereq: ! ../../tests/os_test darwin
 prog: pth_destroy_cond
 vgopts: -q
 stderr_filter_args: pth_destroy_cond.c
