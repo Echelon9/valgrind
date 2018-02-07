@@ -13,6 +13,13 @@ addons:
   apt:
     packages:
     - gdb
+    # docbook-based dependencies required by docs/
+    - dblatex
+    - docbook-xml
+    - docbook-xsl
+    - texlive
+    - xmltex
+    - xsltproc
 
 # Documented matrix of osx_image -> macOS and Xcode version available at:
 # https://docs.travis-ci.com/user/reference/osx/
@@ -32,6 +39,9 @@ matrix:
       osx_image: xcode9.4  # macOS 10.13 and Xcode 9.4
 
 install: # Add dependencies install here
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update          ; fi
+  # docbook-based dependencies required by docs/
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install docbook docbook-xsl; fi
 
 script:
   - ./autogen.sh && ./configure && make && make regtest
