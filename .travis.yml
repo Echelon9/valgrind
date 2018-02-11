@@ -5,6 +5,9 @@ os:
 # Add macOS to build matrix directly via the below matrix.include keys:
 # - osx
 
+# Run a virtual machine on GCE
+sudo: required
+
 compiler:
   - gcc
   - clang
