@@ -2074,16 +2074,38 @@ POST(kevent64)
 Addr pthread_starter = 0;
 Addr wqthread_starter = 0;
 SizeT pthread_structsize = 0;
+SizeT pthread_tsd_offset = 0;
 
 PRE(bsdthread_register)
 {
+#if DARWIN_VERS >= DARWIN_10_12
+   PRINT("bsdthread_register( %#lx, %#lx, %lu, %#lx, %#lx, %#lx, %#lx )",
+         ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7);
+   PRE_REG_READ7(int,"__bsdthread_register", void *,"threadstart",
+                 void *,"wqthread", size_t,"pthsize",
+                 void *,"stack_addr_hint", void *,"targetconc_ptr",
+                 uint32_t,"dispatchqueue_offset", uint32_t,"tsd_offset");
+#else
    PRINT("bsdthread_register( %#lx, %#lx, %lu )", ARG1, ARG2, ARG3);
    PRE_REG_READ3(int,"__bsdthread_register", void *,"threadstart", 
                  void *,"wqthread", size_t,"pthsize");
+#endif
 
    pthread_starter = ARG1;
    wqthread_starter = ARG2;
    pthread_structsize = ARG3;
+ #if DARWIN_VERS >= DARWIN_10_12
+   typedef struct {
+     uint64_t version;
+     uint64_t dispatch_queue_offset;
+     uint64_t main_qos;
+     uint32_t tsd_offset;
+     uint32_t return_to_kernel_offset;
+     uint32_t mach_thread_self_offset;
+   } __attribute__ ((packed)) _pthread_registration_data;
+
+   pthread_tsd_offset = ((_pthread_registration_data*) ARG4)->tsd_offset;
+ #endif
    ARG1 = (Word)&pthread_hijack_asm;
    ARG2 = (Word)&wqthread_hijack_asm;
 }
@@ -2129,6 +2151,7 @@ PRE(workq_ops)
       // GrP fixme need anything here?
       // GrP fixme may block?
       break;
+   case VKI_WQOPS_THREAD_KEVENT_RETURN:
    case VKI_WQOPS_THREAD_RETURN: {
       // The interesting case. The kernel will do one of two things:
       // 1. Return normally. We continue; libc proceeds to stop the thread.
@@ -2157,10 +2180,6 @@ PRE(workq_ops)
    case VKI_WQOPS_QUEUE_REQTHREADS2:
       // JRS uh, looks like it queues up a bunch of threads, or some such?
       *flags |= SfMayBlock; // the kernel sources take a spinlock, so play safe
-      break;
-   case VKI_WQOPS_THREAD_KEVENT_RETURN:
-      // RK fixme need anything here?
-      // perhaps similar to VKI_WQOPS_THREAD_RETURN above?
       break;
    case VKI_WQOPS_SET_EVENT_MANAGER_PRIORITY:
       // RK fixme this just sets scheduling priorities - don't think we need
@@ -10076,6 +10095,57 @@ POST(mach_generate_activity_id)
 
 
 /* ---------------------------------------------------------------------
+ Added for macOS 10.13 (High Sierra)
+ ------------------------------------------------------------------ */
+
+#if DARWIN_VERS >= DARWIN_10_13
+
+PRE(kevent_id)
+{
+  PRINT("kevent_id(id:%ld, changelist:%#lx, nchanges:%ld, eventlist:%#lx, nevents:%ld, data_out:%#lx, data_available:%ld, flags:%lx)",
+        ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7, ARG8);
+  PRE_REG_READ8(int,"kevent_id",
+                uint64_t,id,
+                const struct vki_kevent_qos_s *,changelist,
+                int,nchanges,
+                struct vki_kevent_qos_s *,eventlist,
+                int,nevents,
+                void*,data_out,
+                size_t*,data_available,
+                unsigned int,flags);
+
+  if (ARG3) PRE_MEM_READ ("kevent_id(changelist)",
+                          ARG2, ARG3 * sizeof(struct vki_kevent_qos_s));
+  if (ARG5) PRE_MEM_WRITE("kevent_id(eventlist)",
+                          ARG4, ARG5 * sizeof(struct vki_kevent_qos_s));
+  if (ARG7) PRE_MEM_WRITE ("kevent_id(data_out)",
+                          ARG6, ARG7 * sizeof(void*));
+
+  *flags |= SfMayBlock;
+}
+
+POST(kevent_id)
+{
+   PRINT("kevent_id ret %ld dst %#lx (%zu)", RES, ARG4, sizeof(struct vki_kevent_qos_s));
+   if (RES > 0) {
+      POST_MEM_WRITE(ARG4, RES * sizeof(struct vki_kevent_qos_s));
+   }
+}
+
+PRE(thread_get_special_reply_port)
+{
+  PRINT("thread_get_special_reply_port()");
+}
+
+POST(thread_get_special_reply_port)
+{
+  PRINT("thread_get_special_reply_port -> %#lx (%s)", RES, name_for_port(RES));
+}
+
+#endif /* DARWIN_VERS >= DARWIN_10_13 */
+
+
+/* ---------------------------------------------------------------------
    syscall tables
    ------------------------------------------------------------------ */
 
@@ -10536,7 +10606,9 @@ const SyscallTableEntry ML_(syscall_table)[] = {
 #if DARWIN_VERS < DARWIN_10_11
    _____(VG_DARWIN_SYSCALL_CONSTRUCT_UNIX(374)),   // ???
 #endif
+#if DARWIN_VERS < DARWIN_10_13
    _____(VG_DARWIN_SYSCALL_CONSTRUCT_UNIX(375)),   // ???
+#endif
    _____(VG_DARWIN_SYSCALL_CONSTRUCT_UNIX(376)),   // ???
    _____(VG_DARWIN_SYSCALL_CONSTRUCT_UNIX(377)),   // ???
    _____(VG_DARWIN_SYSCALL_CONSTRUCT_UNIX(378)),   // ???
@@ -10672,7 +10744,7 @@ const SyscallTableEntry ML_(syscall_table)[] = {
 #endif
 #if DARWIN_VERS >= DARWIN_10_13
 // _____(__NR_thread_selfcounts),                       // 186
-// _____(__NR_kevent_id,                                // 375
+  MACXY(__NR_kevent_id, kevent_id),                     // 375
 // _____(__NR_necp_session_open),                       // 522
 // _____(__NR_necp_session_action),                     // 523
 // _____(__NR_setattrlistat),                           // 524
@@ -10806,7 +10878,7 @@ const SyscallTableEntry ML_(mach_trap_table)[] = {
    _____(VG_DARWIN_SYSCALL_CONSTRUCT_MACH(49)),
 #endif
 #if DARWIN_VERS >= DARWIN_10_13
-// _____(__NR_thread_get_special_reply_port,            // 50
+   MACXY(__NR_thread_get_special_reply_port, thread_get_special_reply_port), // 50
 #else
    _____(VG_DARWIN_SYSCALL_CONSTRUCT_MACH(50)), 
 #endif /* DARWIN_VERS >= DARWIN_10_13 */
