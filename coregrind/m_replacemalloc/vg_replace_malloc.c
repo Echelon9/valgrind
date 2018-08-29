@@ -347,13 +347,13 @@ static void init(void);
 #elif defined(VGO_darwin)
  // operator new(unsigned int), GNU mangling
  #if VG_WORDSIZE == 4
-  //ALLOC_or_BOMB(VG_Z_LIBSTDCXX_SONAME, _Znwj,          __builtin_new);
-  //ALLOC_or_BOMB(VG_Z_LIBC_SONAME,      _Znwj,          __builtin_new);
+  ALLOC_or_BOMB(VG_Z_LIBSTDCXX_SONAME, _Znwj,          __builtin_new);
+  ALLOC_or_BOMB(VG_Z_LIBC_SONAME,      _Znwj,          __builtin_new);
  #endif
  // operator new(unsigned long), GNU mangling
  #if 1 // FIXME: is this right?
-  //ALLOC_or_BOMB(VG_Z_LIBSTDCXX_SONAME, _Znwm,          __builtin_new);
-  //ALLOC_or_BOMB(VG_Z_LIBC_SONAME,      _Znwm,          __builtin_new);
+  ALLOC_or_BOMB(VG_Z_LIBSTDCXX_SONAME, _Znwm,          __builtin_new);
+  ALLOC_or_BOMB(VG_Z_LIBC_SONAME,      _Znwm,          __builtin_new);
  #endif
 
 #elif defined(VGO_solaris)
@@ -390,13 +390,13 @@ static void init(void);
 #elif defined(VGO_darwin)
  // operator new(unsigned, std::nothrow_t const&), GNU mangling
  #if VG_WORDSIZE == 4
-  //ALLOC_or_NULL(VG_Z_LIBSTDCXX_SONAME, _ZnwjRKSt9nothrow_t,  __builtin_new);
-  //ALLOC_or_NULL(VG_Z_LIBC_SONAME,      _ZnwjRKSt9nothrow_t,  __builtin_new);
+  ALLOC_or_NULL(VG_Z_LIBSTDCXX_SONAME, _ZnwjRKSt9nothrow_t,  __builtin_new);
+  ALLOC_or_NULL(VG_Z_LIBC_SONAME,      _ZnwjRKSt9nothrow_t,  __builtin_new);
  #endif
  // operator new(unsigned long, std::nothrow_t const&), GNU mangling
  #if 1 // FIXME: is this right?
-  //ALLOC_or_NULL(VG_Z_LIBSTDCXX_SONAME, _ZnwmRKSt9nothrow_t,  __builtin_new);
-  //ALLOC_or_NULL(VG_Z_LIBC_SONAME,      _ZnwmRKSt9nothrow_t,  __builtin_new);
+  ALLOC_or_NULL(VG_Z_LIBSTDCXX_SONAME, _ZnwmRKSt9nothrow_t,  __builtin_new);
+  ALLOC_or_NULL(VG_Z_LIBC_SONAME,      _ZnwmRKSt9nothrow_t,  __builtin_new);
  #endif
 
 #elif defined(VGO_solaris)
@@ -436,13 +436,13 @@ static void init(void);
 #elif defined(VGO_darwin)
  // operator new[](unsigned int), GNU mangling
  #if VG_WORDSIZE == 4
-  //ALLOC_or_BOMB(VG_Z_LIBSTDCXX_SONAME, _Znaj,             __builtin_vec_new );
-  //ALLOC_or_BOMB(VG_Z_LIBC_SONAME,      _Znaj,             __builtin_vec_new );
+  ALLOC_or_BOMB(VG_Z_LIBSTDCXX_SONAME, _Znaj,             __builtin_vec_new );
+  ALLOC_or_BOMB(VG_Z_LIBC_SONAME,      _Znaj,             __builtin_vec_new );
  #endif
  // operator new[](unsigned long), GNU mangling
  #if 1 // FIXME: is this right?
-  //ALLOC_or_BOMB(VG_Z_LIBSTDCXX_SONAME, _Znam,             __builtin_vec_new );
-  //ALLOC_or_BOMB(VG_Z_LIBC_SONAME,      _Znam,             __builtin_vec_new );
+  ALLOC_or_BOMB(VG_Z_LIBSTDCXX_SONAME, _Znam,             __builtin_vec_new );
+  ALLOC_or_BOMB(VG_Z_LIBC_SONAME,      _Znam,             __builtin_vec_new );
  #endif
 
 #elif defined(VGO_solaris)
@@ -479,13 +479,13 @@ static void init(void);
 #elif defined(VGO_darwin)
  // operator new[](unsigned, std::nothrow_t const&), GNU mangling
  #if VG_WORDSIZE == 4
-  //ALLOC_or_NULL(VG_Z_LIBSTDCXX_SONAME, _ZnajRKSt9nothrow_t, __builtin_vec_new );
-  //ALLOC_or_NULL(VG_Z_LIBC_SONAME,      _ZnajRKSt9nothrow_t, __builtin_vec_new );
+  ALLOC_or_NULL(VG_Z_LIBSTDCXX_SONAME, _ZnajRKSt9nothrow_t, __builtin_vec_new );
+  ALLOC_or_NULL(VG_Z_LIBC_SONAME,      _ZnajRKSt9nothrow_t, __builtin_vec_new );
  #endif
  // operator new[](unsigned long, std::nothrow_t const&), GNU mangling
  #if 1 // FIXME: is this right?
-  //ALLOC_or_NULL(VG_Z_LIBSTDCXX_SONAME, _ZnamRKSt9nothrow_t, __builtin_vec_new );
-  //ALLOC_or_NULL(VG_Z_LIBC_SONAME,      _ZnamRKSt9nothrow_t, __builtin_vec_new );
+  ALLOC_or_NULL(VG_Z_LIBSTDCXX_SONAME, _ZnamRKSt9nothrow_t, __builtin_vec_new );
+  ALLOC_or_NULL(VG_Z_LIBC_SONAME,      _ZnamRKSt9nothrow_t, __builtin_vec_new );
  #endif
 
 #elif defined(VGO_solaris)
@@ -562,8 +562,8 @@ static void init(void);
  FREE(SO_SYN_MALLOC,          cfree,                free );
 
 #elif defined(VGO_darwin)
- //FREE(VG_Z_LIBSTDCXX_SONAME,  cfree,                free );
- //FREE(VG_Z_LIBC_SONAME,       cfree,                free );
+ FREE(VG_Z_LIBSTDCXX_SONAME,  cfree,                free );
+ FREE(VG_Z_LIBC_SONAME,       cfree,                free );
 
 #elif defined(VGO_solaris)
  FREE(VG_Z_LIBC_SONAME,       cfree,                free );
@@ -598,8 +598,8 @@ static void init(void);
 
 #elif defined(VGO_darwin)
  // operator delete(void*), GNU mangling
- //FREE(VG_Z_LIBSTDCXX_SONAME,  _ZdlPv,               __builtin_delete );
- //FREE(VG_Z_LIBC_SONAME,       _ZdlPv,               __builtin_delete );
+ FREE(VG_Z_LIBSTDCXX_SONAME,  _ZdlPv,               __builtin_delete );
+ FREE(VG_Z_LIBC_SONAME,       _ZdlPv,               __builtin_delete );
 
 #elif defined(VGO_solaris)
  // operator delete(void*), GNU mangling
@@ -628,8 +628,8 @@ static void init(void);
 
 #elif defined(VGO_darwin)
  // operator delete(void*, std::nothrow_t const&), GNU mangling
- //FREE(VG_Z_LIBSTDCXX_SONAME, _ZdlPvRKSt9nothrow_t,  __builtin_delete );
- //FREE(VG_Z_LIBC_SONAME,      _ZdlPvRKSt9nothrow_t,  __builtin_delete );
+ FREE(VG_Z_LIBSTDCXX_SONAME, _ZdlPvRKSt9nothrow_t,  __builtin_delete );
+ FREE(VG_Z_LIBC_SONAME,      _ZdlPvRKSt9nothrow_t,  __builtin_delete );
 
 #elif defined(VGO_solaris)
  // operator delete(void*, std::nothrow_t const&), GNU mangling
@@ -664,11 +664,11 @@ static void init(void);
 
 #elif defined(VGO_darwin)
  // operator delete[](void*), not mangled (for gcc 2.96)
- //FREE(VG_Z_LIBSTDCXX_SONAME,   __builtin_vec_delete, __builtin_vec_delete );
- //FREE(VG_Z_LIBC_SONAME,        __builtin_vec_delete, __builtin_vec_delete );
+ FREE(VG_Z_LIBSTDCXX_SONAME,   __builtin_vec_delete, __builtin_vec_delete );
+ FREE(VG_Z_LIBC_SONAME,        __builtin_vec_delete, __builtin_vec_delete );
  // operator delete[](void*), GNU mangling
- //FREE(VG_Z_LIBSTDCXX_SONAME,  _ZdaPv,               __builtin_vec_delete );
- //FREE(VG_Z_LIBC_SONAME,       _ZdaPv,               __builtin_vec_delete );
+ FREE(VG_Z_LIBSTDCXX_SONAME,  _ZdaPv,               __builtin_vec_delete );
+ FREE(VG_Z_LIBC_SONAME,       _ZdaPv,               __builtin_vec_delete );
 
 #elif defined(VGO_solaris)
  // operator delete[](void*), GNU mangling
@@ -697,8 +697,8 @@ static void init(void);
 
 #elif defined(VGO_darwin)
  // operator delete[](void*, std::nothrow_t const&), GNU mangling
- //FREE(VG_Z_LIBSTDCXX_SONAME,  _ZdaPvRKSt9nothrow_t, __builtin_vec_delete );
- //FREE(VG_Z_LIBC_SONAME,       _ZdaPvRKSt9nothrow_t, __builtin_vec_delete );
+ FREE(VG_Z_LIBSTDCXX_SONAME,  _ZdaPvRKSt9nothrow_t, __builtin_vec_delete );
+ FREE(VG_Z_LIBC_SONAME,       _ZdaPvRKSt9nothrow_t, __builtin_vec_delete );
 
 #elif defined(VGO_solaris)
  // operator delete[](void*, std::nothrow_t const&), GNU mangling
@@ -990,7 +990,7 @@ static void init(void);
  MALLOPT(SO_SYN_MALLOC,    mallopt);
 
 #elif defined(VGO_darwin)
- //MALLOPT(VG_Z_LIBC_SONAME, mallopt);
+ MALLOPT(VG_Z_LIBC_SONAME, mallopt);
 
 #endif
 
@@ -1034,7 +1034,7 @@ static void init(void);
  MALLOC_TRIM(SO_SYN_MALLOC,    malloc_trim);
 
 #elif defined(VGO_darwin)
- //MALLOC_TRIM(VG_Z_LIBC_SONAME, malloc_trim);
+ MALLOC_TRIM(VG_Z_LIBC_SONAME, malloc_trim);
 
 #endif
 
@@ -1073,7 +1073,7 @@ static void init(void);
  POSIX_MEMALIGN(SO_SYN_MALLOC,    posix_memalign);
 
 #elif defined(VGO_darwin)
- //POSIX_MEMALIGN(VG_Z_LIBC_SONAME, posix_memalign);
+ POSIX_MEMALIGN(VG_Z_LIBC_SONAME, posix_memalign);
 
 #elif defined(VGO_solaris)
  POSIX_MEMALIGN(VG_Z_LIBC_SONAME, posix_memalign);
@@ -1114,7 +1114,7 @@ static void init(void);
 # endif
 
 #elif defined(VGO_darwin)
- //MALLOC_USABLE_SIZE(VG_Z_LIBC_SONAME, malloc_usable_size);
+ MALLOC_USABLE_SIZE(VG_Z_LIBC_SONAME, malloc_usable_size);
  MALLOC_USABLE_SIZE(VG_Z_LIBC_SONAME, malloc_size);
  MALLOC_USABLE_SIZE(SO_SYN_MALLOC,    malloc_size);
 
@@ -1166,7 +1166,7 @@ static void panic(const char *str)
  MALLOC_STATS(SO_SYN_MALLOC,    malloc_stats);
 
 #elif defined(VGO_darwin)
- //MALLOC_STATS(VG_Z_LIBC_SONAME, malloc_stats);
+ MALLOC_STATS(VG_Z_LIBC_SONAME, malloc_stats);
 
 #endif
 
@@ -1193,7 +1193,7 @@ static void panic(const char *str)
  MALLINFO(SO_SYN_MALLOC,    mallinfo);
 
 #elif defined(VGO_darwin)
- //MALLINFO(VG_Z_LIBC_SONAME, mallinfo);
+ MALLINFO(VG_Z_LIBC_SONAME, mallinfo);
 
 #endif
 
