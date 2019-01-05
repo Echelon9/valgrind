@@ -18,6 +18,7 @@ matrix:
       osx_image: xcode10.1 # macOS 10.13 and Xcode 10.1
     - os: osx
       osx_image: xcode10.2 # macOS 10.14 and Xcode 10.2 (beta 2)
+      before_install: sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
 
 compiler:
   - gcc
