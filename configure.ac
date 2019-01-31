@@ -4018,7 +4018,6 @@ fi # test "$VGCONF_OS" = "solaris"
 # Checks for C header files.
 #----------------------------------------------------------------------------
 
-AC_HEADER_STDC
 AC_CHECK_HEADERS([       \
         asm/unistd.h     \
         endian.h         \
