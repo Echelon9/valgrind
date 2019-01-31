@@ -513,7 +513,7 @@ unit_vc_LDADD               = # nothing, i.e. not -lpthread
 
 if HAVE_BOOST_1_35
 boost_thread_SOURCES        = boost_thread.cpp
-boost_thread_CXXFLAGS       = $(AM_CXXFLAGS) $(BOOST_CFLAGS)
+boost_thread_CXXFLAGS       = $(AM_CXXFLAGS) $(BOOST_CXXFLAGS)
 boost_thread_LDADD          = $(BOOST_LIBS)
 endif
 
