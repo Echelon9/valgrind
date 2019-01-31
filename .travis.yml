@@ -25,9 +25,19 @@ addons:
   apt:
     packages:
     - gdb
+    # docbook-based dependencies required by docs/
+    - dblatex
+    - docbook-xml
+    - docbook-xsl
+    - texlive
+    - xmltex
+    - xsltproc
     update: true
   homebrew:
     packages:
+    # docbook-based dependencies required by docs/
+    - docbook
+    - docbook-xsl
     update: true
 
 install: # Add dependencies install here
