@@ -3,7 +3,8 @@ AUTOMAKE_OPTIONS = 1.10
 
 include $(top_srcdir)/Makefile.all.am 
 
-TOOLS =		memcheck \
+TOOLS = \
+		memcheck \
 		cachegrind \
 		callgrind \
 		massif \
@@ -12,7 +13,8 @@ TOOLS =		memcheck \
 		helgrind \
 		drd
 
-EXP_TOOLS = 	exp-sgcheck \
+EXP_TOOLS = \
+		exp-sgcheck \
 		exp-bbv \
 		exp-dhat
 
