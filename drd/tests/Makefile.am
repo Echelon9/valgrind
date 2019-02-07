@@ -500,7 +500,7 @@ pth_detached_CFLAGS         += -D__EXTENSIONS__
 endif
 
 tsan_unittest_SOURCES       = tsan_unittest.cpp
-tsan_unittest_CXXFLAGS      = $(AM_CXXFLAGS) \
+tsan_unittest_CXXFLAGS      = $(AM_CXXFLAGS) -std=c++1z \
 			-DTHREAD_WRAPPERS='"tsan_thread_wrappers_pthread.h"'
 
 unit_bitmap_CFLAGS          = $(AM_CFLAGS) -O2 \
@@ -513,7 +513,7 @@ unit_vc_LDADD               = # nothing, i.e. not -lpthread
 
 if HAVE_BOOST_1_35
 boost_thread_SOURCES        = boost_thread.cpp
-boost_thread_CXXFLAGS       = $(AM_CXXFLAGS) $(BOOST_CFLAGS)
+boost_thread_CXXFLAGS       = $(AM_CXXFLAGS) -std=c++1z $(BOOST_CFLAGS)
 boost_thread_LDADD          = $(BOOST_LIBS) -lstdc++
 endif
 
