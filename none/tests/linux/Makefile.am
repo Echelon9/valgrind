@@ -42,8 +42,8 @@ AM_CFLAGS   += $(AM_FLAG_M3264_PRI)
 AM_CXXFLAGS += $(AM_FLAG_M3264_PRI)
 
 # Special needs
-clonev_LDADD = -lpthread
-pthread_stack_LDADD = -lpthread
+clonev_CFLAGS = $(AM_CFLAGS) -pthread
+pthread_stack_CFLAGS = $(AM_CFLAGS) -pthread
 
 stack_overflow_CFLAGS = $(AM_CFLAGS) @FLAG_W_NO_UNINITIALIZED@ \
 			@FLAG_W_NO_INFINITE_RECURSION@

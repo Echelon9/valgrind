@@ -42,7 +42,6 @@ hackedbz2_CFLAGS	= $(AM_CFLAGS) -O -Wno-inline
 
 globalerr_CFLAGS        = $(AM_CFLAGS) @FLAG_W_NO_UNINITIALIZED@
 # C ones
-#pth_create_LDADD	= -lpthread
 
 # C++ ones
 #ccc_SOURCES		= ccc.cpp

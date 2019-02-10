@@ -179,7 +179,7 @@ insn_sse3_LDADD		= -lm
 insn_ssse3_SOURCES	= insn_ssse3.def
 insn_ssse3_LDADD	= -lm
 x86locked_CFLAGS	= $(AM_CFLAGS) -O
-yield_LDADD		= -lpthread
+yield_CFLAGS		= $(AM_CFLAGS) -pthread
 
 .def.c: $(srcdir)/gen_insn_test.pl
 	$(PERL) $(srcdir)/gen_insn_test.pl < $< > $@

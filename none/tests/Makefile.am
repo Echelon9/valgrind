@@ -285,7 +285,7 @@ fdleak_creat_LDADD	= -lsocket -lnsl
 fdleak_socketpair_LDADD	= -lsocket -lnsl
 endif
 floored_LDADD 		= -lm
-manythreads_LDADD	= -lpthread
+manythreads_CFLAGS	= $(AM_CFLAGS) -pthread
 if VGCONF_OS_IS_DARWIN
  nestedfns_CFLAGS	= $(AM_CFLAGS) -fnested-functions
 else
@@ -300,44 +300,43 @@ libvexmultiarch_test_LDADD = \
 	../../VEX/libvexmultiarch-@VGCONF_ARCH_PRI@-@VGCONF_OS@.a \
 	../../VEX/libvex-@VGCONF_ARCH_PRI@-@VGCONF_OS@.a @LIB_UBSAN@
 libvexmultiarch_test_SOURCES = libvex_test.c
-ppoll_alarm_LDADD	= -lpthread
-pselect_alarm_LDADD	= -lpthread
-pth_atfork1_LDADD	= -lpthread
-pth_blockedsig_LDADD	= -lpthread
-pth_cancel1_CFLAGS	= $(AM_CFLAGS) -Wno-shadow
-pth_cancel1_LDADD	= -lpthread
-pth_cancel2_LDADD	= -lpthread
-pth_cvsimple_LDADD	= -lpthread
-pth_empty_LDADD 	= -lpthread
-pth_exit_LDADD	 	= -lpthread
-pth_exit2_LDADD	 	= -lpthread
-pth_mutexspeed_LDADD	= -lpthread
-pth_once_LDADD		= -lpthread
-pth_rwlock_LDADD	= -lpthread
-pth_rwlock_CFLAGS	= $(AM_CFLAGS)
-pth_stackalign_LDADD	= -lpthread
-pth_2sig_LDADD		= -lpthread
-pth_term_signal_LDADD	= -lpthread
-res_search_LDADD        = -lresolv -lpthread
-resolv_CFLAGS		= $(AM_CFLAGS)
-resolv_LDADD            = -lresolv -lpthread
+ppoll_alarm_CFLAGS	= $(AM_CFLAGS) -pthread
+pselect_alarm_CFLAGS	= $(AM_CFLAGS) -pthread
+pth_atfork1_CFLAGS	= $(AM_CFLAGS) -pthread
+pth_blockedsig_CFLAGS	= $(AM_CFLAGS) -pthread
+pth_cancel1_CFLAGS	= $(AM_CFLAGS) -Wno-shadow -pthread
+pth_cancel2_CFLAGS	= $(AM_CFLAGS) -pthread
+pth_cvsimple_CFLAGS	= $(AM_CFLAGS) -pthread
+pth_empty_CFLAGS 	= $(AM_CFLAGS) -pthread
+pth_exit_CFLAGS	 	= $(AM_CFLAGS) -pthread
+pth_exit2_CFLAGS	= $(AM_CFLAGS) -pthread
+pth_mutexspeed_CFLAGS	= $(AM_CFLAGS) -pthread
+pth_once_CFLAGS		= $(AM_CFLAGS) -pthread
+pth_rwlock_CFLAGS	= $(AM_CFLAGS) -pthread
+pth_stackalign_CFLAGS	= $(AM_CFLAGS) -pthread
+pth_2sig_CFLAGS		= $(AM_CFLAGS) -pthread
+pth_term_signal_CFLAGS	= $(AM_CFLAGS) -pthread
+res_search_CFLAGS       = $(AM_CFLAGS) -pthread
+res_search_LDADD        = -lresolv
+resolv_CFLAGS		= $(AM_CFLAGS) -pthread
+resolv_LDADD            = -lresolv
 if VGCONF_OS_IS_SOLARIS
 resolv_CFLAGS		+= -U_REENTRANT
 endif
-semlimit_LDADD		= -lpthread
+semlimit_CFLAGS		= $(AM_CFLAGS) -pthread
 sha1_test_CFLAGS	= $(AM_CFLAGS)
 if VGCONF_OS_IS_SOLARIS
 sha1_test_CFLAGS	+= -Du_int32_t=uint32_t
 endif
-sigsusp_LDADD		= -lpthread
-thread_exits_LDADD	= -lpthread
-threaded_fork_LDADD	= -lpthread
-threadederrno_CFLAGS	= $(AM_CFLAGS)
-threadederrno_LDADD	= -lpthread
+sigsusp_CFLAGS		= $(AM_CFLAGS) -pthread
+thread_exits_CFLAGS	= $(AM_CFLAGS) -pthread
+threaded_fork_CFLAGS	= $(AM_CFLAGS) -pthread
+threadederrno_CFLAGS	= $(AM_CFLAGS) -pthread
 tls_SOURCES		= tls.c tls2.c
 tls_DEPENDENCIES	= tls.so tls2.so
+tls_CFLAGS		= $(AM_CFLAGS) -pthread
 tls_LDFLAGS		= -Wl,-rpath,$(abs_top_builddir)/none/tests
-tls_LDADD		= tls.so tls2.so -lpthread
+tls_LDADD		= tls.so tls2.so
 tls_so_SOURCES		= tls_so.c
 tls_so_DEPENDENCIES	= tls2.so
 if VGCONF_OS_IS_DARWIN

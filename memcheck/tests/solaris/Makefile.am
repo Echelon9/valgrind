@@ -163,7 +163,7 @@ endif
 AM_CFLAGS   += $(AM_FLAG_M3264_PRI)
 AM_CXXFLAGS += $(AM_FLAG_M3264_PRI)
 
-door_kill_LDADD = -lpthread
+door_kill_CFLAGS = $(AM_CFLAGS) -pthread
 ioctl_LDADD = -lsocket
 ldynsym_LDFLAGS = -Wl,--strip-all
 pkcs11_LDADD = -lpkcs11

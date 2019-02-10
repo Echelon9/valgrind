@@ -471,8 +471,8 @@ endif
 AM_CFLAGS   += $(AM_FLAG_M3264_PRI) @FLAG_W_EXTRA@ -Wno-inline -Wno-unused-parameter
 AM_CXXFLAGS += $(AM_FLAG_M3264_PRI) @FLAG_W_EXTRA@ -Wno-inline -Wno-unused-parameter
 
-LDADD = -lpthread
-
+CFLAGS = -pthread
+CXXFLAGS = -pthread
 
 bug322621_SOURCES           = bug322621.cpp
 concurrent_close_SOURCES    = concurrent_close.cpp
@@ -505,10 +505,8 @@ tsan_unittest_CXXFLAGS      = $(AM_CXXFLAGS) \
 unit_bitmap_CFLAGS          = $(AM_CFLAGS) -O2 \
                               -DENABLE_DRD_CONSISTENCY_CHECKS \
                               @FLAG_UNLIMITED_INLINE_UNIT_GROWTH@
-unit_bitmap_LDADD           = # nothing, i.e. not -lpthread
 
 unit_vc_CFLAGS              = $(AM_CFLAGS) -DENABLE_DRD_CONSISTENCY_CHECKS
-unit_vc_LDADD               = # nothing, i.e. not -lpthread
 
 if HAVE_BOOST_1_35
 boost_thread_SOURCES        = boost_thread.cpp

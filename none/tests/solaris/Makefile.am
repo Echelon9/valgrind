@@ -56,10 +56,10 @@ check_PROGRAMS = \
 AM_CFLAGS   += $(AM_FLAG_M3264_PRI)
 AM_CXXFLAGS += $(AM_FLAG_M3264_PRI)
 
-pthread_stack_LDADD = -lpthread
+pthread_stack_CFLAGS = $(AM_CFLAGS_BASE) -pthread
 resolv_LDADD = -lresolv
 stack_prot_LDFLAGS = -Wl,-M,/usr/lib/ld/map.noexstk
-threads_exitall_LDADD = -lpthread
+threads_exitall_CFLAGS = $(AM_CFLAGS_BASE) -pthread
 
 if SOLARIS_RESERVE_SYSSTAT_ADDR
 check_PROGRAMS += reserve_sysstat_addr

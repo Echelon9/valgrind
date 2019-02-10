@@ -67,7 +67,7 @@ cu21_1_CFLAGS    = $(AM_CFLAGS) -DM3=1
 cu24_1_CFLAGS    = $(AM_CFLAGS) -DM3=1
 fixbr_CFLAGS     = $(AM_CFLAGS) @FLAG_MLONG_DOUBLE_128@
 fpext_CFLAGS     = $(AM_CFLAGS) @FLAG_MLONG_DOUBLE_128@
-ex_clone_LDADD   = -lpthread
+ex_clone_CFLAGS  = $(AM_CFLAGS) -pthread
 vector_CFLAGS    = $(AM_CFLAGS) -march=z13
 lsc2_CFLAGS       = -march=z13 -DS390_TESTS_NOCOLOR
 vector_string_CFLAGS = $(AM_CFLAGS) -march=z13 -DS390_TEST_COUNT=5

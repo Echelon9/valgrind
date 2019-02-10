@@ -475,17 +475,15 @@ big_debuginfo_symbol_CXXFLAGS = $(AM_CXXFLAGS) -std=c++0x
 bug340392_CFLAGS        = $(AM_CFLAGS) -O3
 dw4_CFLAGS		= $(AM_CFLAGS) -gdwarf-4 -fdebug-types-section
 
-descr_belowsp_LDADD     = -lpthread
-err_disable3_LDADD 	= -lpthread
-err_disable4_LDADD 	= -lpthread
-err_disable4_CFLAGS	= $(AM_CFLAGS)
+descr_belowsp_CFLAGS    = $(AM_CFLAGS) -pthread
+err_disable3_CFLAGS 	= $(AM_CFLAGS) -pthread
+err_disable4_CFLAGS 	= $(AM_CFLAGS) -pthread
 if VGCONF_OS_IS_SOLARIS
 err_disable4_CFLAGS	+= -D_XOPEN_SOURCE=600
 endif
-reach_thread_register_CFLAGS	= $(AM_CFLAGS) -O2
-reach_thread_register_LDADD	= -lpthread
-thread_alloca_LDADD     = -lpthread
-threadname_LDADD 	= -lpthread
+reach_thread_register_CFLAGS	= $(AM_CFLAGS) -O2 -pthread
+thread_alloca_CFLAGS     = $(AM_CFLAGS) -pthread
+threadname_CFLAGS 	= $(AM_CFLAGS) -pthread
 
 error_counts_CFLAGS = $(AM_CFLAGS) @FLAG_W_NO_UNINITIALIZED@
 

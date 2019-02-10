@@ -1604,7 +1604,7 @@ AM_CONDITIONAL(HAS_ISA_3_00, [test x$ac_asm_have_isa_3_00 = xyes \
 AC_MSG_CHECKING([for pthread_create@GLIBC2.0()])
 
 safe_CFLAGS=$CFLAGS
-CFLAGS="-lpthread -Werror"
+CFLAGS="-pthread -Werror"
 AC_LINK_IFELSE([AC_LANG_PROGRAM([[
 extern int pthread_create_glibc_2_0(void*, const void*,
                                     void *(*)(void*), void*);

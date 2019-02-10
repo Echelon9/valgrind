@@ -165,7 +165,8 @@ check_PROGRAMS = \
 AM_CFLAGS   += $(AM_FLAG_M3264_PRI)
 AM_CXXFLAGS += $(AM_FLAG_M3264_PRI)
 
-LDADD = -lpthread
+sleepers_CFLAGS = $(AM_CFLAGS) -pthread
+t_CFLAGS = $(AM_CFLAGS) -pthread
 
 main_pic_LDFLAGS = @FLAG_PIE@
 main_pic_CFLAGS	 = $(AM_CFLAGS) -fPIC

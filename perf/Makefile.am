@@ -31,7 +31,7 @@ bz2_CFLAGS	= $(AM_CFLAGS) -Wno-inline
 
 fbench_CFLAGS   = $(AM_CFLAGS) -O2
 ffbench_LDADD	= -lm
-memrw_LDADD	= -lpthread
+memrw_CFLAGS	= $(AM_CFLAGS) -pthread
 
 tinycc_CFLAGS	= $(AM_CFLAGS) -Wno-shadow -Wno-inline \
                   @FLAG_W_NO_POINTER_SIGN@

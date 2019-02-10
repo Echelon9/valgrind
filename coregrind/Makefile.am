@@ -104,7 +104,7 @@ if VGCONF_OS_IS_SOLARIS
 vgdb_LDADD     = -lsocket
 else
 if !VGCONF_PLATVARIANT_IS_ANDROID
-vgdb_LDADD     = -lpthread
+vgdb_CFLAGS    += -pthread
 endif
 endif
 # If there is no secondary platform, and the platforms include x86-darwin,

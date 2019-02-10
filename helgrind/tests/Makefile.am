@@ -216,7 +216,8 @@ endif
 AM_CFLAGS   += $(AM_FLAG_M3264_PRI)
 AM_CXXFLAGS += $(AM_FLAG_M3264_PRI)
 
-LDADD = -lpthread
+CFLAGS = -pthread
+CXXFLAGS = -pthread
 
 if VGCONF_OS_IS_DARWIN
 annotate_hbefore_CFLAGS = $(AM_CFLAGS) -mdynamic-no-pic

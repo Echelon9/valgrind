@@ -52,7 +52,7 @@ endif
 AM_CFLAGS   += $(AM_FLAG_M3264_PRI)
 AM_CXXFLAGS += $(AM_FLAG_M3264_PRI)
 
-stack_switch_LDADD    = -lpthread
+stack_switch_CFLAGS  = $(AM_CFLAGS) -pthread
 timerfd_syscall_LDADD = -lrt
 
 # Build shared object for dlclose_leak
