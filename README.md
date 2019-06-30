@@ -22,5 +22,5 @@ Valgridn executable:
 /usr/local/Cellar/valgrind/bin/valgrind
 
 Analysis options:
---leak-check=full --leak-resolution=med --track-origins=yes --vgdb=no --debugger=native
+--leak-check=full --leak-resolution=med --track-origins=yes --vgdb=no
 
