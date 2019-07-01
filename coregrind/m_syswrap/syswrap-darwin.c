@@ -28,7 +28,7 @@
    The GNU General Public License is contained in the file COPYING.
 */
 
-//#if definded(VGO_darwin)
+#if defined(VGO_darwin)
 
 #include "pub_core_basics.h"
 #include "pub_core_vki.h"
@@ -1552,6 +1552,7 @@ static const HChar *name_for_fcntl(UWord cmd) {
 #     endif
 #     if DARWIN_VERS >= DARWIN_10_14
 	  F(F_CHECK_LV);
+#     endif
    default:
 	  return "UNKNOWN";
    }
@@ -1756,7 +1757,6 @@ PRE(fcntl)
 	  // FIXME: Dejan
 	  break;
 #  endif
-
    default:
 	  PRINT("fcntl ( %lu, %lu [??] )", ARG1, ARG2);
 	  log_decaying("UNKNOWN fcntl %lu!", ARG2);
@@ -2083,16 +2083,38 @@ POST(kevent64)
 Addr pthread_starter = 0;
 Addr wqthread_starter = 0;
 SizeT pthread_structsize = 0;
+SizeT pthread_tsd_offset = 0;
 
 PRE(bsdthread_register)
 {
+#if DARWIN_VERS >= DARWIN_10_12
+   PRINT("bsdthread_register( %#lx, %#lx, %lu, %#lx, %#lx, %#lx, %#lx )",
+		 ARG1, ARG2, ARG3, ARG4, ARG5, ARG6, ARG7);
+   PRE_REG_READ7(int,"__bsdthread_register", void *,"threadstart",
+				 void *,"wqthread", size_t,"pthsize",
+				 void *,"stack_addr_hint", void *,"targetconc_ptr",
+				 uint32_t,"dispatchqueue_offset", uint32_t,"tsd_offset");
+#else
    PRINT("bsdthread_register( %#lx, %#lx, %lu )", ARG1, ARG2, ARG3);
    PRE_REG_READ3(int,"__bsdthread_register", void *,"threadstart",
 				 void *,"wqthread", size_t,"pthsize");
+#endif
 
    pthread_starter = ARG1;
    wqthread_starter = ARG2;
    pthread_structsize = ARG3;
+   #if DARWIN_VERS >= DARWIN_10_12
+	 typedef struct {
+	   uint64_t version;
+	   uint64_t dispatch_queue_offset;
+	   uint64_t main_qos;
+	   uint32_t tsd_offset;
+	   uint32_t return_to_kernel_offset;
+	   uint32_t mach_thread_self_offset;
+	 } __attribute__ ((packed)) _pthread_registration_data;
+
+	 pthread_tsd_offset = ((_pthread_registration_data*) ARG4)->tsd_offset;
+   #endif
    ARG1 = (Word)&pthread_hijack_asm;
    ARG2 = (Word)&wqthread_hijack_asm;
 }
@@ -9769,18 +9791,35 @@ POST(getattrlistbulk)
 
 PRE(faccessat)
 {
-	PRINT("faccessat(FIXME)(fd:%ld, path:%#lx(%s), amode:%#lx, flag:%#lx)",
-		ARG1, ARG2, (HChar*)ARG2, ARG3, ARG4);
+	uint32_t fd = ARG1;
+	PRINT("faccessat(fd:%d, path:%#lx(%s), amode:%#lx, flag:%#lx)",
+		  fd, ARG2, ARG2 ? (HChar*)ARG2 : "null", ARG3, ARG4);
 	PRE_REG_READ4(int, "faccessat",
 				  int, fd, user_addr_t, path, int, amode, int, flag);
+
+	if (fd != VKI_AT_FDCWD && !ML_(fd_allowed)(fd, "faccessat", tid, False)) {
+	  SET_STATUS_Failure( VKI_EBADF );
+	}
+	PRE_MEM_RASCIIZ( "faccessat(path)", ARG2 );
 }
 
 PRE(fstatat64)
 {
-	PRINT("fstatat64(FIXME)(fd:%ld, path:%#lx(%s), ub:%#lx, flag:%#lx)",
-		ARG1, ARG2, (HChar*)ARG2, ARG3, ARG4);
+	uint32_t fd = ARG1;
+	PRINT("fstatat64(fd:%d, path:%#lx(%s), ub:%#lx, flag:%#lx)",
+		  fd, ARG2, ARG2 ? (HChar*)ARG2 : "null", ARG3, ARG4);
 	PRE_REG_READ4(int, "fstatat64",
 				  int, fd, user_addr_t, path, user_addr_t, ub, int, flag);
+
+	if (fd != VKI_AT_FDCWD && !ML_(fd_allowed)(fd, "fstatat64", tid, False)) {
+	  SET_STATUS_Failure( VKI_EBADF );
+	}
+	PRE_MEM_RASCIIZ( "fstatat64(path)", ARG2 );
+	PRE_MEM_WRITE( "fstatat64(ub)", ARG3, sizeof(struct vki_stat64) );
+}
+POST(fstatat64)
+{
+	POST_MEM_WRITE( ARG3, sizeof(struct vki_stat64) );
 }
 
 PRE(readlinkat)
@@ -9817,9 +9856,38 @@ PRE(bsdthread_ctl)
 
 PRE(csrctl)
 {
-   PRINT("csrctl(op:%ld, useraddr:%#lx, usersize:%#lx) FIXME", ARG1, ARG2, ARG3);
+   switch (ARG1) {
+   case VKI_CSR_CHECK:
+	 PRINT("csrctl(op:CSR_CHECK, useraddr:%#lx, usersize:%#lx)", ARG2, ARG3);
    PRE_REG_READ3(int, "csrctl",
 				 uint32_t, op, user_addr_t, useraddr, user_addr_t, usersize);
+	 PRE_MEM_READ( "csrctl(useraddr)", ARG2, ARG3 );
+	 break;
+
+   case VKI_CSR_GET_ACTIVE_CONFIG:
+	  PRINT("csrctl(op:CSR_GET_ACTIVE_CONFIG, useraddr:%#lx, usersize:%#lx)", ARG2, ARG3);
+	  PRE_REG_READ3(int, "csrctl",
+					uint32_t, op, user_addr_t, useraddr, user_addr_t, usersize);
+	  PRE_MEM_WRITE( "csrctl(useraddr)", ARG2, ARG3 );
+	  break;
+
+   default:
+	  PRINT("csrctl(op:%ld [??], useraddr:%#lx, usersize:%#lx)", ARG1, ARG2, ARG3);
+	  log_decaying("UNKNOWN csrctl %ld!", ARG1);
+	  break;
+   }
+}
+POST(csrctl)
+{
+   vg_assert(SUCCESS);
+   switch (ARG1) {
+   case VKI_CSR_GET_ACTIVE_CONFIG:
+	  POST_MEM_WRITE( ARG2, ARG3 );
+	  break;
+
+   default:
+	  break;
+   }
 }
 
 PRE(guarded_open_dprotected_np)
@@ -9846,6 +9914,48 @@ PRE(guarded_writev_np)
 {
 	PRINT("guarded_writev_np(fd:%ld, guard:%#lx, iovp:%#lx, iovcnt:%llu) FIXME",
 		ARG1, ARG2, ARG3, (ULong)ARG4);
+}
+
+PRE(openat)
+{
+   if (ARG3 & VKI_O_CREAT) {
+	  // 4-arg version
+	  PRINT("sys_openat ( %ld, %#" FMT_REGWORD "x(%s), %ld, %ld )",
+			SARG1, ARG2, (HChar*)(Addr)ARG2, SARG3, SARG4);
+	  PRE_REG_READ4(long, "openat",
+					int, dfd, const char *, filename, int, flags, int, mode);
+   } else {
+	 // 3-arg version
+	 PRINT("sys_openat ( %ld, %#" FMT_REGWORD "x(%s), %ld )",
+		   SARG1, ARG2, (HChar*)(Addr)ARG2, SARG3);
+	 PRE_REG_READ3(long, "openat",
+				   int, dfd, const char *, filename, int, flags);
+   }
+   PRE_MEM_RASCIIZ( "openat(filename)", ARG2 );
+
+   /* For absolute filenames, dfd is ignored.  If dfd is AT_FDCWD,
+	  filename is relative to cwd.  When comparing dfd against AT_FDCWD,
+	  be sure only to compare the bottom 32 bits. */
+   if (ML_(safe_to_deref)( (void*)(Addr)ARG2, 1 )
+	   && *(Char *)(Addr)ARG2 != '/'
+	   && ((Int)ARG1) != ((Int)VKI_AT_FDCWD)
+	   && !ML_(fd_allowed)(ARG1, "openat", tid, False))
+	  SET_STATUS_Failure( VKI_EBADF );
+
+   /* Otherwise handle normally */
+   *flags |= SfMayBlock;
+}
+
+POST(openat)
+{
+   vg_assert(SUCCESS);
+   if (!ML_(fd_allowed)(RES, "openat", tid, True)) {
+	  VG_(close)(RES);
+	  SET_STATUS_Failure( VKI_EMFILE );
+   } else {
+	  if (VG_(clo_track_fds))
+		 ML_(record_fd_open_with_given_name)(tid, RES, (HChar*)(Addr)ARG2);
+   }
 }
 
 #endif /* DARWIN_VERS >= DARWIN_10_10 */
@@ -9926,9 +10036,15 @@ PRE(pselect)
 
 PRE(getentropy)
 {
-	PRINT("getentropy(buffer:%#lx, size:%ld) FIXME", ARG1, ARG2);
+	PRINT("getentropy(buffer:%#lx, size:%ld)", ARG1, ARG2);
 	PRE_REG_READ2(int, "getentropy",
 				  void*, buffer, size_t, size);
+	PRE_MEM_WRITE( "getentropy(buffer)", ARG1, ARG2 );
+}
+POST(getentropy)
+{
+	vg_assert(SUCCESS);
+	POST_MEM_WRITE( ARG1, ARG2 );
 }
 
 static const HChar *ulop_name(int op)
@@ -9942,10 +10058,29 @@ static const HChar *ulop_name(int op)
 
 PRE(ulock_wake)
 {
-	PRINT("ulock_wake(operation:%ld, addr:%#lx, wake_value:%ld) FIXME",
-		ARG1, ARG2, ARG3);
+	 uint ul_opcode = ARG1 & VKI_UL_OPCODE_MASK;
+	 uint ul_flags = ARG1 & VKI_UL_FLAGS_MASK;
+   switch (ul_opcode) {
+   case VKI_UL_UNFAIR_LOCK:
+   case VKI_UL_COMPARE_AND_WAIT: {
+	 const char* name = ulop_name(ul_opcode);
+	 if (ul_flags & VKI_ULF_WAKE_THREAD) {
+	   PRINT("ulock_wake(operation:%s (flags: %#x), addr:%#lx, wake_value:%s)",
+			 name, ul_flags, ARG2, name_for_port(ARG3));
+	 } else {
+	   PRINT("ulock_wake(operation:%s (flags: %#x), addr:%#lx, wake_value:%ld /*unused*/)",
+			 name, ul_flags, ARG2, ARG3);
+	 }
 	PRE_REG_READ3(int, "ulock_wake",
 				  uint32_t, operation, void*, addr, uint64_t, wake_value);
+	 break;
+}
+
+   default:
+	  PRINT("ulock_wake(operation:%ld (opcode: %u [??], flags: %#x), addr:%#lx, wake_value:%ld)", ARG1, ul_opcode, ul_flags, ARG2, ARG3);
+	  log_decaying("UNKNOWN ulock_wake %ld (opcode: %u [??], flags: %#x)!", ARG1, ul_opcode, ul_flags);
+	  break;
+   }
 }
 
 PRE(ulock_wait)
@@ -9970,14 +10105,23 @@ PRE(ulock_wait)
 	  log_decaying("UNKNOWN ulock_wait %ld (opcode: %u [??], flags: %#x)!", ARG1, ul_opcode, ul_flags);
 	  break;
 	}
+
+	*flags |= SfMayBlock;
 }
 
 PRE(host_create_mach_voucher_trap)
 {
 	// munge_wwww -- no need to call helper
 	PRINT("host_create_mach_voucher_trap"
-		"(host:%#lx, recipes:%#lx, recipes_size:%ld, voucher:%#lx) FIXME",
-		ARG1, ARG2, ARG3, ARG4);
+		"(host:%s, recipes:%#lx, recipes_size:%ld, voucher:%#lx)",
+		name_for_port(ARG1), ARG2, ARG3, ARG4);
+	PRE_MEM_READ( "host_create_mach_voucher_trap(recipes)", ARG2, ARG3 );
+	PRE_MEM_WRITE( "host_create_mach_voucher_trap(voucher)", ARG4, sizeof(mach_port_name_t) );
+}
+POST(host_create_mach_voucher_trap)
+{
+  vg_assert(SUCCESS);
+  POST_MEM_WRITE( ARG4, sizeof(mach_port_name_t) );
 }
 
 PRE(task_register_dyld_image_infos)
@@ -10082,6 +10226,8 @@ POST(mach_generate_activity_id)
 }
 
 #endif /* DARWIN_VERS >= DARWIN_10_12 */
+
+
 /* ---------------------------------------------------------------------
  Added for macOS 10.13 (High Sierra)
  ------------------------------------------------------------------ */
@@ -10098,6 +10244,17 @@ POST(thread_get_special_reply_port)
    record_named_port(tid, RES, MACH_PORT_RIGHT_RECEIVE, "special-reply-%p");
    PRINT("special reply port %s", name_for_port(RES));
 }
+
+PRE(kevent_id)
+{
+   PRINT("kevent_id()");
+}
+
+//POST(kevent_id)
+//{
+//   record_named_port(tid, RES, MACH_PORT_RIGHT_RECEIVE, "special-reply-%p");
+//   PRINT("special reply port %s", name_for_port(RES));
+//}
 
 #endif /* DARWIN_VERS >= DARWIN_10_13 */
 
@@ -10644,11 +10801,12 @@ const SyscallTableEntry ML_(syscall_table)[] = {
    MACXY(__NR_sysctlbyname,        sysctlbyname),       // 274
    MACXY(__NR_necp_match_policy,   necp_match_policy),  // 460
    MACXY(__NR_getattrlistbulk,     getattrlistbulk),    // 461
+   MACXY(__NR_openat,              openat),             // 463
    MACX_(__NR_faccessat,           faccessat),          // 466
-   MACX_(__NR_fstatat64,           fstatat64),          // 470
+   MACXY(__NR_fstatat64,           fstatat64),          // 470
    MACX_(__NR_readlinkat,          readlinkat),         // 473
    MACX_(__NR_bsdthread_ctl,       bsdthread_ctl),      // 478
-   MACX_(__NR_csrctl,              csrctl),             // 483
+   MACXY(__NR_csrctl,              csrctl),             // 483
    MACX_(__NR_guarded_open_dprotected_np, guarded_open_dprotected_np),  // 484
    MACX_(__NR_guarded_write_np, guarded_write_np),      // 485
    MACX_(__NR_guarded_pwrite_np, guarded_pwrite_np),    // 486
@@ -10674,7 +10832,7 @@ const SyscallTableEntry ML_(syscall_table)[] = {
 // _____(__NR_kdebug_typefilter),                       // 177
 // _____(__NR_clonefileat),                             // 462
 // _____(__NR_renameatx_np),                            // 488
-   MACX_(__NR_getentropy, getentropy),                  // 500
+   MACXY(__NR_getentropy, getentropy),                  // 500
 // _____(__NR_necp_open),                               // 501
 // _____(__NR_necp_client_action),                      // 502
    _____(VG_DARWIN_SYSCALL_CONSTRUCT_UNIX(503)),        // ???
@@ -10699,7 +10857,7 @@ const SyscallTableEntry ML_(syscall_table)[] = {
 #endif
 #if DARWIN_VERS >= DARWIN_10_13
 // _____(__NR_thread_selfcounts),                       // 186
-// _____(__NR_kevent_id,                                // 375
+   MACX_(__NR_kevent_id, kevent_id),                    // 375
 // _____(__NR_necp_session_open),                       // 522
 // _____(__NR_necp_session_action),                     // 523
 // _____(__NR_setattrlistat),                           // 524
@@ -10805,6 +10963,7 @@ const SyscallTableEntry ML_(mach_trap_table)[] = {
    MACX_(__NR_semaphore_wait_signal_trap, semaphore_wait_signal),
    MACX_(__NR_semaphore_timedwait_trap, semaphore_timedwait),
    MACX_(__NR_semaphore_timedwait_signal_trap, semaphore_timedwait_signal),
+
 #  if DARWIN_VERS >= DARWIN_10_14
 // _____(__NR_kernelrpc_mach_port_get_attributes_trap),
 #  else
@@ -10871,7 +11030,7 @@ const SyscallTableEntry ML_(mach_trap_table)[] = {
    _____(VG_DARWIN_SYSCALL_CONSTRUCT_MACH(68)),
    _____(VG_DARWIN_SYSCALL_CONSTRUCT_MACH(69)),
 #if DARWIN_VERS >= DARWIN_10_12
-   MACX_(__NR_host_create_mach_voucher_trap, host_create_mach_voucher_trap),
+   MACXY(__NR_host_create_mach_voucher_trap, host_create_mach_voucher_trap),
 #else
    _____(VG_DARWIN_SYSCALL_CONSTRUCT_MACH(70)),
 #endif

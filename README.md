@@ -24,3 +24,6 @@ Valgridn executable:
 Analysis options:
 --leak-check=full --leak-resolution=med --track-origins=yes --vgdb=no
 
+For testing/developing/checking:
+--trace-syscalls=yes
+
