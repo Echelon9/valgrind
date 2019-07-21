@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -64,9 +62,9 @@
    the integer registers before entering f.*/
 __attribute__((noreturn))
 void ML_(call_on_new_stack_0_1) ( Addr stack,
-                                  Addr retaddr,
-                                  void (*f_desc)(Word),
-                                  Word arg1 );
+								  Addr retaddr,
+								  void (*f_desc)(Word),
+								  Word arg1 );
 //    r3 = stack
 //    r4 = retaddr
 //    r5 = function descriptor
@@ -178,33 +176,33 @@ asm(
 
 
 /*
-        Perform a clone system call.  clone is strange because it has
-        fork()-like return-twice semantics, so it needs special
-        handling here.
+		Perform a clone system call.  clone is strange because it has
+		fork()-like return-twice semantics, so it needs special
+		handling here.
 
-        Upon entry, we have:
+		Upon entry, we have:
 
-            word (fn)(void*)    in r3
-            void* child_stack   in r4
-            word flags          in r5
-            void* arg           in r6
-            pid_t* child_tid    in r7
-            pid_t* parent_tid   in r8
-            void* ???           in r9
+			word (fn)(void*)    in r3
+			void* child_stack   in r4
+			word flags          in r5
+			void* arg           in r6
+			pid_t* child_tid    in r7
+			pid_t* parent_tid   in r8
+			void* ???           in r9
 
-        Note: r3 contains fn desc ptr, not fn ptr -- p_fn = p_fn_desc[0]
-        System call requires:
+		Note: r3 contains fn desc ptr, not fn ptr -- p_fn = p_fn_desc[0]
+		System call requires:
 
-            int    $__NR_clone  in r0  (sc number)
-            int    flags        in r3  (sc arg1)
-            void*  child_stack  in r4  (sc arg2)
-            pid_t* parent_tid   in r5  (sc arg3)
-            ??     child_tls    in r6  (sc arg4)
-            pid_t* child_tid    in r7  (sc arg5)
-            void*  ???          in r8  (sc arg6)
+			int    $__NR_clone  in r0  (sc number)
+			int    flags        in r3  (sc arg1)
+			void*  child_stack  in r4  (sc arg2)
+			pid_t* parent_tid   in r5  (sc arg3)
+			??     child_tls    in r6  (sc arg4)
+			pid_t* child_tid    in r7  (sc arg5)
+			void*  ???          in r8  (sc arg6)
 
-        Returns a ULong encoded as: top half is %cr following syscall,
-        low half is syscall return value (r3).
+		Returns a ULong encoded as: top half is %cr following syscall,
+		low half is syscall return value (r3).
  */
 #define __NR_CLONE        VG_STRINGIFY(__NR_clone)
 #define __NR_EXIT         VG_STRINGIFY(__NR_exit)
@@ -229,17 +227,17 @@ asm(
 "       mr      30,3\n"              // preserve fn
 "       mr      31,6\n"              // preserve arg
 
-        // setup child stack
+		// setup child stack
 "       rldicr  4,4, 0,59\n"         // trim sp to multiple of 16 bytes
-                                     // (r4 &= ~0xF)
+									 // (r4 &= ~0xF)
 "       li      0,0\n"
 "       stdu    0,-32(4)\n"          // make initial stack frame
 "       mr      29,4\n"              // preserve sp
 
-        // setup syscall
+		// setup syscall
 "       li      0,"__NR_CLONE"\n"    // syscall number
 "       mr      3,5\n"               // syscall arg1: flags
-        // r4 already setup          // syscall arg2: child_stack
+		// r4 already setup          // syscall arg2: child_stack
 "       mr      5,8\n"               // syscall arg3: parent_tid
 "       mr      6,13\n"              // syscall arg4: REAL THREAD tls
 "       mr      7,7\n"               // syscall arg5: child_tid
@@ -258,25 +256,25 @@ asm(
 "       cmpwi   3,0\n"               // child if retval == 0 (note, cmpw)
 "       bne     1f\n"                // jump if !child
 
-        /* CHILD - call thread function */
-        /* Note: 2.4 kernel doesn't set the child stack pointer,
-           so we do it here.
-           That does leave a small window for a signal to be delivered
-           on the wrong stack, unfortunately. */
+		/* CHILD - call thread function */
+		/* Note: 2.4 kernel doesn't set the child stack pointer,
+		   so we do it here.
+		   That does leave a small window for a signal to be delivered
+		   on the wrong stack, unfortunately. */
 "       mr      1,29\n"
 "       ld      30, 0(30)\n"         // convert fn desc ptr to fn ptr
 "       mtctr   30\n"                // ctr reg = fn
 "       mr      3,31\n"              // r3 = arg
 "       bctrl\n"                     // call fn()
 
-        // exit with result
+		// exit with result
 "       li      0,"__NR_EXIT"\n"
 "       sc\n"
 
-        // Exit returned?!
+		// Exit returned?!
 "       .long   0\n"
 
-        // PARENT or ERROR - return
+		// PARENT or ERROR - return
 "1:     ld      29,40(1)\n"
 "       ld      30,48(1)\n"
 "       ld      31,56(1)\n"
@@ -301,17 +299,17 @@ asm(
 "       mr      30,3\n"              // preserve fn
 "       mr      31,6\n"              // preserve arg
 
-        // setup child stack
+		// setup child stack
 "       rldicr  4,4, 0,59\n"         // trim sp to multiple of 16 bytes
-                                     // (r4 &= ~0xF)
+									 // (r4 &= ~0xF)
 "       li      0,0\n"
 "       stdu    0,-32(4)\n"          // make initial stack frame
 "       mr      29,4\n"              // preserve sp
 
-        // setup syscall
+		// setup syscall
 "       li      0,"__NR_CLONE"\n"    // syscall number
 "       mr      3,5\n"               // syscall arg1: flags
-        // r4 already setup          // syscall arg2: child_stack
+		// r4 already setup          // syscall arg2: child_stack
 "       mr      5,8\n"               // syscall arg3: parent_tid
 "       mr      6,13\n"              // syscall arg4: REAL THREAD tls
 "       mr      7,7\n"               // syscall arg5: child_tid
@@ -330,24 +328,24 @@ asm(
 "       cmpwi   3,0\n"               // child if retval == 0 (note, cmpw)
 "       bne     1f\n"                // jump if !child
 
-        /* CHILD - call thread function */
-        /* Note: 2.4 kernel doesn't set the child stack pointer,
-           so we do it here.
-           That does leave a small window for a signal to be delivered
-           on the wrong stack, unfortunately. */
+		/* CHILD - call thread function */
+		/* Note: 2.4 kernel doesn't set the child stack pointer,
+		   so we do it here.
+		   That does leave a small window for a signal to be delivered
+		   on the wrong stack, unfortunately. */
 "       mr      1,29\n"
 "       mtctr   30\n"                // ctr reg = fn
 "       mr      3,31\n"              // r3 = arg
 "       bctrl\n"                     // call fn()
 
-        // exit with result
+		// exit with result
 "       li      0,"__NR_EXIT"\n"
 "       sc\n"
 
-        // Exit returned?!
+		// Exit returned?!
 "       .long   0\n"
 
-        // PARENT or ERROR - return
+		// PARENT or ERROR - return
 "1:     ld      29,40(1)\n"
 "       ld      30,48(1)\n"
 "       ld      31,56(1)\n"
@@ -365,7 +363,7 @@ asm(
 
 void VG_(cleanup_thread) ( ThreadArchState* arch )
 {
-}  
+}
 
 /* ---------------------------------------------------------------------
    PRE/POST wrappers for ppc64/Linux-specific syscalls
@@ -395,21 +393,21 @@ PRE(sys_mmap)
    SysRes r;
 
    PRINT("sys_mmap ( %#lx, %lu, %lu, %lu, %lu, %lu )",
-         ARG1, ARG2, ARG3, ARG4, ARG5, ARG6 );
+		 ARG1, ARG2, ARG3, ARG4, ARG5, ARG6 );
    PRE_REG_READ6(long, "mmap",
-                 unsigned long, start, unsigned long, length,
-                 unsigned long, prot,  unsigned long, flags,
-                 unsigned long, fd,    unsigned long, offset);
+				 unsigned long, start, unsigned long, length,
+				 unsigned long, prot,  unsigned long, flags,
+				 unsigned long, fd,    unsigned long, offset);
 
-   r = ML_(generic_PRE_sys_mmap)( tid, ARG1, ARG2, ARG3, ARG4, ARG5, 
-                                       (Off64T)ARG6 );
+   r = ML_(generic_PRE_sys_mmap)( tid, ARG1, ARG2, ARG3, ARG4, ARG5,
+									   (Off64T)ARG6 );
    SET_STATUS_from_SysRes(r);
 }
 
 //zz PRE(sys_mmap2)
 //zz {
 //zz    SysRes r;
-//zz 
+//zz
 //zz    // Exactly like old_mmap() except:
 //zz    //  - the file offset is specified in 4K units rather than bytes,
 //zz    //    so that it can be used for files bigger than 2^32 bytes.
@@ -419,12 +417,12 @@ PRE(sys_mmap)
 //zz                  unsigned long, start, unsigned long, length,
 //zz                  unsigned long, prot,  unsigned long, flags,
 //zz                  unsigned long, fd,    unsigned long, offset);
-//zz 
-//zz    r = ML_(generic_PRE_sys_mmap)( tid, ARG1, ARG2, ARG3, ARG4, ARG5, 
+//zz
+//zz    r = ML_(generic_PRE_sys_mmap)( tid, ARG1, ARG2, ARG3, ARG4, ARG5,
 //zz                                        4096 * (Off64T)ARG6 );
 //zz    SET_STATUS_from_SysRes(r);
 //zz }
-//zz 
+//zz
 //zz // XXX: lstat64/fstat64/stat64 are generic, but not necessarily
 //zz // applicable to every architecture -- I think only to 32-bit archs.
 //zz // We're going to need something like linux/core_os32.h for such
@@ -436,12 +434,12 @@ PRE(sys_mmap)
 //zz    PRE_MEM_RASCIIZ( "stat64(file_name)", ARG1 );
 //zz    PRE_MEM_WRITE( "stat64(buf)", ARG2, sizeof(struct vki_stat64) );
 //zz }
-//zz 
+//zz
 //zz POST(sys_stat64)
 //zz {
 //zz    POST_MEM_WRITE( ARG2, sizeof(struct vki_stat64) );
 //zz }
-//zz 
+//zz
 //zz PRE(sys_lstat64)
 //zz {
 //zz    PRINT("sys_lstat64 ( %p(%s), %p )",ARG1,ARG1,ARG2);
@@ -449,7 +447,7 @@ PRE(sys_mmap)
 //zz    PRE_MEM_RASCIIZ( "lstat64(file_name)", ARG1 );
 //zz    PRE_MEM_WRITE( "lstat64(buf)", ARG2, sizeof(struct vki_stat64) );
 //zz }
-//zz 
+//zz
 //zz POST(sys_lstat64)
 //zz {
 //zz    vg_assert(SUCCESS);
@@ -457,14 +455,14 @@ PRE(sys_mmap)
 //zz       POST_MEM_WRITE( ARG2, sizeof(struct vki_stat64) );
 //zz    }
 //zz }
-//zz 
+//zz
 //zz PRE(sys_fstat64)
 //zz {
 //zz   PRINT("sys_fstat64 ( %d, %p )",ARG1,ARG2);
 //zz   PRE_REG_READ2(long, "fstat64", unsigned long, fd, struct stat64 *, buf);
 //zz   PRE_MEM_WRITE( "fstat64(buf)", ARG2, sizeof(struct vki_stat64) );
 //zz }
-//zz 
+//zz
 //zz POST(sys_fstat64)
 //zz {
 //zz   POST_MEM_WRITE( ARG2, sizeof(struct vki_stat64) );
@@ -474,13 +472,13 @@ PRE(sys_fadvise64)
 {
    PRINT("sys_fadvise64 ( %ld, %ld, %lu, %ld )",  SARG1, SARG2, SARG3, SARG4);
    PRE_REG_READ4(long, "fadvise64",
-                 int, fd, vki_loff_t, offset, vki_size_t, len, int, advice);
+				 int, fd, vki_loff_t, offset, vki_size_t, len, int, advice);
 }
 
 PRE(sys_rt_sigreturn)
 {
    /* See comments on PRE(sys_rt_sigreturn) in syswrap-amd64-linux.c for
-      an explanation of what follows. */
+	  an explanation of what follows. */
 
    //ThreadState* tst;
    PRINT("sys_rt_sigreturn ( )");
@@ -504,7 +502,7 @@ PRE(sys_rt_sigreturn)
    VG_(sigframe_destroy)(tid, True);
 
    /* Tell the driver not to update the guest state with the "result",
-      and set a bogus result to keep it happy. */
+	  and set a bogus result to keep it happy. */
    *flags |= SfNoWriteResult;
    SET_STATUS_Success(0);
 
@@ -522,31 +520,31 @@ PRE(sys_ptrace)
 {
    PRINT("sys_ptrace ( %ld, %ld, %#lx, %#lx )", ARG1,ARG2,ARG3,ARG4);
    PRE_REG_READ4(int, "ptrace",
-                 long, request, long, pid, long, addr, long, data);
+				 long, request, long, pid, long, addr, long, data);
    switch (ARG1) {
    case VKI_PTRACE_PEEKTEXT:
    case VKI_PTRACE_PEEKDATA:
    case VKI_PTRACE_PEEKUSR:
-      PRE_MEM_WRITE( "ptrace(peek)", ARG4,
-                     sizeof (long));
-      break;
+	  PRE_MEM_WRITE( "ptrace(peek)", ARG4,
+					 sizeof (long));
+	  break;
    case VKI_PTRACE_GETEVENTMSG:
-      PRE_MEM_WRITE( "ptrace(geteventmsg)", ARG4, sizeof(unsigned long));
-      break;
+	  PRE_MEM_WRITE( "ptrace(geteventmsg)", ARG4, sizeof(unsigned long));
+	  break;
    case VKI_PTRACE_GETSIGINFO:
-      PRE_MEM_WRITE( "ptrace(getsiginfo)", ARG4, sizeof(vki_siginfo_t));
-      break;
+	  PRE_MEM_WRITE( "ptrace(getsiginfo)", ARG4, sizeof(vki_siginfo_t));
+	  break;
    case VKI_PTRACE_SETSIGINFO:
-      PRE_MEM_READ( "ptrace(setsiginfo)", ARG4, sizeof(vki_siginfo_t));
-      break;
+	  PRE_MEM_READ( "ptrace(setsiginfo)", ARG4, sizeof(vki_siginfo_t));
+	  break;
    case VKI_PTRACE_GETREGSET:
-      ML_(linux_PRE_getregset)(tid, ARG3, ARG4);
-      break;
+	  ML_(linux_PRE_getregset)(tid, ARG3, ARG4);
+	  break;
    case VKI_PTRACE_SETREGSET:
-      ML_(linux_PRE_setregset)(tid, ARG3, ARG4);
-      break;
+	  ML_(linux_PRE_setregset)(tid, ARG3, ARG4);
+	  break;
    default:
-      break;
+	  break;
    }
 }
 
@@ -554,27 +552,27 @@ POST(sys_ptrace)
 {
    switch (ARG1) {
    case VKI_PTRACE_TRACEME:
-      ML_(linux_POST_traceme)(tid);
-      break;
+	  ML_(linux_POST_traceme)(tid);
+	  break;
    case VKI_PTRACE_PEEKTEXT:
    case VKI_PTRACE_PEEKDATA:
    case VKI_PTRACE_PEEKUSR:
-      POST_MEM_WRITE( ARG4, sizeof (long));
-      break;
+	  POST_MEM_WRITE( ARG4, sizeof (long));
+	  break;
    case VKI_PTRACE_GETEVENTMSG:
-      POST_MEM_WRITE( ARG4, sizeof(unsigned long));
-      break;
+	  POST_MEM_WRITE( ARG4, sizeof(unsigned long));
+	  break;
    case VKI_PTRACE_GETSIGINFO:
-      /* XXX: This is a simplification. Different parts of the
-       * siginfo_t are valid depending on the type of signal.
-       */
-      POST_MEM_WRITE( ARG4, sizeof(vki_siginfo_t));
-      break;
+	  /* XXX: This is a simplification. Different parts of the
+	   * siginfo_t are valid depending on the type of signal.
+	   */
+	  POST_MEM_WRITE( ARG4, sizeof(vki_siginfo_t));
+	  break;
    case VKI_PTRACE_GETREGSET:
-      ML_(linux_POST_getregset)(tid, ARG3, ARG4);
-      break;
+	  ML_(linux_POST_getregset)(tid, ARG3, ARG4);
+	  break;
    default:
-      break;
+	  break;
    }
 }
 
@@ -586,7 +584,7 @@ POST(sys_ptrace)
    ------------------------------------------------------------------ */
 
 /* Add an ppc64-linux specific wrapper to a syscall table. */
-#define PLAX_(sysno, name)    WRAPPER_ENTRY_X_(ppc64_linux, sysno, name) 
+#define PLAX_(sysno, name)    WRAPPER_ENTRY_X_(ppc64_linux, sysno, name)
 #define PLAXY(sysno, name)    WRAPPER_ENTRY_XY(ppc64_linux, sysno, name)
 
 // This table maps from __NR_xxx syscall numbers (from
@@ -711,7 +709,7 @@ static SyscallTableEntry syscall_table[] = {
    GENX_(__NR_truncate,          sys_truncate),           //  92
    GENX_(__NR_ftruncate,         sys_ftruncate),          //  93
    GENX_(__NR_fchmod,            sys_fchmod),             //  94
-   
+
    GENX_(__NR_fchown,            sys_fchown),             //  95
    GENX_(__NR_getpriority,       sys_getpriority),        //  96
    GENX_(__NR_setpriority,       sys_setpriority),        //  97
@@ -1007,21 +1005,25 @@ static SyscallTableEntry syscall_table[] = {
 
    LINX_(__NR_membarrier,        sys_membarrier),       // 365
 
+   LINX_(__NR_copy_file_range,   sys_copy_file_range),  // 379
+   LINX_(__NR_preadv2,           sys_preadv2),          // 380
+   LINX_(__NR_pwritev2,          sys_pwritev2),         // 381
+
    LINXY(__NR_statx,             sys_statx),            // 383
 };
 
 SyscallTableEntry* ML_(get_linux_syscall_entry) ( UInt sysno )
 {
    const UInt syscall_table_size
-      = sizeof(syscall_table) / sizeof(syscall_table[0]);
+	  = sizeof(syscall_table) / sizeof(syscall_table[0]);
 
    /* Is it in the contiguous initial section of the table? */
    if (sysno < syscall_table_size) {
-      SyscallTableEntry* sys = &syscall_table[sysno];
-      if (sys->before == NULL)
-         return NULL; /* no entry */
-      else
-         return sys;
+	  SyscallTableEntry* sys = &syscall_table[sysno];
+	  if (sys->before == NULL)
+		 return NULL; /* no entry */
+	  else
+		 return sys;
    }
 
    /* Can't find a wrapper */

@@ -8,9 +8,9 @@
    framework.
 
    Copyright (C) 2000-2017 Nicholas Nethercote
-      njn@valgrind.org
+	  njn@valgrind.org
    Copyright (C) 2008-2017 Evan Geller
-      gaze@bea.ms
+	  gaze@bea.ms
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -23,9 +23,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -67,9 +65,9 @@
    the integer registers before entering f.*/
 __attribute__((noreturn))
 void ML_(call_on_new_stack_0_1) ( Addr stack,
-                                  Addr retaddr,
-                                  void (*f)(Word),
-                                  Word arg1 );
+								  Addr retaddr,
+								  void (*f)(Word),
+								  Word arg1 );
 //    r0 = stack
 //    r1 = retaddr
 //    r2 = f
@@ -111,7 +109,7 @@ asm(
 /*Setup child stack */
 "   str     r0, [r1, #-4]!\n"
 "   str     r3, [r1, #-4]!\n"
-"   push {r4,r7}\n" 
+"   push {r4,r7}\n"
 "   mov r0, r2\n" /* arg1: flags */
 /* r1 (arg2) is already our child's stack */
 "   ldr r2, [sp, #12]\n" // parent tid
@@ -142,7 +140,7 @@ asm(
 
 // forward declarations
 static SysRes sys_set_tls ( ThreadId tid, Addr tlsptr );
-            
+
 /* ---------------------------------------------------------------------
    More thread stuff
    ------------------------------------------------------------------ */
@@ -151,7 +149,7 @@ static SysRes sys_set_tls ( ThreadId tid, Addr tlsptr );
 // needs to be cleaned up
 void VG_(cleanup_thread) ( ThreadArchState* arch )
 {
-}  
+}
 
 /* Assigns tlsptr to the guest TPIDRURO.
    If needed for the specific hardware, really executes
@@ -162,40 +160,40 @@ static SysRes sys_set_tls ( ThreadId tid, Addr tlsptr )
    VG_(threads)[tid].arch.vex.guest_TPIDRURO = tlsptr;
 
    if (KernelVariantiS(KernelVariant_android_no_hw_tls,
-                       VG_(clo_kernel_variant))) {
-      /* Android emulator does not provide an hw tls register.
-         So, the tls register is emulated by the kernel.
-         This emulated value is set by the __NR_ARM_set_tls syscall.
-         The emulated value must be read by the kernel helper function
-         located at 0xffff0fe0.
-      
-         The emulated tlsptr is located at 0xffff0ff0
-         (so slightly after the kernel helper function).
-         Note that applications are not supposed to read this directly.
-      
-         For compatibility : if there is a hw tls register, the kernel
-         will put at 0xffff0fe0 the instructions to read it, so
-         as to have old applications calling the kernel helper
-         working properly.
+					   VG_(clo_kernel_variant))) {
+	  /* Android emulator does not provide an hw tls register.
+		 So, the tls register is emulated by the kernel.
+		 This emulated value is set by the __NR_ARM_set_tls syscall.
+		 The emulated value must be read by the kernel helper function
+		 located at 0xffff0fe0.
 
-         For having emulated guest TLS working correctly with
-         Valgrind, it is needed to execute the syscall to set
-         the emulated TLS value in addition to the assignment
-         of TPIDRURO.
+		 The emulated tlsptr is located at 0xffff0ff0
+		 (so slightly after the kernel helper function).
+		 Note that applications are not supposed to read this directly.
 
-         Note: the below means that if we need thread local storage
-         for Valgrind host, then there will be a conflict between
-         the need of the guest tls and of the host tls.
-         If all the guest code would cleanly call 0xffff0fe0,
-         then we might maybe intercept this. However, at least
-         __libc_preinit reads directly 0xffff0ff0.
-      */
-      /* ??? might call the below if auxv->u.a_val & VKI_HWCAP_TLS ???
-         Unclear if real hardware having tls hw register sets
-         VKI_HWCAP_TLS. */
-      return VG_(do_syscall1) (__NR_ARM_set_tls, tlsptr);
+		 For compatibility : if there is a hw tls register, the kernel
+		 will put at 0xffff0fe0 the instructions to read it, so
+		 as to have old applications calling the kernel helper
+		 working properly.
+
+		 For having emulated guest TLS working correctly with
+		 Valgrind, it is needed to execute the syscall to set
+		 the emulated TLS value in addition to the assignment
+		 of TPIDRURO.
+
+		 Note: the below means that if we need thread local storage
+		 for Valgrind host, then there will be a conflict between
+		 the need of the guest tls and of the host tls.
+		 If all the guest code would cleanly call 0xffff0fe0,
+		 then we might maybe intercept this. However, at least
+		 __libc_preinit reads directly 0xffff0ff0.
+	  */
+	  /* ??? might call the below if auxv->u.a_val & VKI_HWCAP_TLS ???
+		 Unclear if real hardware having tls hw register sets
+		 VKI_HWCAP_TLS. */
+	  return VG_(do_syscall1) (__NR_ARM_set_tls, tlsptr);
    } else {
-      return VG_(mk_SysRes_Success)( 0 );
+	  return VG_(mk_SysRes_Success)( 0 );
    }
 }
 
@@ -236,14 +234,14 @@ PRE(sys_mmap2)
    // 4K-sized.  Assert that the page size is 4K here for safety.
    vg_assert(VKI_PAGE_SIZE == 4096);
    PRINT("sys_mmap2 ( %#lx, %lu, %lu, %lu, %lu, %lu )",
-         ARG1, ARG2, ARG3, ARG4, ARG5, ARG6 );
+		 ARG1, ARG2, ARG3, ARG4, ARG5, ARG6 );
    PRE_REG_READ6(long, "mmap2",
-                 unsigned long, start, unsigned long, length,
-                 unsigned long, prot,  unsigned long, flags,
-                 unsigned long, fd,    unsigned long, offset);
+				 unsigned long, start, unsigned long, length,
+				 unsigned long, prot,  unsigned long, flags,
+				 unsigned long, fd,    unsigned long, offset);
 
-   r = ML_(generic_PRE_sys_mmap)( tid, ARG1, ARG2, ARG3, ARG4, ARG5, 
-                                       4096 * (Off64T)ARG6 );
+   r = ML_(generic_PRE_sys_mmap)( tid, ARG1, ARG2, ARG3, ARG4, ARG5,
+									   4096 * (Off64T)ARG6 );
    SET_STATUS_from_SysRes(r);
 }
 
@@ -263,7 +261,7 @@ POST(sys_lstat64)
 {
    vg_assert(SUCCESS);
    if (RES == 0) {
-      POST_MEM_WRITE( ARG2, sizeof(struct vki_stat64) );
+	  POST_MEM_WRITE( ARG2, sizeof(struct vki_stat64) );
    }
 }
 
@@ -283,9 +281,9 @@ POST(sys_stat64)
 PRE(sys_fstatat64)
 {
    PRINT("sys_fstatat64 ( %ld, %#lx(%s), %#lx )",
-         SARG1, ARG2, (HChar*)ARG2, ARG3);
+		 SARG1, ARG2, (HChar*)ARG2, ARG3);
    PRE_REG_READ3(long, "fstatat64",
-                 int, dfd, char *, file_name, struct stat64 *, buf);
+				 int, dfd, char *, file_name, struct stat64 *, buf);
    PRE_MEM_RASCIIZ( "fstatat64(file_name)", ARG2 );
    PRE_MEM_WRITE( "fstatat64(buf)", ARG3, sizeof(struct vki_stat64) );
 }
@@ -310,7 +308,7 @@ POST(sys_fstat64)
 PRE(sys_sigreturn)
 {
    /* See comments on PRE(sys_rt_sigreturn) in syswrap-amd64-linux.c for
-     an explanation of what follows. */
+	 an explanation of what follows. */
 
    PRINT("sys_sigreturn ( )");
 
@@ -322,7 +320,7 @@ PRE(sys_sigreturn)
    VG_(sigframe_destroy)(tid, False);
 
    /* Tell the driver not to update the guest state with the "result",
-      and set a bogus result to keep it happy. */
+	  and set a bogus result to keep it happy. */
    *flags |= SfNoWriteResult;
    SET_STATUS_Success(0);
 
@@ -333,7 +331,7 @@ PRE(sys_sigreturn)
 PRE(sys_rt_sigreturn)
 {
   /* See comments on PRE(sys_rt_sigreturn) in syswrap-amd64-linux.c for
-      an explanation of what follows. */
+	  an explanation of what follows. */
 
    PRINT("rt_sigreturn ( )");
 
@@ -345,7 +343,7 @@ PRE(sys_rt_sigreturn)
    VG_(sigframe_destroy)(tid, True);
 
    /* Tell the driver not to update the guest state with the "result",
-      and set a bogus result to keep it happy. */
+	  and set a bogus result to keep it happy. */
    *flags |= SfNoWriteResult;
    SET_STATUS_Success(0);
 
@@ -358,19 +356,19 @@ PRE(sys_rt_sigreturn)
 PRE(sys_sigsuspend)
 {
    /* The C library interface to sigsuspend just takes a pointer to
-      a signal mask but this system call has three arguments - the first
-      two don't appear to be used by the kernel and are always passed as
-      zero by glibc and the third is the first word of the signal mask
-      so only 32 signals are supported.
-     
-      In fact glibc normally uses rt_sigsuspend if it is available as
-      that takes a pointer to the signal mask so supports more signals.
-    */
+	  a signal mask but this system call has three arguments - the first
+	  two don't appear to be used by the kernel and are always passed as
+	  zero by glibc and the third is the first word of the signal mask
+	  so only 32 signals are supported.
+
+	  In fact glibc normally uses rt_sigsuspend if it is available as
+	  that takes a pointer to the signal mask so supports more signals.
+	*/
    *flags |= SfMayBlock;
    PRINT("sys_sigsuspend ( %ld, %ld, %#lx )", SARG1, SARG2, ARG3 );
    PRE_REG_READ3(int, "sigsuspend",
-                 int, history0, int, history1,
-                 vki_old_sigset_t, mask);
+				 int, history0, int, history1,
+				 vki_old_sigset_t, mask);
 }
 
 /* Very much ARM specific */
@@ -388,8 +386,8 @@ PRE(sys_cacheflush)
    PRINT("cacheflush (%lx, %#lx, %#lx)",ARG1,ARG2,ARG3);
    PRE_REG_READ3(long, "cacheflush", void*, addrlow,void*, addrhigh,int, flags);
    VG_(discard_translations)( (Addr)ARG1,
-                              ((ULong)ARG2) - ((ULong)ARG1) + 1ULL/*paranoia*/,
-                              "PRE(sys_cacheflush)" );
+							  ((ULong)ARG2) - ((ULong)ARG1) + 1ULL/*paranoia*/,
+							  "PRE(sys_cacheflush)" );
    SET_STATUS_Success(0);
 }
 
@@ -400,82 +398,82 @@ PRE(sys_cacheflush)
 PRE(sys_ptrace)
 {
    PRINT("sys_ptrace ( %ld, %ld, %#lx, %#lx )", SARG1, SARG2, ARG3, ARG4);
-   PRE_REG_READ4(int, "ptrace", 
-                 long, request, long, pid, long, addr, long, data);
+   PRE_REG_READ4(int, "ptrace",
+				 long, request, long, pid, long, addr, long, data);
    switch (ARG1) {
    case VKI_PTRACE_PEEKTEXT:
    case VKI_PTRACE_PEEKDATA:
    case VKI_PTRACE_PEEKUSR:
-      PRE_MEM_WRITE( "ptrace(peek)", ARG4, 
-		     sizeof (long));
-      break;
+	  PRE_MEM_WRITE( "ptrace(peek)", ARG4,
+			 sizeof (long));
+	  break;
    case VKI_PTRACE_GETREGS:
-      PRE_MEM_WRITE( "ptrace(getregs)", ARG4, 
-		     sizeof (struct vki_user_regs_struct));
-      break;
+	  PRE_MEM_WRITE( "ptrace(getregs)", ARG4,
+			 sizeof (struct vki_user_regs_struct));
+	  break;
    case VKI_PTRACE_GETFPREGS:
-      PRE_MEM_WRITE( "ptrace(getfpregs)", ARG4, 
-		     sizeof (struct vki_user_fp));
-      break;
+	  PRE_MEM_WRITE( "ptrace(getfpregs)", ARG4,
+			 sizeof (struct vki_user_fp));
+	  break;
    case VKI_PTRACE_GETWMMXREGS:
-      PRE_MEM_WRITE( "ptrace(getwmmxregs)", ARG4, 
-		     VKI_IWMMXT_SIZE);
-      break;
+	  PRE_MEM_WRITE( "ptrace(getwmmxregs)", ARG4,
+			 VKI_IWMMXT_SIZE);
+	  break;
    case VKI_PTRACE_GETCRUNCHREGS:
-      PRE_MEM_WRITE( "ptrace(getcrunchregs)", ARG4, 
-		     VKI_CRUNCH_SIZE);
-      break;
+	  PRE_MEM_WRITE( "ptrace(getcrunchregs)", ARG4,
+			 VKI_CRUNCH_SIZE);
+	  break;
    case VKI_PTRACE_GETVFPREGS:
-      PRE_MEM_WRITE( "ptrace(getvfpregs)", ARG4, 
-                     sizeof (struct vki_user_vfp) );
-      break;
+	  PRE_MEM_WRITE( "ptrace(getvfpregs)", ARG4,
+					 sizeof (struct vki_user_vfp) );
+	  break;
    case VKI_PTRACE_GETHBPREGS:
-      PRE_MEM_WRITE( "ptrace(gethbpregs)", ARG4, 
-                     sizeof (unsigned long) );
-      break;
+	  PRE_MEM_WRITE( "ptrace(gethbpregs)", ARG4,
+					 sizeof (unsigned long) );
+	  break;
    case VKI_PTRACE_SETREGS:
-      PRE_MEM_READ( "ptrace(setregs)", ARG4, 
-		     sizeof (struct vki_user_regs_struct));
-      break;
+	  PRE_MEM_READ( "ptrace(setregs)", ARG4,
+			 sizeof (struct vki_user_regs_struct));
+	  break;
    case VKI_PTRACE_SETFPREGS:
-      PRE_MEM_READ( "ptrace(setfpregs)", ARG4, 
-		     sizeof (struct vki_user_fp));
-      break;
+	  PRE_MEM_READ( "ptrace(setfpregs)", ARG4,
+			 sizeof (struct vki_user_fp));
+	  break;
    case VKI_PTRACE_SETWMMXREGS:
-      PRE_MEM_READ( "ptrace(setwmmxregs)", ARG4, 
-		     VKI_IWMMXT_SIZE);
-      break;
+	  PRE_MEM_READ( "ptrace(setwmmxregs)", ARG4,
+			 VKI_IWMMXT_SIZE);
+	  break;
    case VKI_PTRACE_SETCRUNCHREGS:
-      PRE_MEM_READ( "ptrace(setcrunchregs)", ARG4, 
-		     VKI_CRUNCH_SIZE);
-      break;
+	  PRE_MEM_READ( "ptrace(setcrunchregs)", ARG4,
+			 VKI_CRUNCH_SIZE);
+	  break;
    case VKI_PTRACE_SETVFPREGS:
-      PRE_MEM_READ( "ptrace(setvfpregs)", ARG4, 
-                     sizeof (struct vki_user_vfp));
-      break;
+	  PRE_MEM_READ( "ptrace(setvfpregs)", ARG4,
+					 sizeof (struct vki_user_vfp));
+	  break;
    case VKI_PTRACE_SETHBPREGS:
-      PRE_MEM_READ( "ptrace(sethbpregs)", ARG4, sizeof(unsigned long));
-      break;
+	  PRE_MEM_READ( "ptrace(sethbpregs)", ARG4, sizeof(unsigned long));
+	  break;
    case VKI_PTRACE_GET_THREAD_AREA:
-      PRE_MEM_WRITE( "ptrace(get_thread_area)", ARG4, sizeof(unsigned long));
-      break;
+	  PRE_MEM_WRITE( "ptrace(get_thread_area)", ARG4, sizeof(unsigned long));
+	  break;
    case VKI_PTRACE_GETEVENTMSG:
-      PRE_MEM_WRITE( "ptrace(geteventmsg)", ARG4, sizeof(unsigned long));
-      break;
+	  PRE_MEM_WRITE( "ptrace(geteventmsg)", ARG4, sizeof(unsigned long));
+	  break;
    case VKI_PTRACE_GETSIGINFO:
-      PRE_MEM_WRITE( "ptrace(getsiginfo)", ARG4, sizeof(vki_siginfo_t));
-      break;
+	  PRE_MEM_WRITE( "ptrace(getsiginfo)", ARG4, sizeof(vki_siginfo_t));
+	  break;
    case VKI_PTRACE_SETSIGINFO:
-      PRE_MEM_READ( "ptrace(setsiginfo)", ARG4, sizeof(vki_siginfo_t));
-      break;
+	  PRE_MEM_READ( "ptrace(setsiginfo)", ARG4, sizeof(vki_siginfo_t));
+	  break;
    case VKI_PTRACE_GETREGSET:
-      ML_(linux_PRE_getregset)(tid, ARG3, ARG4);
-      break;
+	  ML_(linux_PRE_getregset)(tid, ARG3, ARG4);
+	  break;
    case VKI_PTRACE_SETREGSET:
-      ML_(linux_PRE_setregset)(tid, ARG3, ARG4);
-      break;
+	  ML_(linux_PRE_setregset)(tid, ARG3, ARG4);
+	  break;
    default:
-      break;
+	  break;
    }
 }
 
@@ -483,44 +481,44 @@ POST(sys_ptrace)
 {
    switch (ARG1) {
    case VKI_PTRACE_TRACEME:
-      ML_(linux_POST_traceme)(tid);
-      break;
+	  ML_(linux_POST_traceme)(tid);
+	  break;
    case VKI_PTRACE_PEEKTEXT:
    case VKI_PTRACE_PEEKDATA:
    case VKI_PTRACE_PEEKUSR:
-      POST_MEM_WRITE( ARG4, sizeof (long));
-      break;
+	  POST_MEM_WRITE( ARG4, sizeof (long));
+	  break;
    case VKI_PTRACE_GETREGS:
-      POST_MEM_WRITE( ARG4, sizeof (struct vki_user_regs_struct));
-      break;
+	  POST_MEM_WRITE( ARG4, sizeof (struct vki_user_regs_struct));
+	  break;
    case VKI_PTRACE_GETFPREGS:
-      POST_MEM_WRITE( ARG4, sizeof (struct vki_user_fp));
-      break;
+	  POST_MEM_WRITE( ARG4, sizeof (struct vki_user_fp));
+	  break;
    case VKI_PTRACE_GETWMMXREGS:
-      POST_MEM_WRITE( ARG4, VKI_IWMMXT_SIZE);
-      break;
+	  POST_MEM_WRITE( ARG4, VKI_IWMMXT_SIZE);
+	  break;
    case VKI_PTRACE_GETCRUNCHREGS:
-      POST_MEM_WRITE( ARG4, VKI_CRUNCH_SIZE);
-      break;
+	  POST_MEM_WRITE( ARG4, VKI_CRUNCH_SIZE);
+	  break;
    case VKI_PTRACE_GETVFPREGS:
-      POST_MEM_WRITE( ARG4, sizeof(struct vki_user_vfp));
-      break;
+	  POST_MEM_WRITE( ARG4, sizeof(struct vki_user_vfp));
+	  break;
    case VKI_PTRACE_GET_THREAD_AREA:
    case VKI_PTRACE_GETHBPREGS:
    case VKI_PTRACE_GETEVENTMSG:
-      POST_MEM_WRITE( ARG4, sizeof(unsigned long));
-      break;
+	  POST_MEM_WRITE( ARG4, sizeof(unsigned long));
+	  break;
    case VKI_PTRACE_GETSIGINFO:
-      /* XXX: This is a simplification. Different parts of the
-       * siginfo_t are valid depending on the type of signal.
-       */
-      POST_MEM_WRITE( ARG4, sizeof(vki_siginfo_t));
-      break;
+	  /* XXX: This is a simplification. Different parts of the
+	   * siginfo_t are valid depending on the type of signal.
+	   */
+	  POST_MEM_WRITE( ARG4, sizeof(vki_siginfo_t));
+	  break;
    case VKI_PTRACE_GETREGSET:
-      ML_(linux_POST_getregset)(tid, ARG3, ARG4);
-      break;
+	  ML_(linux_POST_getregset)(tid, ARG3, ARG4);
+	  break;
    default:
-      break;
+	  break;
    }
 }
 
@@ -537,7 +535,7 @@ POST(sys_ptrace)
 #define __NR_OABI_SYSCALL_BASE 0x0
 #endif
 
-#define PLAX_(sysno, name)    WRAPPER_ENTRY_X_(arm_linux, sysno, name) 
+#define PLAX_(sysno, name)    WRAPPER_ENTRY_X_(arm_linux, sysno, name)
 #define PLAXY(sysno, name)    WRAPPER_ENTRY_XY(arm_linux, sysno, name)
 
 // This table maps from __NR_xxx syscall numbers (from
@@ -578,7 +576,7 @@ static SyscallTableEntry syscall_main_table[] = {
    LINX_(__NR_umount,            sys_oldumount),      // 22
    LINX_(__NR_setuid,            sys_setuid16),       // 23 ## P
    LINX_(__NR_getuid,            sys_getuid16),       // 24 ## P
-//zz 
+//zz
 //zz    //   (__NR_stime,             sys_stime),          // 25 * (SVr4,SVID,X/OPEN)
    PLAXY(__NR_ptrace,            sys_ptrace),         // 26
    GENX_(__NR_alarm,             sys_alarm),          // 27
@@ -602,7 +600,7 @@ static SyscallTableEntry syscall_main_table[] = {
    LINXY(__NR_pipe,              sys_pipe),           // 42
    GENXY(__NR_times,             sys_times),          // 43
 //   GENX_(__NR_prof,              sys_ni_syscall),     // 44
-//zz 
+//zz
    GENX_(__NR_brk,               sys_brk),            // 45
    LINX_(__NR_setgid,            sys_setgid16),       // 46
    LINX_(__NR_getgid,            sys_getgid16),       // 47
@@ -620,7 +618,7 @@ static SyscallTableEntry syscall_main_table[] = {
    GENX_(__NR_setpgid,           sys_setpgid),        // 57
 //   GENX_(__NR_ulimit,            sys_ni_syscall),     // 58
 //zz    //   (__NR_oldolduname,       sys_olduname),       // 59 Linux -- obsolete
-//zz 
+//zz
    GENX_(__NR_umask,             sys_umask),          // 60
    GENX_(__NR_chroot,            sys_chroot),         // 61
 //zz    //   (__NR_ustat,             sys_ustat)           // 62 SVr4 -- deprecated
@@ -632,13 +630,13 @@ static SyscallTableEntry syscall_main_table[] = {
    LINXY(__NR_sigaction,         sys_sigaction),      // 67
 //zz    //   (__NR_sgetmask,          sys_sgetmask),       // 68 */* (ANSI C)
 //zz    //   (__NR_ssetmask,          sys_ssetmask),       // 69 */* (ANSI C)
-//zz 
+//zz
    LINX_(__NR_setreuid,          sys_setreuid16),     // 70
    LINX_(__NR_setregid,          sys_setregid16),     // 71
    PLAX_(__NR_sigsuspend,        sys_sigsuspend),     // 72
    LINXY(__NR_sigpending,        sys_sigpending),     // 73
 //zz    //   (__NR_sethostname,       sys_sethostname),    // 74 */*
-//zz 
+//zz
    GENX_(__NR_setrlimit,         sys_setrlimit),      // 75
    GENXY(__NR_getrlimit,         sys_old_getrlimit),  // 76
    GENXY(__NR_getrusage,         sys_getrusage),      // 77
@@ -650,13 +648,13 @@ static SyscallTableEntry syscall_main_table[] = {
 //   PLAX_(__NR_select,            old_select),         // 82
    GENX_(__NR_symlink,           sys_symlink),        // 83
 //zz    //   (__NR_oldlstat,          sys_lstat),          // 84 -- obsolete
-//zz 
+//zz
    GENX_(__NR_readlink,          sys_readlink),       // 85
 //zz    //   (__NR_uselib,            sys_uselib),         // 86 */Linux
 //zz    //   (__NR_swapon,            sys_swapon),         // 87 */Linux
 //zz    //   (__NR_reboot,            sys_reboot),         // 88 */Linux
 //zz    //   (__NR_readdir,           old_readdir),        // 89 -- superseded
-//zz 
+//zz
 //   _____(__NR_mmap,              old_mmap),           // 90
    GENXY(__NR_munmap,            sys_munmap),         // 91
    GENX_(__NR_truncate,          sys_truncate),       // 92
@@ -680,14 +678,14 @@ static SyscallTableEntry syscall_main_table[] = {
    GENXY(__NR_lstat,             sys_newlstat),       // 107
    GENXY(__NR_fstat,             sys_newfstat),       // 108
 //zz    //   (__NR_olduname,          sys_uname),          // 109 -- obsolete
-//zz 
+//zz
 //   GENX_(__NR_iopl,              sys_iopl),           // 110
    LINX_(__NR_vhangup,           sys_vhangup),        // 111
 //   GENX_(__NR_idle,              sys_ni_syscall),     // 112
 // PLAXY(__NR_vm86old,           sys_vm86old),        // 113 __NR_syscall... weird
    GENXY(__NR_wait4,             sys_wait4),          // 114
-//zz 
-//zz    //   (__NR_swapoff,           sys_swapoff),        // 115 */Linux 
+//zz
+//zz    //   (__NR_swapoff,           sys_swapoff),        // 115 */Linux
    LINXY(__NR_sysinfo,           sys_sysinfo),        // 116
 //   _____(__NR_ipc,               sys_ipc),            // 117
    GENX_(__NR_fsync,             sys_fsync),          // 118
@@ -698,27 +696,27 @@ static SyscallTableEntry syscall_main_table[] = {
    GENXY(__NR_uname,             sys_newuname),       // 122
 //   PLAX_(__NR_modify_ldt,        sys_modify_ldt),     // 123
 //zz    LINXY(__NR_adjtimex,          sys_adjtimex),       // 124
-//zz 
+//zz
    GENXY(__NR_mprotect,          sys_mprotect),       // 125
    LINXY(__NR_sigprocmask,       sys_sigprocmask),    // 126
 //zz    // Nb: create_module() was removed 2.4-->2.6
 //   GENX_(__NR_create_module,     sys_ni_syscall),     // 127
    LINX_(__NR_init_module,       sys_init_module),    // 128
    LINX_(__NR_delete_module,     sys_delete_module),  // 129
-//zz 
+//zz
 //zz    // Nb: get_kernel_syms() was removed 2.4-->2.6
 //   GENX_(__NR_get_kernel_syms,   sys_ni_syscall),     // 130
    LINX_(__NR_quotactl,          sys_quotactl),       // 131
    GENX_(__NR_getpgid,           sys_getpgid),        // 132
    GENX_(__NR_fchdir,            sys_fchdir),         // 133
 //zz    //   (__NR_bdflush,           sys_bdflush),        // 134 */Linux
-//zz 
+//zz
 //zz    //   (__NR_sysfs,             sys_sysfs),          // 135 SVr4
    LINX_(__NR_personality,       sys_personality),    // 136
 //   GENX_(__NR_afs_syscall,       sys_ni_syscall),     // 137
    LINX_(__NR_setfsuid,          sys_setfsuid16),     // 138
    LINX_(__NR_setfsgid,          sys_setfsgid16),     // 139
- 
+
    LINXY(__NR__llseek,           sys_llseek),         // 140
    GENXY(__NR_getdents,          sys_getdents),       // 141
    GENX_(__NR__newselect,        sys_select),         // 142
@@ -754,11 +752,11 @@ static SyscallTableEntry syscall_main_table[] = {
 //   GENX_(__NR_query_module,      sys_ni_syscall),     // 167
    GENXY(__NR_poll,              sys_poll),           // 168
 //zz    //   (__NR_nfsservctl,        sys_nfsservctl),     // 169 */Linux
-//zz 
+//zz
    LINX_(__NR_setresgid,         sys_setresgid16),    // 170
    LINXY(__NR_getresgid,         sys_getresgid16),    // 171
    LINXY(__NR_prctl,             sys_prctl),          // 172
-   PLAX_(__NR_rt_sigreturn,      sys_rt_sigreturn),   // 173 
+   PLAX_(__NR_rt_sigreturn,      sys_rt_sigreturn),   // 173
    LINXY(__NR_rt_sigaction,      sys_rt_sigaction),   // 174
 
    LINXY(__NR_rt_sigprocmask,    sys_rt_sigprocmask), // 175
@@ -785,7 +783,7 @@ static SyscallTableEntry syscall_main_table[] = {
    PLAX_(__NR_mmap2,             sys_mmap2),          // 192
    GENX_(__NR_truncate64,        sys_truncate64),     // 193
    GENX_(__NR_ftruncate64,       sys_ftruncate64),    // 194
-   
+
    PLAXY(__NR_stat64,            sys_stat64),         // 195
    PLAXY(__NR_lstat64,           sys_lstat64),        // 196
    PLAXY(__NR_fstat64,           sys_fstat64),        // 197
@@ -909,12 +907,12 @@ static SyscallTableEntry syscall_main_table[] = {
    LINXY(__NR_getsockopt,        sys_getsockopt),     // 295
    LINX_(__NR_sendmsg,           sys_sendmsg),        // 296
    LINXY(__NR_recvmsg,           sys_recvmsg),        // 297
-   LINX_(__NR_semop,             sys_semop),          // 298 
+   LINX_(__NR_semop,             sys_semop),          // 298
    LINX_(__NR_semget,            sys_semget),         // 299
    LINXY(__NR_semctl,            sys_semctl),         // 300
-   LINX_(__NR_msgget,            sys_msgget),         
-   LINX_(__NR_msgsnd,            sys_msgsnd),          
-   LINXY(__NR_msgrcv,            sys_msgrcv),         
+   LINX_(__NR_msgget,            sys_msgget),
+   LINX_(__NR_msgsnd,            sys_msgsnd),
+   LINXY(__NR_msgrcv,            sys_msgrcv),
    LINXY(__NR_msgctl,            sys_msgctl),         // 304
    LINX_(__NR_semtimedop,        sys_semtimedop),     // 312
 
@@ -941,13 +939,13 @@ static SyscallTableEntry syscall_main_table[] = {
    LINX_(__NR_linkat,       sys_linkat),           // 303
    LINX_(__NR_symlinkat,    sys_symlinkat),        // 304
 
-   LINX_(__NR_readlinkat,    sys_readlinkat),       // 
+   LINX_(__NR_readlinkat,    sys_readlinkat),       //
    LINX_(__NR_fchmodat,       sys_fchmodat),         //
    LINX_(__NR_faccessat,    sys_faccessat),        //
    LINXY(__NR_shmat,             sys_shmat),       //305
-   LINXY(__NR_shmdt,             sys_shmdt),          //306 
-   LINX_(__NR_shmget,            sys_shmget),         //307 
-   LINXY(__NR_shmctl,            sys_shmctl),         // 308 
+   LINXY(__NR_shmdt,             sys_shmdt),          //306
+   LINX_(__NR_shmget,            sys_shmget),         //307
+   LINXY(__NR_shmctl,            sys_shmctl),         // 308
 //   LINX_(__NR_pselect6,       sys_pselect6),         //
 
    LINX_(__NR_unshare,       sys_unshare),          // 310
@@ -971,7 +969,7 @@ static SyscallTableEntry syscall_main_table[] = {
 
    ///////////////
 
-   // JRS 2010-Jan-03: I believe that all the numbers listed 
+   // JRS 2010-Jan-03: I believe that all the numbers listed
    // in comments in the table prior to this point (eg "// 326",
    // etc) are bogus since it looks to me like they are copied
    // verbatim from syswrap-x86-linux.c and they certainly do not
@@ -1016,6 +1014,9 @@ static SyscallTableEntry syscall_main_table[] = {
    LINXY(__NR_getrandom,         sys_getrandom),        // 384
    LINXY(__NR_memfd_create,      sys_memfd_create),     // 385
 
+   LINX_(__NR_membarrier,        sys_membarrier),       // 389
+   LINX_(__NR_copy_file_range,   sys_copy_file_range),  // 391
+
    LINXY(__NR_statx,             sys_statx),            // 397
 };
 
@@ -1033,22 +1034,22 @@ static SyscallTableEntry ste___ARM_cacheflush
 SyscallTableEntry* ML_(get_linux_syscall_entry) ( UInt sysno )
 {
    const UInt syscall_main_table_size
-      = sizeof(syscall_main_table) / sizeof(syscall_main_table[0]);
+	  = sizeof(syscall_main_table) / sizeof(syscall_main_table[0]);
 
    /* Is it in the contiguous initial section of the table? */
    if (sysno < syscall_main_table_size) {
-      SyscallTableEntry* sys = &syscall_main_table[sysno];
-      if (sys->before == NULL)
-         return NULL; /* no entry */
-      else
-         return sys;
+	  SyscallTableEntry* sys = &syscall_main_table[sysno];
+	  if (sys->before == NULL)
+		 return NULL; /* no entry */
+	  else
+		 return sys;
    }
 
    /* Check if it's one of the out-of-line entries. */
    switch (sysno) {
-      case __NR_ARM_set_tls:    return &ste___ARM_set_tls;
-      case __NR_ARM_cacheflush: return &ste___ARM_cacheflush;
-      default: break;
+	  case __NR_ARM_set_tls:    return &ste___ARM_set_tls;
+	  case __NR_ARM_cacheflush: return &ste___ARM_cacheflush;
+	  default: break;
    }
 
    /* Can't find a wrapper */

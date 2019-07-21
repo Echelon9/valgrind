@@ -8,7 +8,7 @@
    framework.
 
    Copyright (C) 2005-2017 Apple Inc.
-      Greg Parker  gparker@apple.com
+	  Greg Parker  gparker@apple.com
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -646,10 +646,6 @@ DECL_TEMPLATE(darwin, ulock_wake);                  // 516
 // NYI ntp_gettime                                  // 528
 // NYI os_fault_with_payload                        // 529
 #endif /* DARWIN_VERS >= DARWIN_10_13 */
-#if DARWIN_VERS >= DARWIN_10_14
-// NYI kqueue_workloop_ctl                          // 530
-// NYI __mach_bridge_remote_time                    // 531
-#endif /* DARWIN_VERS >= DARWIN_10_14 */
 
 // Mach message helpers
 DECL_TEMPLATE(darwin, mach_port_set_context);
@@ -798,33 +794,33 @@ DECL_TEMPLATE(darwin, thread_fast_set_cthread_self);
 #include <mach/mach.h>
 extern
 void thread_state_from_vex(thread_state_t mach_generic,
-                           thread_state_flavor_t flavor,
-                           mach_msg_type_number_t count,
-                           VexGuestArchState *vex_generic);
+						   thread_state_flavor_t flavor,
+						   mach_msg_type_number_t count,
+						   VexGuestArchState *vex_generic);
 extern
 void thread_state_to_vex(const thread_state_t mach_generic,
-                         thread_state_flavor_t flavor,
-                         mach_msg_type_number_t count,
-                         VexGuestArchState *vex_generic);
+						 thread_state_flavor_t flavor,
+						 mach_msg_type_number_t count,
+						 VexGuestArchState *vex_generic);
 extern
 ThreadState *build_thread(const thread_state_t state,
-                          thread_state_flavor_t flavor,
-                          mach_msg_type_number_t count);
+						  thread_state_flavor_t flavor,
+						  mach_msg_type_number_t count);
 extern
 void hijack_thread_state(thread_state_t mach_generic,
-                         thread_state_flavor_t flavor,
-                         mach_msg_type_number_t count,
-                         ThreadState *tst);
+						 thread_state_flavor_t flavor,
+						 mach_msg_type_number_t count,
+						 ThreadState *tst);
 extern
 __attribute__((noreturn))
 void call_on_new_stack_0_1 ( Addr stack,
-			     Addr retaddr,
-			     void (*f)(Word),
-                             Word arg1 );
+				 Addr retaddr,
+				 void (*f)(Word),
+							 Word arg1 );
 
 extern void pthread_hijack_asm(void);
 extern void pthread_hijack(Addr self, Addr kport, Addr func, Addr func_arg,
-                           Addr stacksize, Addr flags, Addr sp);
+						   Addr stacksize, Addr flags, Addr sp);
 extern void wqthread_hijack_asm(void);
 extern void wqthread_hijack(Addr self, Addr kport, Addr stackaddr, Addr workitem, Int reuse, Addr sp);
 

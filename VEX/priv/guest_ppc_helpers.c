@@ -8,7 +8,7 @@
    framework.
 
    Copyright (C) 2004-2017 OpenWorks LLP
-      info@open-works.net
+	  info@open-works.net
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -72,13 +72,13 @@ ULong ppcg_dirtyhelper_MFTB ( void )
    ULong res;
    UInt  lo, hi1, hi2;
    while (1) {
-      __asm__ __volatile__ ("\n"
-         "\tmftbu %0\n"
-         "\tmftb %1\n"
-         "\tmftbu %2\n"
-         : "=r" (hi1), "=r" (lo), "=r" (hi2)
-      );
-      if (hi1 == hi2) break;
+	  __asm__ __volatile__ ("\n"
+		 "\tmftbu %0\n"
+		 "\tmftb %1\n"
+		 "\tmftbu %2\n"
+		 : "=r" (hi1), "=r" (lo), "=r" (hi2)
+	  );
+	  if (hi1 == hi2) break;
    }
    res = ((ULong)hi1) << 32;
    res |= (ULong)lo;
@@ -96,9 +96,9 @@ UInt ppc32g_dirtyhelper_MFSPR_268_269 ( UInt r269 )
 #  if defined(__powerpc__)
    UInt spr;
    if (r269) {
-      __asm__ __volatile__("mfspr %0,269" : "=b"(spr));
+	  __asm__ __volatile__("mfspr %0,269" : "=b"(spr));
    } else {
-      __asm__ __volatile__("mfspr %0,268" : "=b"(spr));
+	  __asm__ __volatile__("mfspr %0,268" : "=b"(spr));
    }
    return spr;
 #  else
@@ -124,13 +124,13 @@ UInt ppc32g_dirtyhelper_MFSPR_287 ( void )
 /* CALLED FROM GENERATED CODE */
 /* DIRTY HELPER (reads guest state, writes guest mem) */
 void ppc32g_dirtyhelper_LVS ( VexGuestPPC32State* gst,
-                              UInt vD_off, UInt sh, UInt shift_right )
+							  UInt vD_off, UInt sh, UInt shift_right )
 {
   static
   UChar ref[32] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-                    0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
-                    0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
-                    0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F };
+					0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+					0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+					0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F };
   U128* pU128_src;
   U128* pU128_dst;
 
@@ -138,7 +138,7 @@ void ppc32g_dirtyhelper_LVS ( VexGuestPPC32State* gst,
   vassert( sh           <= 15 );
   vassert( shift_right  <=  1 );
   if (shift_right)
-     sh = 16-sh;
+	 sh = 16-sh;
   /* else shift left  */
 
   pU128_src = (U128*)&ref[sh];
@@ -153,19 +153,19 @@ void ppc32g_dirtyhelper_LVS ( VexGuestPPC32State* gst,
 /* CALLED FROM GENERATED CODE */
 /* DIRTY HELPER (reads guest state, writes guest mem) */
 void ppc64g_dirtyhelper_LVS ( VexGuestPPC64State* gst,
-                              UInt vD_off, UInt sh, UInt shift_right,
-                              UInt endness )
+							  UInt vD_off, UInt sh, UInt shift_right,
+							  UInt endness )
 {
   UChar ref[32];
   ULong i;
   Int k;
   /* ref[] used to be a static const array, but this doesn't work on
-     ppc64 because VEX doesn't load the TOC pointer for the call here,
-     and so we wind up picking up some totally random other data.
-     (It's a wonder we don't segfault.)  So, just to be clear, this
-     "fix" (vex r2073) is really a kludgearound for the fact that
-     VEX's 64-bit ppc code generation doesn't provide a valid TOC
-     pointer for helper function calls.  Ick.  (Bug 250038) */
+	 ppc64 because VEX doesn't load the TOC pointer for the call here,
+	 and so we wind up picking up some totally random other data.
+	 (It's a wonder we don't segfault.)  So, just to be clear, this
+	 "fix" (vex r2073) is really a kludgearound for the fact that
+	 VEX's 64-bit ppc code generation doesn't provide a valid TOC
+	 pointer for helper function calls.  Ick.  (Bug 250038) */
   for (i = 0; i < 32; i++) ref[i] = i;
 
   U128* pU128_src;
@@ -175,24 +175,24 @@ void ppc64g_dirtyhelper_LVS ( VexGuestPPC64State* gst,
   vassert( sh           <= 15 );
   vassert( shift_right  <=  1 );
   if (shift_right)
-     sh = 16-sh;
+	 sh = 16-sh;
   /* else shift left  */
 
   pU128_src = (U128*)&ref[sh];
   pU128_dst = (U128*)( ((UChar*)gst) + vD_off );
 
   if ((0x1 & endness) == 0x0) {
-     /* Little endian */
-     unsigned char *srcp, *dstp;
-     srcp = (unsigned char *)pU128_src;
-     dstp = (unsigned char *)pU128_dst;
-     for (k = 15; k >= 0; k--, srcp++)
-        dstp[k] = *srcp;
+	 /* Little endian */
+	 unsigned char *srcp, *dstp;
+	 srcp = (unsigned char *)pU128_src;
+	 dstp = (unsigned char *)pU128_dst;
+	 for (k = 15; k >= 0; k--, srcp++)
+		dstp[k] = *srcp;
   } else {
-     (*pU128_dst)[0] = (*pU128_src)[0];
-     (*pU128_dst)[1] = (*pU128_src)[1];
-     (*pU128_dst)[2] = (*pU128_src)[2];
-     (*pU128_dst)[3] = (*pU128_src)[3];
+	 (*pU128_dst)[0] = (*pU128_src)[0];
+	 (*pU128_dst)[1] = (*pU128_src)[1];
+	 (*pU128_dst)[2] = (*pU128_src)[2];
+	 (*pU128_dst)[3] = (*pU128_src)[3];
   }
 }
 
@@ -200,17 +200,17 @@ void ppc64g_dirtyhelper_LVS ( VexGuestPPC64State* gst,
 /* Helper-function specialiser. */
 
 IRExpr* guest_ppc32_spechelper ( const HChar* function_name,
-                                 IRExpr** args,
-                                 IRStmt** precedingStmts,
-                                 Int      n_precedingStmts )
+								 IRExpr** args,
+								 IRStmt** precedingStmts,
+								 Int      n_precedingStmts )
 {
    return NULL;
 }
 
 IRExpr* guest_ppc64_spechelper ( const HChar* function_name,
-                                 IRExpr** args,
-                                 IRStmt** precedingStmts,
-                                 Int      n_precedingStmts )
+								 IRExpr** args,
+								 IRStmt** precedingStmts,
+								 Int      n_precedingStmts )
 {
    return NULL;
 }
@@ -235,80 +235,80 @@ ULong generate_C_FPCC_helper( ULong irType, ULong src_hi, ULong src )
    ULong fpcc, c;
 
    if ( irType == Ity_I16 ) {
-      frac_part = I16_FRACTION_MASK & src;
-      exp_mask = I16_EXP_MASK;
-      exp_part = exp_mask & src;
-      sign_bit = src >> 15;
+	  frac_part = I16_FRACTION_MASK & src;
+	  exp_mask = I16_EXP_MASK;
+	  exp_part = exp_mask & src;
+	  sign_bit = src >> 15;
 
    } else if ( irType == Ity_I32 ) {
-      frac_part = I32_FRACTION_MASK & src;
-      exp_mask = I32_EXP_MASK;
-      exp_part = exp_mask & src;
-      sign_bit = src >> 31;
+	  frac_part = I32_FRACTION_MASK & src;
+	  exp_mask = I32_EXP_MASK;
+	  exp_part = exp_mask & src;
+	  sign_bit = src >> 31;
 
    } else  if ( irType == Ity_I64 ) {
-     frac_part = I64_FRACTION_MASK & src;
-     exp_mask = I64_EXP_MASK;
-     exp_part = exp_mask & src;
-     sign_bit = src >> 63;
+	 frac_part = I64_FRACTION_MASK & src;
+	 exp_mask = I64_EXP_MASK;
+	 exp_part = exp_mask & src;
+	 sign_bit = src >> 63;
 
    } else  if ( irType == Ity_F128 ) {
-     /* only care if the frac part is zero or non-zero */
-     frac_part = (V128_FRACTION_MASK & src_hi) | src;
-     exp_mask = V128_EXP_MASK;
-     exp_part = exp_mask & src_hi;
-     sign_bit = src_hi >> 63;
+	 /* only care if the frac part is zero or non-zero */
+	 frac_part = (V128_FRACTION_MASK & src_hi) | src;
+	 exp_mask = V128_EXP_MASK;
+	 exp_part = exp_mask & src_hi;
+	 sign_bit = src_hi >> 63;
    } else {
-     vassert(0);  // Unknown value of irType
+	 vassert(0);  // Unknown value of irType
    }
 
    /* NaN: exponene is all ones, fractional part not zero */
    if ((exp_part == exp_mask) && (frac_part != 0))
-     NaN = 1;
+	 NaN = 1;
    else
-     NaN = 0;
+	 NaN = 0;
 
    /* inf: exponent all 1's, fraction part is zero */
    if ((exp_part == exp_mask) && (frac_part == 0))
-     inf = 1;
+	 inf = 1;
    else
-     inf = 0;
+	 inf = 0;
 
    /* zero: exponent is 0, fraction part is zero */
    if ((exp_part == 0) && (frac_part == 0))
-     zero = 1;
+	 zero = 1;
    else
-     zero = 0;
+	 zero = 0;
 
    /* norm: exponent is not 0, exponent is not all 1's */
    if ((exp_part != 0) && (exp_part != exp_mask))
-     norm = 1;
+	 norm = 1;
    else
-     norm = 0;
+	 norm = 0;
 
    /* dnorm: exponent is all 0's, fraction is not 0 */
    if ((exp_part == 0) && (frac_part != 0))
-     dnorm = 1;
+	 dnorm = 1;
    else
-     dnorm = 0;
+	 dnorm = 0;
 
    /* pos: MSB is 1 */
    if (sign_bit == 0)
-     pos = 1;
+	 pos = 1;
    else
-     pos = 0;
+	 pos = 0;
 
    /* calculate FPCC */
    /* If the result is NaN then must force bits 1, 2 and 3 to zero
-    * to get correct result.
-    */
+	* to get correct result.
+	*/
    bit0 = NaN | inf;
 
    bit1 = (!NaN) & zero;
    bit2 =  (!NaN) & ((pos & dnorm) | (pos & norm) | (pos & inf))
-      & ((!zero) & (!NaN));
+	  & ((!zero) & (!NaN));
    bit3 =  (!NaN) & (((!pos) & dnorm) |((!pos) & norm) | ((!pos) & inf))
-      & ((!zero) & (!NaN));
+	  & ((!zero) & (!NaN));
 
    fpcc = (bit3 << 3) | (bit2 << 2) | (bit1 << 1) | bit0;
 
@@ -337,40 +337,40 @@ ULong generate_C_FPCC_helper( ULong irType, ULong src_hi, ULong src )
  * inclusive.  Returns an unsigned 64-bit value if valid.
  */
 ULong is_BCDstring128_helper( ULong Signed, ULong bcd_string_hi,
-                              ULong bcd_string_low ) {
+							  ULong bcd_string_low ) {
    Int i;
    ULong valid_bcd, sign_valid = False;
    ULong digit;
    UInt  sign;
 
    if ( Signed == True ) {
-      sign = bcd_string_low & 0xF;
-      if( ( sign >= 0xA ) && ( sign <= 0xF ) )
-         sign_valid = True;
+	  sign = bcd_string_low & 0xF;
+	  if( ( sign >= 0xA ) && ( sign <= 0xF ) )
+		 sign_valid = True;
 
-      /* Change the sign digit to a zero
-       * so the for loop below works the same
-       * for signed and unsigned BCD stings
-       */
-      bcd_string_low &= 0xFFFFFFFFFFFFFFF0ULL;
+	  /* Change the sign digit to a zero
+	   * so the for loop below works the same
+	   * for signed and unsigned BCD stings
+	   */
+	  bcd_string_low &= 0xFFFFFFFFFFFFFFF0ULL;
 
    } else {
-      sign_valid = True;  /* set sign to True so result is only
-                             based on the validity of the digits */
+	  sign_valid = True;  /* set sign to True so result is only
+							 based on the validity of the digits */
    }
 
    valid_bcd = True;  // Assume true to start
    for( i = 0; i < 32; i++ ) {
-      /* check high and low 64-bit strings in parallel */
-      digit = bcd_string_low & 0xF;
-      if ( digit > 0x9 )
-         valid_bcd = False;
-      bcd_string_low = bcd_string_low >> 4;
+	  /* check high and low 64-bit strings in parallel */
+	  digit = bcd_string_low & 0xF;
+	  if ( digit > 0x9 )
+		 valid_bcd = False;
+	  bcd_string_low = bcd_string_low >> 4;
 
-      digit = bcd_string_hi & 0xF;
-      if ( digit > 0x9 )
-         valid_bcd = False;
-      bcd_string_hi = bcd_string_hi >> 4;
+	  digit = bcd_string_hi & 0xF;
+	  if ( digit > 0x9 )
+		 valid_bcd = False;
+	  bcd_string_hi = bcd_string_hi >> 4;
    }
 
    return valid_bcd & sign_valid;
@@ -384,7 +384,7 @@ ULong is_BCDstring128_helper( ULong Signed, ULong bcd_string_hi,
  * bits [35:32] of the result.
  */
 ULong increment_BCDstring32_helper( ULong Signed,
-                                    ULong bcd_string, ULong carry_in ) {
+									ULong bcd_string, ULong carry_in ) {
    UInt i, num_digits = 8;
    ULong bcd_value, result = 0;
    ULong carry, digit, new_digit;
@@ -392,31 +392,31 @@ ULong increment_BCDstring32_helper( ULong Signed,
    carry = carry_in;
 
    if ( Signed == True ) {
-      bcd_value = bcd_string >> 4;   /* remove sign */
-      num_digits = num_digits - 1;
+	  bcd_value = bcd_string >> 4;   /* remove sign */
+	  num_digits = num_digits - 1;
    } else {
-      bcd_value = bcd_string;
+	  bcd_value = bcd_string;
    }
 
    for( i = 0; i < num_digits; i++ ) {
-      digit = bcd_value & 0xF;
-      bcd_value = bcd_value >> 4;
-      new_digit = digit + carry;
+	  digit = bcd_value & 0xF;
+	  bcd_value = bcd_value >> 4;
+	  new_digit = digit + carry;
 
-      if ( new_digit > 10 ) {
-         carry = 1;
-         new_digit = new_digit - 10;
+	  if ( new_digit > 10 ) {
+		 carry = 1;
+		 new_digit = new_digit - 10;
 
-      } else {
-         carry = 0;
-      }
-      result =  result | (new_digit << (i*4) );
+	  } else {
+		 carry = 0;
+	  }
+	  result =  result | (new_digit << (i*4) );
    }
 
    if ( Signed == True ) {
-      result = ( carry << 32) | ( result << 4 ) | ( bcd_string & 0xF );
+	  result = ( carry << 32) | ( result << 4 ) | ( bcd_string & 0xF );
    } else {
-      result = ( carry << 32) | result;
+	  result = ( carry << 32) | result;
    }
 
    return result;
@@ -433,30 +433,30 @@ ULong increment_BCDstring32_helper( ULong Signed,
  * 64 bits of the result.
  */
 ULong convert_to_zoned_helper( ULong src_hi, ULong src_low,
-                               ULong upper_byte, ULong return_upper ) {
+							   ULong upper_byte, ULong return_upper ) {
    UInt i, sh;
    ULong tmp = 0, new_value;
 
    /* Remove the sign from the source.  Put in the upper byte of result.
-    * Sign inserted later.
-    */
+	* Sign inserted later.
+	*/
    if ( return_upper == 0 ) {  /* return lower 64-bit result */
-      for(i = 0; i < 7; i++) {
-         sh = ( 8 - i ) * 4;
-         new_value = ( ( src_low >> sh ) & 0xf ) | upper_byte;
-         tmp = tmp | ( new_value <<  ( ( 7 - i ) * 8 ) );
-      }
+	  for(i = 0; i < 7; i++) {
+		 sh = ( 8 - i ) * 4;
+		 new_value = ( ( src_low >> sh ) & 0xf ) | upper_byte;
+		 tmp = tmp | ( new_value <<  ( ( 7 - i ) * 8 ) );
+	  }
 
    } else {
-      /* Byte for i=0 is in upper 64-bit of the source, do it separately */
-      new_value = ( src_hi & 0xf ) | upper_byte;
-      tmp = tmp | new_value << 56;
+	  /* Byte for i=0 is in upper 64-bit of the source, do it separately */
+	  new_value = ( src_hi & 0xf ) | upper_byte;
+	  tmp = tmp | new_value << 56;
 
-      for( i = 1; i < 8; i++ ) {
-         sh = ( 16 - i ) * 4;
-         new_value = ( ( src_low >> sh ) & 0xf ) | upper_byte;
-         tmp = tmp | ( new_value <<  ( ( 7 - i ) * 8 ) );
-      }
+	  for( i = 1; i < 8; i++ ) {
+		 sh = ( 16 - i ) * 4;
+		 new_value = ( ( src_low >> sh ) & 0xf ) | upper_byte;
+		 tmp = tmp | ( new_value <<  ( ( 7 - i ) * 8 ) );
+	  }
    }
    return tmp;
 }
@@ -473,14 +473,14 @@ ULong convert_to_national_helper( ULong src, ULong return_upper ) {
    ULong tmp = 0, new_value;
 
    if ( return_upper == 0 ) {  /* return lower 64-bit result */
-      min = 4;
-      max = 7;
-      sh  = 7;
+	  min = 4;
+	  max = 7;
+	  sh  = 7;
    }
 
    for( i = min; i < max; i++ ) {
-      new_value = ( ( src >> ( ( 7 - i ) * 4 ) ) & 0xf ) | 0x0030;
-      tmp = tmp | ( new_value <<  ( ( sh - i ) * 16 ) );
+	  new_value = ( ( src >> ( ( 7 - i ) * 4 ) ) & 0xf ) | 0x0030;
+	  tmp = tmp | ( new_value <<  ( ( sh - i ) * 16 ) );
    }
    return tmp;
 }
@@ -497,19 +497,19 @@ ULong convert_from_zoned_helper( ULong src_hi, ULong src_low ) {
    ULong tmp = 0, nibble;
 
    /* Unroll the i = 0 iteration so the sizes of the loop for the upper
-    * and lower extraction match.  Skip sign in lease significant byte.
-    */
+	* and lower extraction match.  Skip sign in lease significant byte.
+	*/
    nibble = ( src_hi >> 56 ) & 0xF;
    tmp = tmp | ( nibble << 60 );
 
    for( i = 1; i < 8; i++ ) {
-      /* get the high nibbles, put into result */
-      nibble = ( src_hi >> ( ( 7 - i ) * 8 ) ) & 0xF;
-      tmp = tmp | ( nibble << ( ( 15 - i ) * 4 ) );
+	  /* get the high nibbles, put into result */
+	  nibble = ( src_hi >> ( ( 7 - i ) * 8 ) ) & 0xF;
+	  tmp = tmp | ( nibble << ( ( 15 - i ) * 4 ) );
 
-      /* get the low nibbles, put into result */
-      nibble = ( src_low >> ( ( 8 - i ) * 8 ) ) & 0xF;
-      tmp = tmp | ( nibble << ( ( 8 - i ) * 4 ) );
+	  /* get the low nibbles, put into result */
+	  nibble = ( src_low >> ( ( 8 - i ) * 8 ) ) & 0xF;
+	  tmp = tmp | ( nibble << ( ( 8 - i ) * 4 ) );
    }
    return tmp;
 }
@@ -524,13 +524,13 @@ ULong convert_from_national_helper( ULong src_hi, ULong src_low ) {
    src_low = src_low & 0xFFFFFFFFFFFFFFF0ULL; /* remove the sign */
 
    for( i = 0; i < 4; i++ ) {
-      /* get the high half-word, put into result */
-      hword = ( src_hi >> ( ( 3 - i ) * 16 ) ) & 0xF;
-      tmp = tmp | ( hword << ( ( 7 - i ) * 4 ) );
+	  /* get the high half-word, put into result */
+	  hword = ( src_hi >> ( ( 3 - i ) * 16 ) ) & 0xF;
+	  tmp = tmp | ( hword << ( ( 7 - i ) * 4 ) );
 
-      /* get the low half-word, put into result */
-      hword = ( src_low >> (  ( 3 - i ) * 16 ) ) & 0xF;
-      tmp = tmp | ( hword << ( ( 3 - i ) * 4 ) );
+	  /* get the low half-word, put into result */
+	  hword = ( src_low >> (  ( 3 - i ) * 16 ) ) & 0xF;
+	  tmp = tmp | ( hword << ( ( 3 - i ) * 4 ) );
    }
    return tmp;
 }
@@ -543,17 +543,17 @@ ULong convert_from_national_helper( ULong src_hi, ULong src_low ) {
 UInt LibVEX_GuestPPC32_get_CR ( /*IN*/const VexGuestPPC32State* vex_state )
 {
 #  define FIELD(_n)                                    \
-      ( ( (UInt)                                       \
-           ( (vex_state->guest_CR##_n##_321 & (7<<1))  \
-             | (vex_state->guest_CR##_n##_0 & 1)       \
-           )                                           \
-        )                                              \
-        << (4 * (7-(_n)))                              \
-      )
+	  ( ( (UInt)                                       \
+		   ( (vex_state->guest_CR##_n##_321 & (7<<1))  \
+			 | (vex_state->guest_CR##_n##_0 & 1)       \
+		   )                                           \
+		)                                              \
+		<< (4 * (7-(_n)))                              \
+	  )
 
-   return 
-      FIELD(0) | FIELD(1) | FIELD(2) | FIELD(3)
-      | FIELD(4) | FIELD(5) | FIELD(6) | FIELD(7);
+   return
+	  FIELD(0) | FIELD(1) | FIELD(2) | FIELD(3)
+	  | FIELD(4) | FIELD(5) | FIELD(6) | FIELD(7);
 
 #  undef FIELD
 }
@@ -564,17 +564,17 @@ UInt LibVEX_GuestPPC32_get_CR ( /*IN*/const VexGuestPPC32State* vex_state )
 UInt LibVEX_GuestPPC64_get_CR ( /*IN*/const VexGuestPPC64State* vex_state )
 {
 #  define FIELD(_n)                                    \
-      ( ( (UInt)                                       \
-           ( (vex_state->guest_CR##_n##_321 & (7<<1))  \
-             | (vex_state->guest_CR##_n##_0 & 1)       \
-           )                                           \
-        )                                              \
-        << (4 * (7-(_n)))                              \
-      )
+	  ( ( (UInt)                                       \
+		   ( (vex_state->guest_CR##_n##_321 & (7<<1))  \
+			 | (vex_state->guest_CR##_n##_0 & 1)       \
+		   )                                           \
+		)                                              \
+		<< (4 * (7-(_n)))                              \
+	  )
 
-   return 
-      FIELD(0) | FIELD(1) | FIELD(2) | FIELD(3)
-      | FIELD(4) | FIELD(5) | FIELD(6) | FIELD(7);
+   return
+	  FIELD(0) | FIELD(1) | FIELD(2) | FIELD(3)
+	  | FIELD(4) | FIELD(5) | FIELD(6) | FIELD(7);
 
 #  undef FIELD
 }
@@ -582,16 +582,16 @@ UInt LibVEX_GuestPPC64_get_CR ( /*IN*/const VexGuestPPC64State* vex_state )
 
 /* VISIBLE TO LIBVEX CLIENT */
 void LibVEX_GuestPPC32_put_CR ( UInt cr_native,
-                                /*OUT*/VexGuestPPC32State* vex_state )
+								/*OUT*/VexGuestPPC32State* vex_state )
 {
    UInt t;
 
 #  define FIELD(_n)                                           \
-      do {                                                    \
-         t = cr_native >> (4*(7-(_n)));                       \
-         vex_state->guest_CR##_n##_0 = toUChar(t & 1);        \
-         vex_state->guest_CR##_n##_321 = toUChar(t & (7<<1)); \
-      } while (0)
+	  do {                                                    \
+		 t = cr_native >> (4*(7-(_n)));                       \
+		 vex_state->guest_CR##_n##_0 = toUChar(t & 1);        \
+		 vex_state->guest_CR##_n##_321 = toUChar(t & (7<<1)); \
+	  } while (0)
 
    FIELD(0);
    FIELD(1);
@@ -609,16 +609,16 @@ void LibVEX_GuestPPC32_put_CR ( UInt cr_native,
 /* VISIBLE TO LIBVEX CLIENT */
 /* Note: %CR is 32 bits even for ppc64 */
 void LibVEX_GuestPPC64_put_CR ( UInt cr_native,
-                                /*OUT*/VexGuestPPC64State* vex_state )
+								/*OUT*/VexGuestPPC64State* vex_state )
 {
    UInt t;
 
 #  define FIELD(_n)                                           \
-      do {                                                    \
-         t = cr_native >> (4*(7-(_n)));                       \
-         vex_state->guest_CR##_n##_0 = toUChar(t & 1);        \
-         vex_state->guest_CR##_n##_321 = toUChar(t & (7<<1)); \
-      } while (0)
+	  do {                                                    \
+		 t = cr_native >> (4*(7-(_n)));                       \
+		 vex_state->guest_CR##_n##_0 = toUChar(t & 1);        \
+		 vex_state->guest_CR##_n##_321 = toUChar(t & (7<<1)); \
+	  } while (0)
 
    FIELD(0);
    FIELD(1);
@@ -664,7 +664,7 @@ UInt LibVEX_GuestPPC64_get_XER ( /*IN*/const VexGuestPPC64State* vex_state )
 
 /* VISIBLE TO LIBVEX CLIENT */
 void LibVEX_GuestPPC32_put_XER ( UInt xer_native,
-                                 /*OUT*/VexGuestPPC32State* vex_state )
+								 /*OUT*/VexGuestPPC32State* vex_state )
 {
    vex_state->guest_XER_BC = toUChar(xer_native & 0xFF);
    vex_state->guest_XER_SO = toUChar((xer_native >> 31) & 0x1);
@@ -677,7 +677,7 @@ void LibVEX_GuestPPC32_put_XER ( UInt xer_native,
 /* VISIBLE TO LIBVEX CLIENT */
 /* Note: %XER is 32 bits even for ppc64 */
 void LibVEX_GuestPPC64_put_XER ( UInt xer_native,
-                                 /*OUT*/VexGuestPPC64State* vex_state )
+								 /*OUT*/VexGuestPPC64State* vex_state )
 {
    vex_state->guest_XER_BC = toUChar(xer_native & 0xFF);
    vex_state->guest_XER_SO = toUChar((xer_native >> 31) & 0x1);
@@ -835,7 +835,15 @@ void LibVEX_GuestPPC32_initialise ( /*OUT*/VexGuestPPC32State* vex_state )
 
    vex_state->guest_VRSAVE = 0;
 
-   vex_state->guest_VSCR = 0x0;  // Non-Java mode = 0
+# if defined(VGP_ppc64be_linux)
+   /* By default, the HW for BE sets the VSCR[NJ] bit to 1.
+	  VSR is a 128-bit register, NJ bit is bit 111 (IBM numbering).
+	  However, VSCR is modeled as a 64-bit register. */
+   vex_state->guest_VSCR = 0x1 << (127 - 111);
+# else
+   /* LE API requires NJ be set to 0. */
+   vex_state->guest_VSCR = 0x0;
+#endif
 
    vex_state->guest_EMNOTE = EmNote_NONE;
 
@@ -847,7 +855,7 @@ void LibVEX_GuestPPC32_initialise ( /*OUT*/VexGuestPPC32State* vex_state )
 
    vex_state->guest_REDIR_SP = -1;
    for (i = 0; i < VEX_GUEST_PPC32_REDIR_STACK_SIZE; i++)
-      vex_state->guest_REDIR_STACK[i] = 0;
+	  vex_state->guest_REDIR_STACK[i] = 0;
 
    vex_state->guest_IP_AT_SYSCALL = 0;
    vex_state->guest_SPRG3_RO = 0;
@@ -1002,7 +1010,15 @@ void LibVEX_GuestPPC64_initialise ( /*OUT*/VexGuestPPC64State* vex_state )
 
    vex_state->guest_VRSAVE = 0;
 
-   vex_state->guest_VSCR = 0x0;  // Non-Java mode = 0
+# if defined(VGP_ppc64be_linux)
+   /* By default, the HW for BE sets the VSCR[NJ] bit to 1.
+	  VSR is a 128-bit register, NJ bit is bit 111 (IBM numbering).
+	  However, VSCR is modeled as a 64-bit register. */
+   vex_state->guest_VSCR = 0x1 << (127 - 111);
+# else
+   /* LE API requires NJ be set to 0. */
+   vex_state->guest_VSCR = 0x0;
+#endif
 
    vex_state->guest_EMNOTE = EmNote_NONE;
 
@@ -1016,7 +1032,7 @@ void LibVEX_GuestPPC64_initialise ( /*OUT*/VexGuestPPC64State* vex_state )
 
    vex_state->guest_REDIR_SP = -1;
    for (i = 0; i < VEX_GUEST_PPC64_REDIR_STACK_SIZE; i++)
-      vex_state->guest_REDIR_STACK[i] = 0;
+	  vex_state->guest_REDIR_STACK[i] = 0;
 
    vex_state->guest_IP_AT_SYSCALL = 0;
    vex_state->guest_SPRG3_RO = 0;
@@ -1036,7 +1052,7 @@ void LibVEX_GuestPPC64_initialise ( /*OUT*/VexGuestPPC64State* vex_state )
 
 /* Figure out if any part of the guest state contained in minoff
    .. maxoff requires precise memory exceptions.  If in doubt return
-   True (but this is generates significantly slower code).  
+   True (but this is generates significantly slower code).
 
    By default we enforce precise exns for guest R1 (stack pointer),
    CIA (current insn address) and LR (link register).  These are the
@@ -1044,11 +1060,11 @@ void LibVEX_GuestPPC64_initialise ( /*OUT*/VexGuestPPC64State* vex_state )
    code. [[NB: not sure if keeping LR up to date is actually
    necessary.]]
 
-   Only R1 is needed in mode VexRegUpdSpAtMemAccess.   
+   Only R1 is needed in mode VexRegUpdSpAtMemAccess.
 */
 Bool guest_ppc32_state_requires_precise_mem_exns (
-        Int minoff, Int maxoff, VexRegisterUpdates pxControl
-     )
+		Int minoff, Int maxoff, VexRegisterUpdates pxControl
+	 )
 {
    Int lr_min  = offsetof(VexGuestPPC32State, guest_LR);
    Int lr_max  = lr_min + 4 - 1;
@@ -1058,36 +1074,36 @@ Bool guest_ppc32_state_requires_precise_mem_exns (
    Int cia_max = cia_min + 4 - 1;
 
    if (maxoff < r1_min || minoff > r1_max) {
-      /* no overlap with R1 */
-      if (pxControl == VexRegUpdSpAtMemAccess)
-         return False; // We only need to check stack pointer.
+	  /* no overlap with R1 */
+	  if (pxControl == VexRegUpdSpAtMemAccess)
+		 return False; // We only need to check stack pointer.
    } else {
-      return True;
+	  return True;
    }
 
    if (maxoff < lr_min || minoff > lr_max) {
-      /* no overlap with LR */
+	  /* no overlap with LR */
    } else {
-      return True;
+	  return True;
    }
 
    if (maxoff < cia_min || minoff > cia_max) {
-      /* no overlap with CIA */
+	  /* no overlap with CIA */
    } else {
-      return True;
+	  return True;
    }
 
    return False;
 }
 
 Bool guest_ppc64_state_requires_precise_mem_exns (
-        Int minoff, Int maxoff, VexRegisterUpdates pxControl
-     )
+		Int minoff, Int maxoff, VexRegisterUpdates pxControl
+	 )
 {
    /* Given that R2 is a Big Deal in the ELF ppc64 ABI, it seems
-      prudent to be conservative with it, even though thus far there
-      is no evidence to suggest that it actually needs to be kept up
-      to date wrt possible exceptions. */
+	  prudent to be conservative with it, even though thus far there
+	  is no evidence to suggest that it actually needs to be kept up
+	  to date wrt possible exceptions. */
    Int lr_min  = offsetof(VexGuestPPC64State, guest_LR);
    Int lr_max  = lr_min + 8 - 1;
    Int r1_min  = offsetof(VexGuestPPC64State, guest_GPR1);
@@ -1098,29 +1114,29 @@ Bool guest_ppc64_state_requires_precise_mem_exns (
    Int cia_max = cia_min + 8 - 1;
 
    if (maxoff < r1_min || minoff > r1_max) {
-      /* no overlap with R1 */
-      if (pxControl == VexRegUpdSpAtMemAccess)
-         return False; // We only need to check stack pointer.
+	  /* no overlap with R1 */
+	  if (pxControl == VexRegUpdSpAtMemAccess)
+		 return False; // We only need to check stack pointer.
    } else {
-      return True;
+	  return True;
    }
 
    if (maxoff < lr_min || minoff > lr_max) {
-      /* no overlap with LR */
+	  /* no overlap with LR */
    } else {
-      return True;
+	  return True;
    }
 
    if (maxoff < r2_min || minoff > r2_max) {
-      /* no overlap with R2 */
+	  /* no overlap with R2 */
    } else {
-      return True;
+	  return True;
    }
 
    if (maxoff < cia_min || minoff > cia_max) {
-      /* no overlap with CIA */
+	  /* no overlap with CIA */
    } else {
-      return True;
+	  return True;
    }
 
    return False;
@@ -1128,88 +1144,88 @@ Bool guest_ppc64_state_requires_precise_mem_exns (
 
 
 #define ALWAYSDEFD32(field)                           \
-    { offsetof(VexGuestPPC32State, field),            \
-      (sizeof ((VexGuestPPC32State*)0)->field) }
+	{ offsetof(VexGuestPPC32State, field),            \
+	  (sizeof ((VexGuestPPC32State*)0)->field) }
 
 VexGuestLayout
-   ppc32Guest_layout 
-      = { 
-          /* Total size of the guest state, in bytes. */
-          .total_sizeB = sizeof(VexGuestPPC32State),
+   ppc32Guest_layout
+	  = {
+		  /* Total size of the guest state, in bytes. */
+		  .total_sizeB = sizeof(VexGuestPPC32State),
 
-          /* Describe the stack pointer. */
-          .offset_SP = offsetof(VexGuestPPC32State,guest_GPR1),
-          .sizeof_SP = 4,
+		  /* Describe the stack pointer. */
+		  .offset_SP = offsetof(VexGuestPPC32State,guest_GPR1),
+		  .sizeof_SP = 4,
 
-          /* Describe the frame pointer. */
-          .offset_FP = offsetof(VexGuestPPC32State,guest_GPR1),
-          .sizeof_FP = 4,
+		  /* Describe the frame pointer. */
+		  .offset_FP = offsetof(VexGuestPPC32State,guest_GPR1),
+		  .sizeof_FP = 4,
 
-          /* Describe the instruction pointer. */
-          .offset_IP = offsetof(VexGuestPPC32State,guest_CIA),
-          .sizeof_IP = 4,
+		  /* Describe the instruction pointer. */
+		  .offset_IP = offsetof(VexGuestPPC32State,guest_CIA),
+		  .sizeof_IP = 4,
 
-          /* Describe any sections to be regarded by Memcheck as
-             'always-defined'. */
-          .n_alwaysDefd = 12,
+		  /* Describe any sections to be regarded by Memcheck as
+			 'always-defined'. */
+		  .n_alwaysDefd = 12,
 
-          .alwaysDefd 
+		  .alwaysDefd
 	  = { /*  0 */ ALWAYSDEFD32(guest_CIA),
-	      /*  1 */ ALWAYSDEFD32(guest_EMNOTE),
-	      /*  2 */ ALWAYSDEFD32(guest_CMSTART),
-	      /*  3 */ ALWAYSDEFD32(guest_CMLEN),
-	      /*  4 */ ALWAYSDEFD32(guest_VSCR),
-	      /*  5 */ ALWAYSDEFD32(guest_FPROUND),
-              /*  6 */ ALWAYSDEFD32(guest_NRADDR),
-	      /*  7 */ ALWAYSDEFD32(guest_NRADDR_GPR2),
-	      /*  8 */ ALWAYSDEFD32(guest_REDIR_SP),
-	      /*  9 */ ALWAYSDEFD32(guest_REDIR_STACK),
-	      /* 10 */ ALWAYSDEFD32(guest_IP_AT_SYSCALL),
-	      /* 11 */ ALWAYSDEFD32(guest_C_FPCC)
-            }
-        };
+		  /*  1 */ ALWAYSDEFD32(guest_EMNOTE),
+		  /*  2 */ ALWAYSDEFD32(guest_CMSTART),
+		  /*  3 */ ALWAYSDEFD32(guest_CMLEN),
+		  /*  4 */ ALWAYSDEFD32(guest_VSCR),
+		  /*  5 */ ALWAYSDEFD32(guest_FPROUND),
+			  /*  6 */ ALWAYSDEFD32(guest_NRADDR),
+		  /*  7 */ ALWAYSDEFD32(guest_NRADDR_GPR2),
+		  /*  8 */ ALWAYSDEFD32(guest_REDIR_SP),
+		  /*  9 */ ALWAYSDEFD32(guest_REDIR_STACK),
+		  /* 10 */ ALWAYSDEFD32(guest_IP_AT_SYSCALL),
+		  /* 11 */ ALWAYSDEFD32(guest_C_FPCC)
+			}
+		};
 
 #define ALWAYSDEFD64(field)                           \
-    { offsetof(VexGuestPPC64State, field),            \
-      (sizeof ((VexGuestPPC64State*)0)->field) }
+	{ offsetof(VexGuestPPC64State, field),            \
+	  (sizeof ((VexGuestPPC64State*)0)->field) }
 
 VexGuestLayout
-   ppc64Guest_layout 
-      = { 
-          /* Total size of the guest state, in bytes. */
-          .total_sizeB = sizeof(VexGuestPPC64State),
+   ppc64Guest_layout
+	  = {
+		  /* Total size of the guest state, in bytes. */
+		  .total_sizeB = sizeof(VexGuestPPC64State),
 
-          /* Describe the stack pointer. */
-          .offset_SP = offsetof(VexGuestPPC64State,guest_GPR1),
-          .sizeof_SP = 8,
+		  /* Describe the stack pointer. */
+		  .offset_SP = offsetof(VexGuestPPC64State,guest_GPR1),
+		  .sizeof_SP = 8,
 
-          /* Describe the frame pointer. */
-          .offset_FP = offsetof(VexGuestPPC64State,guest_GPR1),
-          .sizeof_FP = 8,
+		  /* Describe the frame pointer. */
+		  .offset_FP = offsetof(VexGuestPPC64State,guest_GPR1),
+		  .sizeof_FP = 8,
 
-          /* Describe the instruction pointer. */
-          .offset_IP = offsetof(VexGuestPPC64State,guest_CIA),
-          .sizeof_IP = 8,
+		  /* Describe the instruction pointer. */
+		  .offset_IP = offsetof(VexGuestPPC64State,guest_CIA),
+		  .sizeof_IP = 8,
 
-          /* Describe any sections to be regarded by Memcheck as
-             'always-defined'. */
-          .n_alwaysDefd = 12,
+		  /* Describe any sections to be regarded by Memcheck as
+			 'always-defined'. */
+		  .n_alwaysDefd = 12,
 
-          .alwaysDefd 
+		  .alwaysDefd
 	  = { /*  0 */ ALWAYSDEFD64(guest_CIA),
-	      /*  1 */ ALWAYSDEFD64(guest_EMNOTE),
-	      /*  2 */ ALWAYSDEFD64(guest_CMSTART),
-	      /*  3 */ ALWAYSDEFD64(guest_CMLEN),
-	      /*  4 */ ALWAYSDEFD64(guest_VSCR),
-	      /*  5 */ ALWAYSDEFD64(guest_FPROUND),
-	      /*  6 */ ALWAYSDEFD64(guest_NRADDR),
-	      /*  7 */ ALWAYSDEFD64(guest_NRADDR_GPR2),
-	      /*  8 */ ALWAYSDEFD64(guest_REDIR_SP),
-	      /*  9 */ ALWAYSDEFD64(guest_REDIR_STACK),
-	      /* 10 */ ALWAYSDEFD64(guest_IP_AT_SYSCALL),
-	      /* 11 */ ALWAYSDEFD64(guest_C_FPCC)
-            }
-        };
+		  /*  1 */ ALWAYSDEFD64(guest_EMNOTE),
+		  /*  2 */ ALWAYSDEFD64(guest_CMSTART),
+		  /*  3 */ ALWAYSDEFD64(guest_CMLEN),
+		  /*  4 */ ALWAYSDEFD64(guest_VSCR),
+		  /*  5 */ ALWAYSDEFD64(guest_FPROUND),
+		  /*  6 */ ALWAYSDEFD64(guest_NRADDR),
+		  /*  7 */ ALWAYSDEFD64(guest_NRADDR_GPR2),
+		  /*  8 */ ALWAYSDEFD64(guest_REDIR_SP),
+		  /*  9 */ ALWAYSDEFD64(guest_REDIR_STACK),
+		  /* 10 */ ALWAYSDEFD64(guest_IP_AT_SYSCALL),
+		  /* 11 */ ALWAYSDEFD64(guest_C_FPCC)
+			}
+		};
 
 /*---------------------------------------------------------------*/
 /*--- end                                 guest_ppc_helpers.c ---*/

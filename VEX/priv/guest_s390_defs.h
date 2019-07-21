@@ -41,30 +41,30 @@
 /* Convert one s390 insn to IR.  See the type DisOneInstrFn in
    guest_generic_bb_to_IR.h. */
 DisResult disInstr_S390 ( IRSB*        irbb,
-                          Bool         (*resteerOkFn) ( void*, Addr ),
-                          Bool         resteerCisOk,
-                          void*        callback_opaque,
-                          const UChar* guest_code,
-                          Long         delta,
-                          Addr         guest_IP,
-                          VexArch      guest_arch,
-                          const VexArchInfo* archinfo,
-                          const VexAbiInfo*  abiinfo,
-                          VexEndness   host_endness,
-                          Bool         sigill_diag );
+						  Bool         (*resteerOkFn) ( void*, Addr ),
+						  Bool         resteerCisOk,
+						  void*        callback_opaque,
+						  const UChar* guest_code,
+						  Long         delta,
+						  Addr         guest_IP,
+						  VexArch      guest_arch,
+						  const VexArchInfo* archinfo,
+						  const VexAbiInfo*  abiinfo,
+						  VexEndness   host_endness,
+						  Bool         sigill_diag );
 
 /* Used by the optimiser to specialise calls to helpers. */
 IRExpr* guest_s390x_spechelper ( const HChar *function_name,
-                                 IRExpr **args,
-                                 IRStmt **precedingStmts,
-                                 Int n_precedingStmts);
+								 IRExpr **args,
+								 IRStmt **precedingStmts,
+								 Int n_precedingStmts);
 
 
 /* Describes to the optimiser which part of the guest state require
    precise memory exceptions.  This is logically part of the guest
    state description. */
 Bool guest_s390x_state_requires_precise_mem_exns ( Int, Int,
-                                                   VexRegisterUpdates );
+												   VexRegisterUpdates );
 
 extern VexGuestLayout s390xGuest_layout;
 
@@ -81,12 +81,12 @@ ULong s390x_dirtyhelper_STCKE(ULong *addr);
 ULong s390x_dirtyhelper_STFLE(VexGuestS390XState *guest_state, ULong *addr);
 void  s390x_dirtyhelper_CUxy(UChar *addr, ULong data, ULong num_bytes);
 ULong s390x_dirtyhelper_vec_op(VexGuestS390XState *guest_state,
-                               ULong details);
+							   ULong details);
 ULong s390_do_cu12_cu14_helper1(UInt byte1, UInt etf3_and_m3_is_1);
 ULong s390_do_cu12_helper2(UInt byte1, UInt byte2, UInt byte3, UInt byte4,
-                           ULong stuff);
+						   ULong stuff);
 ULong s390_do_cu14_helper2(UInt byte1, UInt byte2, UInt byte3, UInt byte4,
-                           ULong stuff);
+						   ULong stuff);
 ULong s390_do_cu21(UInt srcvalue, UInt low_surrogate);
 ULong s390_do_cu24(UInt srcvalue, UInt low_surrogate);
 ULong s390_do_cu41(UInt srcvalue);
@@ -160,7 +160,9 @@ enum {
    S390_CC_OP_DFP_128_TO_INT_64 = 57,
    S390_CC_OP_PFPO_32 = 58,
    S390_CC_OP_PFPO_64 = 59,
-   S390_CC_OP_PFPO_128 = 60
+   S390_CC_OP_PFPO_128 = 60,
+   S390_CC_OP_MUL_32 = 61,
+   S390_CC_OP_MUL_64 = 62
 };
 
 /*------------------------------------------------------------*/
@@ -244,9 +246,9 @@ enum {
 /*--- Condition code helpers.                             ---*/
 /*------------------------------------------------------------*/
 UInt s390_calculate_cc(ULong cc_op, ULong cc_dep1, ULong cc_dep2,
-                       ULong cc_ndep);
+					   ULong cc_ndep);
 UInt s390_calculate_cond(ULong mask, ULong op, ULong dep1, ULong dep2,
-                         ULong ndep);
+						 ULong ndep);
 
 /* Size of special instruction preamble */
 #define S390_SPECIAL_OP_PREAMBLE_SIZE 8
@@ -293,21 +295,21 @@ enum {
  */
 typedef union {
    struct {
-      unsigned int op : 8;        // should be an element of s390x_vec_op_t
-      unsigned int v1 : 5;        // result of operation
-      unsigned int v2 : 5;        // argument one of operation
-      unsigned int v3 : 5;        // argument two of operation or
-                                  // zero for unary operations
+	  unsigned int op : 8;        // should be an element of s390x_vec_op_t
+	  unsigned int v1 : 5;        // result of operation
+	  unsigned int v2 : 5;        // argument one of operation
+	  unsigned int v3 : 5;        // argument two of operation or
+								  // zero for unary operations
 
-      unsigned int v4 : 5;        // argument two of operation or
-                                  // zero for unary and binary operations
+	  unsigned int v4 : 5;        // argument two of operation or
+								  // zero for unary and binary operations
 
-      unsigned int m4 : 4;        // field m4 of insn or zero if it's missing
-      unsigned int m5 : 4;        // field m5 of insn or zero if it's missing
-      unsigned int m6 : 4;        // field m6 of insn or zero if it's missing
-      unsigned int i3 : 12;       // field i3 of insn or zero if it's missing
-      unsigned int read_only: 1;  // don't write result to Guest State
-      unsigned int reserved : 11; // reserved for future
+	  unsigned int m4 : 4;        // field m4 of insn or zero if it's missing
+	  unsigned int m5 : 4;        // field m5 of insn or zero if it's missing
+	  unsigned int m6 : 4;        // field m6 of insn or zero if it's missing
+	  unsigned int i3 : 12;       // field i3 of insn or zero if it's missing
+	  unsigned int read_only: 1;  // don't write result to Guest State
+	  unsigned int reserved : 11; // reserved for future
    };
    ULong serialized;
 } s390x_vec_op_details_t;
@@ -321,9 +323,9 @@ STATIC_ASSERT(sizeof(s390x_vec_op_details_t) == sizeof(ULong));
    E.g. VRX_VXBD(e7, 1, 0, 3, 0000, 0, 06) is equal to "vl %%v1, 0(%%r3)\n\t"
 */
 #define VRX_VXBD(op1, v1, x2, b2, d2, rxb, op2)  \
-            ".short 0x" #op1 #v1 #x2 "\n\t .int  0x" #b2 #d2 "0" #rxb #op2 "\n\t"
+			".short 0x" #op1 #v1 #x2 "\n\t .int  0x" #b2 #d2 "0" #rxb #op2 "\n\t"
 #define VRR_VVVMM(op1, v1, v2, v3, m5, m4, rxb, op2) \
-            ".short 0x" #op1 #v1 #v2 "\n\t .int  0x" #v3 "0" #m5 "0" #m4 #rxb #op2 "\n\t"
+			".short 0x" #op1 #v1 #v2 "\n\t .int  0x" #v3 "0" #m5 "0" #m4 #rxb #op2 "\n\t"
 
 #define VL(v1, x2, b2, d2, rxb)                VRX_VXBD(e7, v1, x2, b2, d2, rxb, 06)
 #define VST(v1, x2, b2, d2, rxb)               VRX_VXBD(e7, v1, x2, b2, d2, rxb, 0e)

@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -48,7 +46,9 @@ DECL_TEMPLATE(linux, sys_oldumount);
 DECL_TEMPLATE(linux, sys_umount);
 DECL_TEMPLATE(linux, sys_perf_event_open);
 DECL_TEMPLATE(linux, sys_preadv);
+DECL_TEMPLATE(linux, sys_preadv2);
 DECL_TEMPLATE(linux, sys_pwritev);
+DECL_TEMPLATE(linux, sys_pwritev2);
 DECL_TEMPLATE(linux, sys_sendmmsg);
 DECL_TEMPLATE(linux, sys_recvmmsg);
 DECL_TEMPLATE(linux, sys_dup3);
@@ -301,6 +301,18 @@ DECL_TEMPLATE(linux, sys_bpf);
 // Linux-specific (new in Linux 4.11)
 DECL_TEMPLATE(linux, sys_statx);
 
+// Linux-specific memory protection key syscalls (since Linux 4.9)
+DECL_TEMPLATE(linux, sys_pkey_alloc);
+DECL_TEMPLATE(linux, sys_pkey_free);
+DECL_TEMPLATE(linux, sys_pkey_mprotect);
+
+// Linux io_uring system calls. See also commit 2b188cc1bb85 ("Add io_uring IO
+// interface") # v5.1. See also commit edafccee56ff ("io_uring: add support
+// for pre-mapped user IO buffers") # v5.1.
+DECL_TEMPLATE(linux, sys_io_uring_setup);
+DECL_TEMPLATE(linux, sys_io_uring_enter);
+DECL_TEMPLATE(linux, sys_io_uring_register);
+
 /* ---------------------------------------------------------------------
    Wrappers for sockets and ipc-ery.  These are split into standalone
    procedures because x86-linux hides them inside multiplexors
@@ -379,6 +391,7 @@ DECL_TEMPLATE(linux, sys_getsockname);
 DECL_TEMPLATE(linux, sys_getpeername);
 DECL_TEMPLATE(linux, sys_socketpair);
 DECL_TEMPLATE(linux, sys_kcmp);
+DECL_TEMPLATE(linux, sys_copy_file_range);
 
 // Some arch specific functions called from syswrap-linux.c
 extern Int do_syscall_clone_x86_linux ( Word (*fn)(void *), 

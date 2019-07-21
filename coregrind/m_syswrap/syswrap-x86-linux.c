@@ -8,7 +8,7 @@
    framework.
 
    Copyright (C) 2000-2017 Nicholas Nethercote
-      njn@valgrind.org
+	  njn@valgrind.org
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -71,9 +69,9 @@
    the integer registers before entering f.*/
 __attribute__((noreturn))
 void ML_(call_on_new_stack_0_1) ( Addr stack,
-			          Addr retaddr,
-			          void (*f)(Word),
-                                  Word arg1 );
+					  Addr retaddr,
+					  void (*f)(Word),
+								  Word arg1 );
 //  4(%esp) == stack
 //  8(%esp) == retaddr
 // 12(%esp) == f
@@ -102,28 +100,28 @@ asm(
 
 
 /*
-        Perform a clone system call.  clone is strange because it has
-        fork()-like return-twice semantics, so it needs special
-        handling here.
+		Perform a clone system call.  clone is strange because it has
+		fork()-like return-twice semantics, so it needs special
+		handling here.
 
-        Upon entry, we have:
+		Upon entry, we have:
 
-            int (fn)(void*)     in  0+FSZ(%esp)
-            void* child_stack   in  4+FSZ(%esp)
-            int flags           in  8+FSZ(%esp)
-            void* arg           in 12+FSZ(%esp)
-            pid_t* child_tid    in 16+FSZ(%esp)
-            pid_t* parent_tid   in 20+FSZ(%esp)
-            void* tls_ptr       in 24+FSZ(%esp)
+			int (fn)(void*)     in  0+FSZ(%esp)
+			void* child_stack   in  4+FSZ(%esp)
+			int flags           in  8+FSZ(%esp)
+			void* arg           in 12+FSZ(%esp)
+			pid_t* child_tid    in 16+FSZ(%esp)
+			pid_t* parent_tid   in 20+FSZ(%esp)
+			void* tls_ptr       in 24+FSZ(%esp)
 
-        System call requires:
+		System call requires:
 
-            int    $__NR_clone  in %eax
-            int    flags        in %ebx
-            void*  child_stack  in %ecx
-            pid_t* parent_tid   in %edx
-            pid_t* child_tid    in %edi
-            void*  tls_ptr      in %esi
+			int    $__NR_clone  in %eax
+			int    flags        in %ebx
+			void*  child_stack  in %ecx
+			pid_t* parent_tid   in %edx
+			pid_t* child_tid    in %edi
+			void*  tls_ptr      in %esi
 
 	Returns an Int encoded in the linux-x86 way, not a SysRes.
  */
@@ -140,7 +138,7 @@ asm(
 "        push    %edi\n"
 "        push    %esi\n"
 
-         /* set up child stack with function and arg */
+		 /* set up child stack with function and arg */
 "        movl     4+"FSZ"(%esp), %ecx\n"    /* syscall arg2: child stack */
 "        movl    12+"FSZ"(%esp), %ebx\n"    /* fn arg */
 "        movl     0+"FSZ"(%esp), %eax\n"    /* fn */
@@ -149,7 +147,7 @@ asm(
 "        movl    %ebx, 4(%ecx)\n"           /*   fn arg */
 "        movl    %eax, 0(%ecx)\n"           /*   fn */
 
-         /* get other args to clone */
+		 /* get other args to clone */
 "        movl     8+"FSZ"(%esp), %ebx\n"    /* syscall arg1: flags */
 "        movl    20+"FSZ"(%esp), %edx\n"    /* syscall arg3: parent tid * */
 "        movl    16+"FSZ"(%esp), %edi\n"    /* syscall arg5: child tid * */
@@ -159,16 +157,16 @@ asm(
 "        testl   %eax, %eax\n"              /* child if retval == 0 */
 "        jnz     1f\n"
 
-         /* CHILD - call thread function */
+		 /* CHILD - call thread function */
 "        popl    %eax\n"                    /* child %esp is 16-byte aligned */
 "        call    *%eax\n"                   /* call fn */
 
-         /* exit with result */
+		 /* exit with result */
 "        movl    %eax, %ebx\n"              /* arg1: return value from fn */
 "        movl    $"__NR_EXIT", %eax\n"
 "        int     $0x80\n"
 
-         /* Hm, exit returned */
+		 /* Hm, exit returned */
 "        ud2\n"
 
 "1:\n"   /* PARENT or ERROR */
@@ -190,7 +188,7 @@ asm(
 
 /* Details of the LDT simulation
    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  
+
    When a program runs natively, the linux kernel allows each *thread*
    in it to have its own LDT.  Almost all programs never do this --
    it's wildly unportable, after all -- and so the kernel never
@@ -249,44 +247,44 @@ asm(
 
 static
 void translate_to_hw_format ( /* IN  */ vki_modify_ldt_t* inn,
-                              /* OUT */ VexGuestX86SegDescr* out,
-                                        Int oldmode )
+							  /* OUT */ VexGuestX86SegDescr* out,
+										Int oldmode )
 {
    UInt entry_1, entry_2;
    vg_assert(8 == sizeof(VexGuestX86SegDescr));
 
    if (0)
-      VG_(printf)("translate_to_hw_format: base %#lx, limit %u\n",
-                  inn->base_addr, inn->limit );
+	  VG_(printf)("translate_to_hw_format: base %#lx, limit %u\n",
+				  inn->base_addr, inn->limit );
 
    /* Allow LDTs to be cleared by the user. */
    if (inn->base_addr == 0 && inn->limit == 0) {
-      if (oldmode ||
-          (inn->contents == 0      &&
-           inn->read_exec_only == 1   &&
-           inn->seg_32bit == 0      &&
-           inn->limit_in_pages == 0   &&
-           inn->seg_not_present == 1   &&
-           inn->useable == 0 )) {
-         entry_1 = 0;
-         entry_2 = 0;
-         goto install;
-      }
+	  if (oldmode ||
+		  (inn->contents == 0      &&
+		   inn->read_exec_only == 1   &&
+		   inn->seg_32bit == 0      &&
+		   inn->limit_in_pages == 0   &&
+		   inn->seg_not_present == 1   &&
+		   inn->useable == 0 )) {
+		 entry_1 = 0;
+		 entry_2 = 0;
+		 goto install;
+	  }
    }
 
    entry_1 = ((inn->base_addr & 0x0000ffff) << 16) |
-             (inn->limit & 0x0ffff);
+			 (inn->limit & 0x0ffff);
    entry_2 = (inn->base_addr & 0xff000000) |
-             ((inn->base_addr & 0x00ff0000) >> 16) |
-             (inn->limit & 0xf0000) |
-             ((inn->read_exec_only ^ 1) << 9) |
-             (inn->contents << 10) |
-             ((inn->seg_not_present ^ 1) << 15) |
-             (inn->seg_32bit << 22) |
-             (inn->limit_in_pages << 23) |
-             0x7000;
+			 ((inn->base_addr & 0x00ff0000) >> 16) |
+			 (inn->limit & 0xf0000) |
+			 ((inn->read_exec_only ^ 1) << 9) |
+			 (inn->contents << 10) |
+			 ((inn->seg_not_present ^ 1) << 15) |
+			 (inn->seg_32bit << 22) |
+			 (inn->limit_in_pages << 23) |
+			 0x7000;
    if (!oldmode)
-      entry_2 |= (inn->useable << 20);
+	  entry_2 |= (inn->useable << 20);
 
    /* Install the new entry ...  */
   install:
@@ -343,24 +341,24 @@ static void free_LDT_or_GDT ( VexGuestX86SegDescr* dt )
 
 /* Copy contents between two existing LDTs. */
 static void copy_LDT_from_to ( VexGuestX86SegDescr* src,
-                               VexGuestX86SegDescr* dst )
+							   VexGuestX86SegDescr* dst )
 {
    Int i;
    vg_assert(src);
    vg_assert(dst);
    for (i = 0; i < VEX_GUEST_X86_LDT_NENT; i++)
-      dst[i] = src[i];
+	  dst[i] = src[i];
 }
 
 /* Copy contents between two existing GDTs. */
 static void copy_GDT_from_to ( VexGuestX86SegDescr* src,
-                               VexGuestX86SegDescr* dst )
+							   VexGuestX86SegDescr* dst )
 {
    Int i;
    vg_assert(src);
    vg_assert(dst);
    for (i = 0; i < VEX_GUEST_X86_GDT_NENT; i++)
-      dst[i] = src[i];
+	  dst[i] = src[i];
 }
 
 /* Free this thread's DTs, if it has any. */
@@ -369,18 +367,18 @@ static void deallocate_LGDTs_for_thread ( VexGuestX86State* vex )
    vg_assert(sizeof(HWord) == sizeof(void*));
 
    if (0)
-      VG_(printf)("deallocate_LGDTs_for_thread: "
-                  "ldt = 0x%llx, gdt = 0x%llx\n",
-                  vex->guest_LDT, vex->guest_GDT );
+	  VG_(printf)("deallocate_LGDTs_for_thread: "
+				  "ldt = 0x%llx, gdt = 0x%llx\n",
+				  vex->guest_LDT, vex->guest_GDT );
 
    if (vex->guest_LDT != (HWord)NULL) {
-      free_LDT_or_GDT( (VexGuestX86SegDescr*)(HWord)vex->guest_LDT );
-      vex->guest_LDT = (HWord)NULL;
+	  free_LDT_or_GDT( (VexGuestX86SegDescr*)(HWord)vex->guest_LDT );
+	  vex->guest_LDT = (HWord)NULL;
    }
 
    if (vex->guest_GDT != (HWord)NULL) {
-      free_LDT_or_GDT( (VexGuestX86SegDescr*)(HWord)vex->guest_GDT );
-      vex->guest_GDT = (HWord)NULL;
+	  free_LDT_or_GDT( (VexGuestX86SegDescr*)(HWord)vex->guest_GDT );
+	  vex->guest_GDT = (HWord)NULL;
    }
 }
 
@@ -406,8 +404,8 @@ SysRes read_ldt ( ThreadId tid, UChar* ptr, UInt bytecount )
    UChar* ldt;
 
    if (0)
-      VG_(printf)("read_ldt: tid = %u, ptr = %p, bytecount = %u\n",
-                  tid, ptr, bytecount );
+	  VG_(printf)("read_ldt: tid = %u, ptr = %p, bytecount = %u\n",
+				  tid, ptr, bytecount );
 
    vg_assert(sizeof(HWord) == sizeof(VexGuestX86SegDescr*));
    vg_assert(8 == sizeof(VexGuestX86SegDescr));
@@ -415,16 +413,16 @@ SysRes read_ldt ( ThreadId tid, UChar* ptr, UInt bytecount )
    ldt = (UChar*)(HWord)(VG_(threads)[tid].arch.vex.guest_LDT);
    res = VG_(mk_SysRes_Success)( 0 );
    if (ldt == NULL)
-      /* LDT not allocated, meaning all entries are null */
-      goto out;
+	  /* LDT not allocated, meaning all entries are null */
+	  goto out;
 
    size = VEX_GUEST_X86_LDT_NENT * sizeof(VexGuestX86SegDescr);
    if (size > bytecount)
-      size = bytecount;
+	  size = bytecount;
 
    res = VG_(mk_SysRes_Success)( size );
    for (i = 0; i < size; i++)
-      ptr[i] = ldt[i];
+	  ptr[i] = ldt[i];
 
   out:
    return res;
@@ -436,12 +434,12 @@ SysRes write_ldt ( ThreadId tid, void* ptr, UInt bytecount, Int oldmode )
 {
    SysRes res;
    VexGuestX86SegDescr* ldt;
-   vki_modify_ldt_t* ldt_info; 
+   vki_modify_ldt_t* ldt_info;
 
    if (0)
-      VG_(printf)("write_ldt: tid = %u, ptr = %p, "
-                  "bytecount = %u, oldmode = %d\n",
-                  tid, ptr, bytecount, oldmode );
+	  VG_(printf)("write_ldt: tid = %u, ptr = %p, "
+				  "bytecount = %u, oldmode = %d\n",
+				  tid, ptr, bytecount, oldmode );
 
    vg_assert(8 == sizeof(VexGuestX86SegDescr));
    vg_assert(sizeof(HWord) == sizeof(VexGuestX86SegDescr*));
@@ -451,23 +449,23 @@ SysRes write_ldt ( ThreadId tid, void* ptr, UInt bytecount, Int oldmode )
 
    res = VG_(mk_SysRes_Error)( VKI_EINVAL );
    if (bytecount != sizeof(vki_modify_ldt_t))
-      goto out;
+	  goto out;
 
    res = VG_(mk_SysRes_Error)( VKI_EINVAL );
    if (ldt_info->entry_number >= VEX_GUEST_X86_LDT_NENT)
-      goto out;
+	  goto out;
    if (ldt_info->contents == 3) {
-      if (oldmode)
-         goto out;
-      if (ldt_info->seg_not_present == 0)
-         goto out;
+	  if (oldmode)
+		 goto out;
+	  if (ldt_info->seg_not_present == 0)
+		 goto out;
    }
 
    /* If this thread doesn't have an LDT, we'd better allocate it
-      now. */
+	  now. */
    if (ldt == NULL) {
-      ldt = alloc_zeroed_x86_LDT();
-      VG_(threads)[tid].arch.vex.guest_LDT = (HWord)ldt;
+	  ldt = alloc_zeroed_x86_LDT();
+	  VG_(threads)[tid].arch.vex.guest_LDT = (HWord)ldt;
    }
 
    /* Install the new entry ...  */
@@ -480,35 +478,35 @@ SysRes write_ldt ( ThreadId tid, void* ptr, UInt bytecount, Int oldmode )
 
 
 static SysRes sys_modify_ldt ( ThreadId tid,
-                               Int func, void* ptr, UInt bytecount )
+							   Int func, void* ptr, UInt bytecount )
 {
    /* Set return value to something "safe".  I think this will never
-      actually be returned, though. */
+	  actually be returned, though. */
    SysRes ret = VG_(mk_SysRes_Error)( VKI_ENOSYS );
 
    if (func != 0 && func != 1 && func != 2 && func != 0x11) {
-      ret = VG_(mk_SysRes_Error)( VKI_ENOSYS );
+	  ret = VG_(mk_SysRes_Error)( VKI_ENOSYS );
    } else if (ptr != NULL && ! ML_(safe_to_deref)(ptr, bytecount)) {
-      ret = VG_(mk_SysRes_Error)( VKI_EFAULT );
+	  ret = VG_(mk_SysRes_Error)( VKI_EFAULT );
    } else {
-      switch (func) {
-      case 0:
-         ret = read_ldt(tid, ptr, bytecount);
-         break;
-      case 1:
-         ret = write_ldt(tid, ptr, bytecount, 1);
-         break;
-      case 2:
-         ret = VG_(mk_SysRes_Error)( VKI_ENOSYS );
-         VG_(unimplemented)("sys_modify_ldt: func == 2");
-         /* god knows what this is about */
-         /* ret = read_default_ldt(ptr, bytecount); */
-         /*UNREACHED*/
-         break;
-      case 0x11:
-         ret = write_ldt(tid, ptr, bytecount, 0);
-         break;
-      }
+	  switch (func) {
+	  case 0:
+		 ret = read_ldt(tid, ptr, bytecount);
+		 break;
+	  case 1:
+		 ret = write_ldt(tid, ptr, bytecount, 1);
+		 break;
+	  case 2:
+		 ret = VG_(mk_SysRes_Error)( VKI_ENOSYS );
+		 VG_(unimplemented)("sys_modify_ldt: func == 2");
+		 /* god knows what this is about */
+		 /* ret = read_default_ldt(ptr, bytecount); */
+		 /*UNREACHED*/
+		 break;
+	  case 0x11:
+		 ret = write_ldt(tid, ptr, bytecount, 0);
+		 break;
+	  }
    }
    return ret;
 }
@@ -523,46 +521,46 @@ SysRes ML_(x86_sys_set_thread_area) ( ThreadId tid, vki_modify_ldt_t* info )
    vg_assert(sizeof(HWord) == sizeof(VexGuestX86SegDescr*));
 
    if (info == NULL || ! ML_(safe_to_deref)(info, sizeof(vki_modify_ldt_t))) {
-      VG_(umsg)("Warning: bad u_info address %p in set_thread_area\n", info);
-      return VG_(mk_SysRes_Error)( VKI_EFAULT );
+	  VG_(umsg)("Warning: bad u_info address %p in set_thread_area\n", info);
+	  return VG_(mk_SysRes_Error)( VKI_EFAULT );
    }
 
    gdt = (VexGuestX86SegDescr*)(HWord)VG_(threads)[tid].arch.vex.guest_GDT;
 
    /* If the thread doesn't have a GDT, allocate it now. */
    if (!gdt) {
-      gdt = alloc_system_x86_GDT();
-      VG_(threads)[tid].arch.vex.guest_GDT = (HWord)gdt;
+	  gdt = alloc_system_x86_GDT();
+	  VG_(threads)[tid].arch.vex.guest_GDT = (HWord)gdt;
    }
 
    idx = info->entry_number;
 
    if (idx == -1) {
-      /* Find and use the first free entry.  Don't allocate entry
-         zero, because the hardware will never do that, and apparently
-         doing so confuses some code (perhaps stuff running on
-         Wine). */
-      for (idx = 1; idx < VEX_GUEST_X86_GDT_NENT; idx++) {
-         if (gdt[idx].LdtEnt.Words.word1 == 0 
-             && gdt[idx].LdtEnt.Words.word2 == 0)
-            break;
-      }
+	  /* Find and use the first free entry.  Don't allocate entry
+		 zero, because the hardware will never do that, and apparently
+		 doing so confuses some code (perhaps stuff running on
+		 Wine). */
+	  for (idx = 1; idx < VEX_GUEST_X86_GDT_NENT; idx++) {
+		 if (gdt[idx].LdtEnt.Words.word1 == 0
+			 && gdt[idx].LdtEnt.Words.word2 == 0)
+			break;
+	  }
 
-      if (idx == VEX_GUEST_X86_GDT_NENT)
-         return VG_(mk_SysRes_Error)( VKI_ESRCH );
+	  if (idx == VEX_GUEST_X86_GDT_NENT)
+		 return VG_(mk_SysRes_Error)( VKI_ESRCH );
    } else if (idx < 0 || idx == 0 || idx >= VEX_GUEST_X86_GDT_NENT) {
-      /* Similarly, reject attempts to use GDT[0]. */
-      return VG_(mk_SysRes_Error)( VKI_EINVAL );
+	  /* Similarly, reject attempts to use GDT[0]. */
+	  return VG_(mk_SysRes_Error)( VKI_EINVAL );
    }
 
    translate_to_hw_format(info, &gdt[idx], 0);
 
    VG_TRACK( pre_mem_write, Vg_CoreSysCall, tid,
-             "set_thread_area(info->entry)",
-             (Addr) & info->entry_number, sizeof(unsigned int) );
+			 "set_thread_area(info->entry)",
+			 (Addr) & info->entry_number, sizeof(unsigned int) );
    info->entry_number = idx;
    VG_TRACK( post_mem_write, Vg_CoreSysCall, tid,
-             (Addr) & info->entry_number, sizeof(unsigned int) );
+			 (Addr) & info->entry_number, sizeof(unsigned int) );
 
    return VG_(mk_SysRes_Success)( 0 );
 }
@@ -577,28 +575,28 @@ static SysRes sys_get_thread_area ( ThreadId tid, vki_modify_ldt_t* info )
    vg_assert(8 == sizeof(VexGuestX86SegDescr));
 
    if (info == NULL || ! ML_(safe_to_deref)(info, sizeof(vki_modify_ldt_t))) {
-      VG_(umsg)("Warning: bad u_info address %p in get_thread_area\n", info);
-      return VG_(mk_SysRes_Error)( VKI_EFAULT );
+	  VG_(umsg)("Warning: bad u_info address %p in get_thread_area\n", info);
+	  return VG_(mk_SysRes_Error)( VKI_EFAULT );
    }
 
    idx = info->entry_number;
 
    if (idx < 0 || idx >= VEX_GUEST_X86_GDT_NENT)
-      return VG_(mk_SysRes_Error)( VKI_EINVAL );
+	  return VG_(mk_SysRes_Error)( VKI_EINVAL );
 
    gdt = (VexGuestX86SegDescr*)(HWord)VG_(threads)[tid].arch.vex.guest_GDT;
 
    /* If the thread doesn't have a GDT, allocate it now. */
    if (!gdt) {
-      gdt = alloc_system_x86_GDT();
-      VG_(threads)[tid].arch.vex.guest_GDT = (HWord)gdt;
+	  gdt = alloc_system_x86_GDT();
+	  VG_(threads)[tid].arch.vex.guest_GDT = (HWord)gdt;
    }
 
    info->base_addr = ( gdt[idx].LdtEnt.Bits.BaseHi << 24 ) |
-                     ( gdt[idx].LdtEnt.Bits.BaseMid << 16 ) |
-                     gdt[idx].LdtEnt.Bits.BaseLow;
+					 ( gdt[idx].LdtEnt.Bits.BaseMid << 16 ) |
+					 gdt[idx].LdtEnt.Bits.BaseLow;
    info->limit = ( gdt[idx].LdtEnt.Bits.LimitHi << 16 ) |
-                   gdt[idx].LdtEnt.Bits.LimitLow;
+				   gdt[idx].LdtEnt.Bits.LimitLow;
    info->seg_32bit = gdt[idx].LdtEnt.Bits.Default_Big;
    info->contents = ( gdt[idx].LdtEnt.Bits.Type >> 2 ) & 0x3;
    info->read_exec_only = ( gdt[idx].LdtEnt.Bits.Type & 0x1 ) ^ 0x1;
@@ -619,34 +617,34 @@ void VG_(cleanup_thread) ( ThreadArchState* arch )
    /* Release arch-specific resources held by this thread. */
    /* On x86, we have to dump the LDT and GDT. */
    deallocate_LGDTs_for_thread( &arch->vex );
-}  
+}
 
 
-void ML_(x86_setup_LDT_GDT) ( /*OUT*/ ThreadArchState *child, 
-                              /*IN*/  ThreadArchState *parent )
+void ML_(x86_setup_LDT_GDT) ( /*OUT*/ ThreadArchState *child,
+							  /*IN*/  ThreadArchState *parent )
 {
    /* We inherit our parent's LDT. */
    if (parent->vex.guest_LDT == (HWord)NULL) {
-      /* We hope this is the common case. */
-      child->vex.guest_LDT = (HWord)NULL;
+	  /* We hope this is the common case. */
+	  child->vex.guest_LDT = (HWord)NULL;
    } else {
-      /* No luck .. we have to take a copy of the parent's. */
-      child->vex.guest_LDT = (HWord)alloc_zeroed_x86_LDT();
-      copy_LDT_from_to( (VexGuestX86SegDescr*)(HWord)parent->vex.guest_LDT, 
-                        (VexGuestX86SegDescr*)(HWord)child->vex.guest_LDT );
+	  /* No luck .. we have to take a copy of the parent's. */
+	  child->vex.guest_LDT = (HWord)alloc_zeroed_x86_LDT();
+	  copy_LDT_from_to( (VexGuestX86SegDescr*)(HWord)parent->vex.guest_LDT,
+						(VexGuestX86SegDescr*)(HWord)child->vex.guest_LDT );
    }
 
    /* Either we start with an empty GDT (the usual case) or inherit a
-      copy of our parents' one (Quadrics Elan3 driver -style clone
-      only). */
+	  copy of our parents' one (Quadrics Elan3 driver -style clone
+	  only). */
    child->vex.guest_GDT = (HWord)NULL;
 
    if (parent->vex.guest_GDT != (HWord)NULL) {
-      child->vex.guest_GDT = (HWord)alloc_system_x86_GDT();
-      copy_GDT_from_to( (VexGuestX86SegDescr*)(HWord)parent->vex.guest_GDT,
-                        (VexGuestX86SegDescr*)(HWord)child->vex.guest_GDT );
+	  child->vex.guest_GDT = (HWord)alloc_system_x86_GDT();
+	  copy_GDT_from_to( (VexGuestX86SegDescr*)(HWord)parent->vex.guest_GDT,
+						(VexGuestX86SegDescr*)(HWord)child->vex.guest_GDT );
    }
-}  
+}
 
 
 /* ---------------------------------------------------------------------
@@ -682,40 +680,40 @@ DECL_TEMPLATE(x86_linux, sys_syscall223);
 PRE(old_select)
 {
    /* struct sel_arg_struct {
-      unsigned long n;
-      fd_set *inp, *outp, *exp;
-      struct timeval *tvp;
-      };
+	  unsigned long n;
+	  fd_set *inp, *outp, *exp;
+	  struct timeval *tvp;
+	  };
    */
    PRE_REG_READ1(long, "old_select", struct sel_arg_struct *, args);
    PRE_MEM_READ( "old_select(args)", ARG1, 5*sizeof(UWord) );
    *flags |= SfMayBlock;
    {
-      UInt* arg_struct = (UInt*)ARG1;
-      UInt a1, a2, a3, a4, a5;
+	  UInt* arg_struct = (UInt*)ARG1;
+	  UInt a1, a2, a3, a4, a5;
 
-      a1 = arg_struct[0];
-      a2 = arg_struct[1];
-      a3 = arg_struct[2];
-      a4 = arg_struct[3];
-      a5 = arg_struct[4];
+	  a1 = arg_struct[0];
+	  a2 = arg_struct[1];
+	  a3 = arg_struct[2];
+	  a4 = arg_struct[3];
+	  a5 = arg_struct[4];
 
-      PRINT("old_select ( %d, %#x, %#x, %#x, %#x )", (Int)a1,a2,a3,a4,a5);
-      if (a2 != (Addr)NULL)
-         PRE_MEM_READ( "old_select(readfds)",   a2, a1/8 /* __FD_SETSIZE/8 */ );
-      if (a3 != (Addr)NULL)
-         PRE_MEM_READ( "old_select(writefds)",  a3, a1/8 /* __FD_SETSIZE/8 */ );
-      if (a4 != (Addr)NULL)
-         PRE_MEM_READ( "old_select(exceptfds)", a4, a1/8 /* __FD_SETSIZE/8 */ );
-      if (a5 != (Addr)NULL)
-         PRE_MEM_READ( "old_select(timeout)", a5, sizeof(struct vki_timeval) );
+	  PRINT("old_select ( %d, %#x, %#x, %#x, %#x )", (Int)a1,a2,a3,a4,a5);
+	  if (a2 != (Addr)NULL)
+		 PRE_MEM_READ( "old_select(readfds)",   a2, a1/8 /* __FD_SETSIZE/8 */ );
+	  if (a3 != (Addr)NULL)
+		 PRE_MEM_READ( "old_select(writefds)",  a3, a1/8 /* __FD_SETSIZE/8 */ );
+	  if (a4 != (Addr)NULL)
+		 PRE_MEM_READ( "old_select(exceptfds)", a4, a1/8 /* __FD_SETSIZE/8 */ );
+	  if (a5 != (Addr)NULL)
+		 PRE_MEM_READ( "old_select(timeout)", a5, sizeof(struct vki_timeval) );
    }
 }
 
 PRE(sys_sigreturn)
 {
    /* See comments on PRE(sys_rt_sigreturn) in syswrap-amd64-linux.c for
-      an explanation of what follows. */
+	  an explanation of what follows. */
 
    ThreadState* tst;
    PRINT("sys_sigreturn ( )");
@@ -725,20 +723,20 @@ PRE(sys_sigreturn)
    vg_assert(VG_(is_running_thread)(tid));
 
    /* Adjust esp to point to start of frame; skip back up over
-      sigreturn sequence's "popl %eax" and handler ret addr */
+	  sigreturn sequence's "popl %eax" and handler ret addr */
    tst = VG_(get_ThreadState)(tid);
    tst->arch.vex.guest_ESP -= sizeof(Addr)+sizeof(Word);
    /* XXX why does ESP change differ from rt_sigreturn case below? */
 
    /* This is only so that the EIP is (might be) useful to report if
-      something goes wrong in the sigreturn */
+	  something goes wrong in the sigreturn */
    ML_(fixup_guest_state_to_restart_syscall)(&tst->arch);
 
    /* Restore register state from frame and remove it */
    VG_(sigframe_destroy)(tid, False);
 
    /* Tell the driver not to update the guest state with the "result",
-      and set a bogus result to keep it happy. */
+	  and set a bogus result to keep it happy. */
    *flags |= SfNoWriteResult;
    SET_STATUS_Success(0);
 
@@ -749,7 +747,7 @@ PRE(sys_sigreturn)
 PRE(sys_rt_sigreturn)
 {
    /* See comments on PRE(sys_rt_sigreturn) in syswrap-amd64-linux.c for
-      an explanation of what follows. */
+	  an explanation of what follows. */
 
    ThreadState* tst;
    PRINT("sys_rt_sigreturn ( )");
@@ -759,20 +757,20 @@ PRE(sys_rt_sigreturn)
    vg_assert(VG_(is_running_thread)(tid));
 
    /* Adjust esp to point to start of frame; skip back up over handler
-      ret addr */
+	  ret addr */
    tst = VG_(get_ThreadState)(tid);
    tst->arch.vex.guest_ESP -= sizeof(Addr);
    /* XXX why does ESP change differ from sigreturn case above? */
 
    /* This is only so that the EIP is (might be) useful to report if
-      something goes wrong in the sigreturn */
+	  something goes wrong in the sigreturn */
    ML_(fixup_guest_state_to_restart_syscall)(&tst->arch);
 
    /* Restore register state from frame and remove it */
    VG_(sigframe_destroy)(tid, True);
 
    /* Tell the driver not to update the guest state with the "result",
-      and set a bogus result to keep it happy. */
+	  and set a bogus result to keep it happy. */
    *flags |= SfNoWriteResult;
    SET_STATUS_Success(0);
 
@@ -784,21 +782,21 @@ PRE(sys_modify_ldt)
 {
    PRINT("sys_modify_ldt ( %ld, %#lx, %lu )", SARG1, ARG2, ARG3);
    PRE_REG_READ3(int, "modify_ldt", int, func, void *, ptr,
-                 unsigned long, bytecount);
-   
+				 unsigned long, bytecount);
+
    if (ARG1 == 0) {
-      /* read the LDT into ptr */
-      PRE_MEM_WRITE( "modify_ldt(ptr)", ARG2, ARG3 );
+	  /* read the LDT into ptr */
+	  PRE_MEM_WRITE( "modify_ldt(ptr)", ARG2, ARG3 );
    }
    if (ARG1 == 1 || ARG1 == 0x11) {
-      /* write the LDT with the entry pointed at by ptr */
-      PRE_MEM_READ( "modify_ldt(ptr)", ARG2, sizeof(vki_modify_ldt_t) );
+	  /* write the LDT with the entry pointed at by ptr */
+	  PRE_MEM_READ( "modify_ldt(ptr)", ARG2, sizeof(vki_modify_ldt_t) );
    }
    /* "do" the syscall ourselves; the kernel never sees it */
    SET_STATUS_from_SysRes( sys_modify_ldt( tid, ARG1, (void*)ARG2, ARG3 ) );
 
    if (ARG1 == 0 && SUCCESS && RES > 0) {
-      POST_MEM_WRITE( ARG2, RES );
+	  POST_MEM_WRITE( ARG2, RES );
    }
 }
 
@@ -822,7 +820,7 @@ PRE(sys_get_thread_area)
    SET_STATUS_from_SysRes( sys_get_thread_area( tid, (void *)ARG1 ) );
 
    if (SUCCESS) {
-      POST_MEM_WRITE( ARG1, sizeof(vki_modify_ldt_t) );
+	  POST_MEM_WRITE( ARG1, sizeof(vki_modify_ldt_t) );
    }
 }
 
@@ -835,65 +833,65 @@ PRE(sys_get_thread_area)
 PRE(sys_ptrace)
 {
    PRINT("sys_ptrace ( %ld, %ld, %#lx, %#lx )", SARG1, SARG2, ARG3, ARG4);
-   PRE_REG_READ4(int, "ptrace", 
-                 long, request, long, pid, unsigned long, addr,
-                 unsigned long, data);
+   PRE_REG_READ4(int, "ptrace",
+				 long, request, long, pid, unsigned long, addr,
+				 unsigned long, data);
    switch (ARG1) {
    case VKI_PTRACE_PEEKTEXT:
    case VKI_PTRACE_PEEKDATA:
    case VKI_PTRACE_PEEKUSR:
-      PRE_MEM_WRITE( "ptrace(peek)", ARG4, 
-		     sizeof (long));
-      break;
+	  PRE_MEM_WRITE( "ptrace(peek)", ARG4,
+			 sizeof (long));
+	  break;
    case VKI_PTRACE_GETREGS:
-      PRE_MEM_WRITE( "ptrace(getregs)", ARG4, 
-		     sizeof (struct vki_user_regs_struct));
-      break;
+	  PRE_MEM_WRITE( "ptrace(getregs)", ARG4,
+			 sizeof (struct vki_user_regs_struct));
+	  break;
    case VKI_PTRACE_GETFPREGS:
-      PRE_MEM_WRITE( "ptrace(getfpregs)", ARG4, 
-		     sizeof (struct vki_user_i387_struct));
-      break;
+	  PRE_MEM_WRITE( "ptrace(getfpregs)", ARG4,
+			 sizeof (struct vki_user_i387_struct));
+	  break;
    case VKI_PTRACE_GETFPXREGS:
-      PRE_MEM_WRITE( "ptrace(getfpxregs)", ARG4, 
-                     sizeof(struct vki_user_fxsr_struct) );
-      break;
+	  PRE_MEM_WRITE( "ptrace(getfpxregs)", ARG4,
+					 sizeof(struct vki_user_fxsr_struct) );
+	  break;
    case VKI_PTRACE_GET_THREAD_AREA:
-      PRE_MEM_WRITE( "ptrace(get_thread_area)", ARG4, 
-                     sizeof(struct vki_user_desc) );
-      break;
+	  PRE_MEM_WRITE( "ptrace(get_thread_area)", ARG4,
+					 sizeof(struct vki_user_desc) );
+	  break;
    case VKI_PTRACE_SETREGS:
-      PRE_MEM_READ( "ptrace(setregs)", ARG4, 
-		     sizeof (struct vki_user_regs_struct));
-      break;
+	  PRE_MEM_READ( "ptrace(setregs)", ARG4,
+			 sizeof (struct vki_user_regs_struct));
+	  break;
    case VKI_PTRACE_SETFPREGS:
-      PRE_MEM_READ( "ptrace(setfpregs)", ARG4, 
-		     sizeof (struct vki_user_i387_struct));
-      break;
+	  PRE_MEM_READ( "ptrace(setfpregs)", ARG4,
+			 sizeof (struct vki_user_i387_struct));
+	  break;
    case VKI_PTRACE_SETFPXREGS:
-      PRE_MEM_READ( "ptrace(setfpxregs)", ARG4, 
-                     sizeof(struct vki_user_fxsr_struct) );
-      break;
+	  PRE_MEM_READ( "ptrace(setfpxregs)", ARG4,
+					 sizeof(struct vki_user_fxsr_struct) );
+	  break;
    case VKI_PTRACE_SET_THREAD_AREA:
-      PRE_MEM_READ( "ptrace(set_thread_area)", ARG4, 
-                     sizeof(struct vki_user_desc) );
-      break;
+	  PRE_MEM_READ( "ptrace(set_thread_area)", ARG4,
+					 sizeof(struct vki_user_desc) );
+	  break;
    case VKI_PTRACE_GETEVENTMSG:
-      PRE_MEM_WRITE( "ptrace(geteventmsg)", ARG4, sizeof(unsigned long));
-      break;
+	  PRE_MEM_WRITE( "ptrace(geteventmsg)", ARG4, sizeof(unsigned long));
+	  break;
    case VKI_PTRACE_GETSIGINFO:
-      PRE_MEM_WRITE( "ptrace(getsiginfo)", ARG4, sizeof(vki_siginfo_t));
-      break;
+	  PRE_MEM_WRITE( "ptrace(getsiginfo)", ARG4, sizeof(vki_siginfo_t));
+	  break;
    case VKI_PTRACE_SETSIGINFO:
-      PRE_MEM_READ( "ptrace(setsiginfo)", ARG4, sizeof(vki_siginfo_t));
-      break;
+	  PRE_MEM_READ( "ptrace(setsiginfo)", ARG4, sizeof(vki_siginfo_t));
+	  break;
    case VKI_PTRACE_GETREGSET:
-      ML_(linux_PRE_getregset)(tid, ARG3, ARG4);
-      break;
+	  ML_(linux_PRE_getregset)(tid, ARG3, ARG4);
+	  break;
    case VKI_PTRACE_SETREGSET:
-      ML_(linux_PRE_setregset)(tid, ARG3, ARG4);
-      break;
+	  ML_(linux_PRE_setregset)(tid, ARG3, ARG4);
+	  break;
    default:
-      break;
+	  break;
    }
 }
 
@@ -901,51 +899,51 @@ POST(sys_ptrace)
 {
    switch (ARG1) {
    case VKI_PTRACE_TRACEME:
-      ML_(linux_POST_traceme)(tid);
-      break;
+	  ML_(linux_POST_traceme)(tid);
+	  break;
    case VKI_PTRACE_PEEKTEXT:
    case VKI_PTRACE_PEEKDATA:
    case VKI_PTRACE_PEEKUSR:
-      POST_MEM_WRITE( ARG4, sizeof (long));
-      break;
+	  POST_MEM_WRITE( ARG4, sizeof (long));
+	  break;
    case VKI_PTRACE_GETREGS:
-      POST_MEM_WRITE( ARG4, sizeof (struct vki_user_regs_struct));
-      break;
+	  POST_MEM_WRITE( ARG4, sizeof (struct vki_user_regs_struct));
+	  break;
    case VKI_PTRACE_GETFPREGS:
-      POST_MEM_WRITE( ARG4, sizeof (struct vki_user_i387_struct));
-      break;
+	  POST_MEM_WRITE( ARG4, sizeof (struct vki_user_i387_struct));
+	  break;
    case VKI_PTRACE_GETFPXREGS:
-      POST_MEM_WRITE( ARG4, sizeof(struct vki_user_fxsr_struct) );
-      break;
+	  POST_MEM_WRITE( ARG4, sizeof(struct vki_user_fxsr_struct) );
+	  break;
    case VKI_PTRACE_GET_THREAD_AREA:
-      POST_MEM_WRITE( ARG4, sizeof(struct vki_user_desc) );
-      break;
+	  POST_MEM_WRITE( ARG4, sizeof(struct vki_user_desc) );
+	  break;
    case VKI_PTRACE_GETEVENTMSG:
-      POST_MEM_WRITE( ARG4, sizeof(unsigned long));
-      break;
+	  POST_MEM_WRITE( ARG4, sizeof(unsigned long));
+	  break;
    case VKI_PTRACE_GETSIGINFO:
-      /* XXX: This is a simplification. Different parts of the
-       * siginfo_t are valid depending on the type of signal.
-       */
-      POST_MEM_WRITE( ARG4, sizeof(vki_siginfo_t));
-      break;
+	  /* XXX: This is a simplification. Different parts of the
+	   * siginfo_t are valid depending on the type of signal.
+	   */
+	  POST_MEM_WRITE( ARG4, sizeof(vki_siginfo_t));
+	  break;
    case VKI_PTRACE_GETREGSET:
-      ML_(linux_POST_getregset)(tid, ARG3, ARG4);
-      break;
+	  ML_(linux_POST_getregset)(tid, ARG3, ARG4);
+	  break;
    default:
-      break;
+	  break;
    }
 }
 
 PRE(old_mmap)
 {
-   /* struct mmap_arg_struct {           
-         unsigned long addr;
-         unsigned long len;
-         unsigned long prot;
-         unsigned long flags;
-         unsigned long fd;
-         unsigned long offset;
+   /* struct mmap_arg_struct {
+		 unsigned long addr;
+		 unsigned long len;
+		 unsigned long prot;
+		 unsigned long flags;
+		 unsigned long fd;
+		 unsigned long offset;
    }; */
    UWord a1, a2, a3, a4, a5, a6;
    SysRes r;
@@ -962,7 +960,7 @@ PRE(old_mmap)
    a6 = args[6-1];
 
    PRINT("old_mmap ( %#lx, %lu, %ld, %ld, %ld, %ld )",
-         a1, a2, (Word)a3, (Word)a4, (Word)a5, (Word)a6 );
+		 a1, a2, (Word)a3, (Word)a4, (Word)a5, (Word)a6 );
 
    r = ML_(generic_PRE_sys_mmap)( tid, a1, a2, a3, a4, a5, (Off64T)a6 );
    SET_STATUS_from_SysRes(r);
@@ -980,14 +978,14 @@ PRE(sys_mmap2)
    // 4K-sized.  Assert that the page size is 4K here for safety.
    vg_assert(VKI_PAGE_SIZE == 4096);
    PRINT("sys_mmap2 ( %#lx, %lu, %lu, %lu, %lu, %lu )",
-         ARG1, ARG2, ARG3, ARG4, ARG5, ARG6 );
+		 ARG1, ARG2, ARG3, ARG4, ARG5, ARG6 );
    PRE_REG_READ6(long, "mmap2",
-                 unsigned long, start, unsigned long, length,
-                 unsigned long, prot,  unsigned long, flags,
-                 unsigned long, fd,    unsigned long, offset);
+				 unsigned long, start, unsigned long, length,
+				 unsigned long, prot,  unsigned long, flags,
+				 unsigned long, fd,    unsigned long, offset);
 
-   r = ML_(generic_PRE_sys_mmap)( tid, ARG1, ARG2, ARG3, ARG4, ARG5, 
-                                       4096 * (Off64T)ARG6 );
+   r = ML_(generic_PRE_sys_mmap)( tid, ARG1, ARG2, ARG3, ARG4, ARG5,
+									   4096 * (Off64T)ARG6 );
    SET_STATUS_from_SysRes(r);
 }
 
@@ -1007,7 +1005,7 @@ POST(sys_lstat64)
 {
    vg_assert(SUCCESS);
    if (RES == 0) {
-      POST_MEM_WRITE( ARG2, sizeof(struct vki_stat64) );
+	  POST_MEM_WRITE( ARG2, sizeof(struct vki_stat64) );
    }
 }
 
@@ -1031,9 +1029,9 @@ PRE(sys_fstatat64)
    // ARG4 =  int flags;  Flags are or'ed together, therefore writing them
    // as a hex constant is more meaningful.
    PRINT("sys_fstatat64 ( %ld, %#lx(%s), %#lx, %#lx )",
-         SARG1, ARG2, (HChar*)ARG2, ARG3, ARG4);
+		 SARG1, ARG2, (HChar*)ARG2, ARG3, ARG4);
    PRE_REG_READ4(long, "fstatat64",
-                 int, dfd, char *, file_name, struct stat64 *, buf, int, flags);
+				 int, dfd, char *, file_name, struct stat64 *, buf, int, flags);
    PRE_MEM_RASCIIZ( "fstatat64(file_name)", ARG2 );
    PRE_MEM_WRITE( "fstatat64(buf)", ARG3, sizeof(struct vki_stat64) );
 }
@@ -1060,19 +1058,19 @@ POST(sys_fstat64)
 PRE(sys_sigsuspend)
 {
    /* The C library interface to sigsuspend just takes a pointer to
-      a signal mask but this system call has three arguments - the first
-      two don't appear to be used by the kernel and are always passed as
-      zero by glibc and the third is the first word of the signal mask
-      so only 32 signals are supported.
-     
-      In fact glibc normally uses rt_sigsuspend if it is available as
-      that takes a pointer to the signal mask so supports more signals.
-    */
+	  a signal mask but this system call has three arguments - the first
+	  two don't appear to be used by the kernel and are always passed as
+	  zero by glibc and the third is the first word of the signal mask
+	  so only 32 signals are supported.
+
+	  In fact glibc normally uses rt_sigsuspend if it is available as
+	  that takes a pointer to the signal mask so supports more signals.
+	*/
    *flags |= SfMayBlock;
    PRINT("sys_sigsuspend ( %ld, %ld, %lu )", SARG1, SARG2, ARG3 );
    PRE_REG_READ3(int, "sigsuspend",
-                 int, history0, int, history1,
-                 vki_old_sigset_t, mask);
+				 int, history0, int, history1,
+				 vki_old_sigset_t, mask);
 }
 
 PRE(sys_vm86old)
@@ -1092,13 +1090,13 @@ PRE(sys_vm86)
    PRINT("sys_vm86 ( %lu, %#lx )", ARG1, ARG2);
    PRE_REG_READ2(int, "vm86", unsigned long, fn, struct vm86plus_struct *, v86);
    if (ARG1 == VKI_VM86_ENTER || ARG1 == VKI_VM86_ENTER_NO_BYPASS)
-      PRE_MEM_WRITE( "vm86(v86)", ARG2, sizeof(struct vki_vm86plus_struct));
+	  PRE_MEM_WRITE( "vm86(v86)", ARG2, sizeof(struct vki_vm86plus_struct));
 }
 
 POST(sys_vm86)
 {
    if (ARG1 == VKI_VM86_ENTER || ARG1 == VKI_VM86_ENTER_NO_BYPASS)
-      POST_MEM_WRITE( ARG2, sizeof(struct vki_vm86plus_struct));
+	  POST_MEM_WRITE( ARG2, sizeof(struct vki_vm86plus_struct));
 }
 
 
@@ -1111,20 +1109,20 @@ PRE(sys_syscall223)
    Int err;
 
    /* 223 is used by sys_bproc.  If we're not on a declared bproc
-      variant, fail in the usual way. */
+	  variant, fail in the usual way. */
 
    if (!KernelVariantiS(KernelVariant_bproc, VG_(clo_kernel_variant))) {
-      PRINT("non-existent syscall! (syscall 223)");
-      PRE_REG_READ0(long, "ni_syscall(223)");
-      SET_STATUS_Failure( VKI_ENOSYS );
-      return;
+	  PRINT("non-existent syscall! (syscall 223)");
+	  PRE_REG_READ0(long, "ni_syscall(223)");
+	  SET_STATUS_Failure( VKI_ENOSYS );
+	  return;
    }
 
-   err = ML_(linux_variant_PRE_sys_bproc)( ARG1, ARG2, ARG3, 
-                                           ARG4, ARG5, ARG6 );
+   err = ML_(linux_variant_PRE_sys_bproc)( ARG1, ARG2, ARG3,
+										   ARG4, ARG5, ARG6 );
    if (err) {
-      SET_STATUS_Failure( err );
-      return;
+	  SET_STATUS_Failure( err );
+	  return;
    }
    /* Let it go through. */
    *flags |= SfMayBlock; /* who knows?  play safe. */
@@ -1132,8 +1130,8 @@ PRE(sys_syscall223)
 
 POST(sys_syscall223)
 {
-   ML_(linux_variant_POST_sys_bproc)( ARG1, ARG2, ARG3, 
-                                      ARG4, ARG5, ARG6 );
+   ML_(linux_variant_POST_sys_bproc)( ARG1, ARG2, ARG3,
+									  ARG4, ARG5, ARG6 );
 }
 
 #undef PRE
@@ -1145,7 +1143,7 @@ POST(sys_syscall223)
    ------------------------------------------------------------------ */
 
 /* Add an x86-linux specific wrapper to a syscall table. */
-#define PLAX_(sysno, name)    WRAPPER_ENTRY_X_(x86_linux, sysno, name) 
+#define PLAX_(sysno, name)    WRAPPER_ENTRY_X_(x86_linux, sysno, name)
 #define PLAXY(sysno, name)    WRAPPER_ENTRY_XY(x86_linux, sysno, name)
 
 
@@ -1211,7 +1209,7 @@ static SyscallTableEntry syscall_table[] = {
    LINXY(__NR_pipe,              sys_pipe),           // 42
    GENXY(__NR_times,             sys_times),          // 43
    GENX_(__NR_prof,              sys_ni_syscall),     // 44
-//zz 
+//zz
    GENX_(__NR_brk,               sys_brk),            // 45
    LINX_(__NR_setgid,            sys_setgid16),       // 46
    LINX_(__NR_getgid,            sys_getgid16),       // 47
@@ -1229,7 +1227,7 @@ static SyscallTableEntry syscall_table[] = {
    GENX_(__NR_setpgid,           sys_setpgid),        // 57
    GENX_(__NR_ulimit,            sys_ni_syscall),     // 58
 //zz    //   (__NR_oldolduname,       sys_olduname),       // 59 Linux -- obsolete
-//zz 
+//zz
    GENX_(__NR_umask,             sys_umask),          // 60
    GENX_(__NR_chroot,            sys_chroot),         // 61
 //zz    //   (__NR_ustat,             sys_ustat)           // 62 SVr4 -- deprecated
@@ -1241,13 +1239,13 @@ static SyscallTableEntry syscall_table[] = {
    LINXY(__NR_sigaction,         sys_sigaction),      // 67
 //zz    //   (__NR_sgetmask,          sys_sgetmask),       // 68 */* (ANSI C)
 //zz    //   (__NR_ssetmask,          sys_ssetmask),       // 69 */* (ANSI C)
-//zz 
+//zz
    LINX_(__NR_setreuid,          sys_setreuid16),     // 70
    LINX_(__NR_setregid,          sys_setregid16),     // 71
    PLAX_(__NR_sigsuspend,        sys_sigsuspend),     // 72
    LINXY(__NR_sigpending,        sys_sigpending),     // 73
    GENX_(__NR_sethostname,       sys_sethostname),    // 74
-//zz 
+//zz
    GENX_(__NR_setrlimit,         sys_setrlimit),      // 75
    GENXY(__NR_getrlimit,         sys_old_getrlimit),  // 76
    GENXY(__NR_getrusage,         sys_getrusage),      // 77
@@ -1259,13 +1257,13 @@ static SyscallTableEntry syscall_table[] = {
    PLAX_(__NR_select,            old_select),         // 82
    GENX_(__NR_symlink,           sys_symlink),        // 83
 //zz    //   (__NR_oldlstat,          sys_lstat),          // 84 -- obsolete
-//zz 
+//zz
    GENX_(__NR_readlink,          sys_readlink),       // 85
 //zz    //   (__NR_uselib,            sys_uselib),         // 86 */Linux
 //zz    //   (__NR_swapon,            sys_swapon),         // 87 */Linux
 //zz    //   (__NR_reboot,            sys_reboot),         // 88 */Linux
 //zz    //   (__NR_readdir,           old_readdir),        // 89 -- superseded
-//zz 
+//zz
    PLAX_(__NR_mmap,              old_mmap),           // 90
    GENXY(__NR_munmap,            sys_munmap),         // 91
    GENX_(__NR_truncate,          sys_truncate),       // 92
@@ -1289,14 +1287,14 @@ static SyscallTableEntry syscall_table[] = {
    GENXY(__NR_lstat,             sys_newlstat),       // 107
    GENXY(__NR_fstat,             sys_newfstat),       // 108
 //zz    //   (__NR_olduname,          sys_uname),          // 109 -- obsolete
-//zz 
+//zz
    GENX_(__NR_iopl,              sys_iopl),           // 110
    LINX_(__NR_vhangup,           sys_vhangup),        // 111
    GENX_(__NR_idle,              sys_ni_syscall),     // 112
    PLAXY(__NR_vm86old,           sys_vm86old),        // 113 x86/Linux-only
    GENXY(__NR_wait4,             sys_wait4),          // 114
-//zz 
-//zz    //   (__NR_swapoff,           sys_swapoff),        // 115 */Linux 
+//zz
+//zz    //   (__NR_swapoff,           sys_swapoff),        // 115 */Linux
    LINXY(__NR_sysinfo,           sys_sysinfo),        // 116
    LINXY(__NR_ipc,               sys_ipc),            // 117
    GENX_(__NR_fsync,             sys_fsync),          // 118
@@ -1314,20 +1312,20 @@ static SyscallTableEntry syscall_table[] = {
    GENX_(__NR_create_module,     sys_ni_syscall),     // 127
    LINX_(__NR_init_module,       sys_init_module),    // 128
    LINX_(__NR_delete_module,     sys_delete_module),  // 129
-//zz 
+//zz
 //zz    // Nb: get_kernel_syms() was removed 2.4-->2.6
    GENX_(__NR_get_kernel_syms,   sys_ni_syscall),     // 130
    LINX_(__NR_quotactl,          sys_quotactl),       // 131
    GENX_(__NR_getpgid,           sys_getpgid),        // 132
    GENX_(__NR_fchdir,            sys_fchdir),         // 133
 //zz    //   (__NR_bdflush,           sys_bdflush),        // 134 */Linux
-//zz 
+//zz
 //zz    //   (__NR_sysfs,             sys_sysfs),          // 135 SVr4
    LINX_(__NR_personality,       sys_personality),    // 136
    GENX_(__NR_afs_syscall,       sys_ni_syscall),     // 137
    LINX_(__NR_setfsuid,          sys_setfsuid16),     // 138
    LINX_(__NR_setfsgid,          sys_setfsgid16),     // 139
- 
+
    LINXY(__NR__llseek,           sys_llseek),         // 140
    GENXY(__NR_getdents,          sys_getdents),       // 141
    GENX_(__NR__newselect,        sys_select),         // 142
@@ -1363,7 +1361,7 @@ static SyscallTableEntry syscall_table[] = {
    GENX_(__NR_query_module,      sys_ni_syscall),     // 167
    GENXY(__NR_poll,              sys_poll),           // 168
 //zz    //   (__NR_nfsservctl,        sys_nfsservctl),     // 169 */Linux
-//zz 
+//zz
    LINX_(__NR_setresgid,         sys_setresgid16),    // 170
    LINXY(__NR_getresgid,         sys_getresgid16),    // 171
    LINXY(__NR_prctl,             sys_prctl),          // 172
@@ -1394,7 +1392,7 @@ static SyscallTableEntry syscall_table[] = {
    PLAX_(__NR_mmap2,             sys_mmap2),          // 192
    GENX_(__NR_truncate64,        sys_truncate64),     // 193
    GENX_(__NR_ftruncate64,       sys_ftruncate64),    // 194
-   
+
    PLAXY(__NR_stat64,            sys_stat64),         // 195
    PLAXY(__NR_lstat64,           sys_lstat64),        // 196
    PLAXY(__NR_fstat64,           sys_fstat64),        // 197
@@ -1608,24 +1606,35 @@ static SyscallTableEntry syscall_table[] = {
 
    LINX_(__NR_membarrier,        sys_membarrier),       // 375
 
+   LINX_(__NR_copy_file_range,   sys_copy_file_range),   // 377
+   LINXY(__NR_preadv2,           sys_preadv2),           // 378
+   LINX_(__NR_pwritev2,          sys_pwritev2),          // 379
+
+   LINXY(__NR_pkey_mprotect,     sys_pkey_mprotect),    // 380
+   LINX_(__NR_pkey_alloc,        sys_pkey_alloc),       // 381
+   LINX_(__NR_pkey_free,         sys_pkey_free),        // 382
    LINXY(__NR_statx,             sys_statx),            // 383
 
    /* Explicitly not supported on i386 yet. */
-   GENX_(__NR_arch_prctl,        sys_ni_syscall)        // 384
+   GENX_(__NR_arch_prctl,        sys_ni_syscall),       // 384
+
+   LINXY(__NR_io_uring_setup,    sys_io_uring_setup),   // 425
+   LINXY(__NR_io_uring_enter,    sys_io_uring_enter),   // 426
+   LINXY(__NR_io_uring_register, sys_io_uring_register),// 427
 };
 
 SyscallTableEntry* ML_(get_linux_syscall_entry) ( UInt sysno )
 {
    const UInt syscall_table_size
-      = sizeof(syscall_table) / sizeof(syscall_table[0]);
+	  = sizeof(syscall_table) / sizeof(syscall_table[0]);
 
    /* Is it in the contiguous initial section of the table? */
    if (sysno < syscall_table_size) {
-      SyscallTableEntry* sys = &syscall_table[sysno];
-      if (sys->before == NULL)
-         return NULL; /* no entry */
-      else
-         return sys;
+	  SyscallTableEntry* sys = &syscall_table[sysno];
+	  if (sys->before == NULL)
+		 return NULL; /* no entry */
+	  else
+		 return sys;
    }
 
    /* Can't find a wrapper */

@@ -8,7 +8,7 @@
 ##------------------------------------------------------------##
 
 # Process this file with autoconf to produce a configure script.
-AC_INIT([Valgrind],[3.15.0],[valgrind-users@lists.sourceforge.net])
+AC_INIT([Valgrind],[3.16.0.GIT],[valgrind-users@lists.sourceforge.net])
 AC_CONFIG_SRCDIR(coregrind/m_main.c)
 AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE([foreign dist-bzip2 subdir-objects])
@@ -4179,6 +4179,11 @@ AC_CHECK_FUNCS([     \
         utimensat    \
         process_vm_readv  \
         process_vm_writev \
+        copy_file_range \
+        preadv \
+        pwritev \
+        preadv2 \
+        pwritev2 \
         ])
 
 # AC_CHECK_LIB adds any library found to the variable LIBS, and links these
@@ -4194,6 +4199,12 @@ AM_CONDITIONAL([HAVE_PTHREAD_SPINLOCK],
                [test x$ac_cv_func_pthread_spin_lock = xyes])
 AM_CONDITIONAL([HAVE_PTHREAD_SETNAME_NP],
                [test x$ac_cv_func_pthread_setname_np = xyes])
+AM_CONDITIONAL([HAVE_COPY_FILE_RANGE],
+               [test x$ac_cv_func_copy_file_range = xyes])
+AM_CONDITIONAL([HAVE_PREADV_PWRITEV],
+               [test x$ac_cv_func_preadv = xyes && test x$ac_cv_func_pwritev = xyes])
+AM_CONDITIONAL([HAVE_PREADV2_PWRITEV2],
+               [test x$ac_cv_func_preadv2 = xyes && test x$ac_cv_func_pwritev2 = xyes])
 
 if test x$VGCONF_PLATFORM_PRI_CAPS = xMIPS32_LINUX \
      -o x$VGCONF_PLATFORM_PRI_CAPS = xMIPS64_LINUX ; then

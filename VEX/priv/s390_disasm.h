@@ -44,17 +44,17 @@
 #define ENC3(a,b,c) ((P(DONE) << 12) | (P(c) << 8) | (P(b) << 4) | P(a))
 #undef  ENC4
 #define ENC4(a,b,c,d) ((P(DONE) << 16) | (P(d) << 12) | (P(c) << 8) | \
-                       (P(b) << 4) | P(a))
+					   (P(b) << 4) | P(a))
 #undef  ENC5
 #define ENC5(a,b,c,d,e) ((P(DONE) << 20) | (P(e) << 16) | (P(d) << 12) | \
-                         (P(c) << 8) | (P(b) << 4) | P(a))
+						 (P(c) << 8) | (P(b) << 4) | P(a))
 #undef  ENC6
 #define ENC6(a,b,c,d,e,f) ((P(DONE) << 24) | (P(f) << 20) | (P(e) << 16) | \
-                           (P(d) << 12) | (P(c) << 8) | (P(b) << 4) | P(a))
+						   (P(d) << 12) | (P(c) << 8) | (P(b) << 4) | P(a))
 #undef  ENC7
 #define ENC7(a,b,c,d,e,f,g) ((P(DONE) << 28) | (P(g) << 24) | (P(f) << 20) | \
-                             (P(e) << 16) | (P(d) << 12) | (P(c) << 8) | \
-                             (P(b) << 4) | P(a))
+							 (P(e) << 16) | (P(d) << 12) | (P(c) << 8) | \
+							 (P(b) << 4) | P(a))
 
 /* The different kinds of operands in an asm insn */
 enum {
@@ -93,7 +93,8 @@ enum {
    S390_XMNM_LOCFHR = 13,
    S390_XMNM_LOCHI = 14,
    S390_XMNM_LOCGHI = 15,
-   S390_XMNM_LOCHHI = 16
+   S390_XMNM_LOCHHI = 16,
+   S390_XMNM_BIC = 17
 };
 
 void s390_disasm(UInt command, ...);

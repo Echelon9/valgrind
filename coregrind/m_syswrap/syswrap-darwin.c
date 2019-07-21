@@ -10803,10 +10803,10 @@ const SyscallTableEntry ML_(syscall_table)[] = {
    MACXY(__NR_getattrlistbulk,     getattrlistbulk),    // 461
    MACXY(__NR_openat,              openat),             // 463
    MACX_(__NR_faccessat,           faccessat),          // 466
-   MACXY(__NR_fstatat64,           fstatat64),          // 470
+   MACX_(__NR_fstatat64,           fstatat64),          // 470
    MACX_(__NR_readlinkat,          readlinkat),         // 473
    MACX_(__NR_bsdthread_ctl,       bsdthread_ctl),      // 478
-   MACXY(__NR_csrctl,              csrctl),             // 483
+   MACX_(__NR_csrctl,              csrctl),             // 483
    MACX_(__NR_guarded_open_dprotected_np, guarded_open_dprotected_np),  // 484
    MACX_(__NR_guarded_write_np, guarded_write_np),      // 485
    MACX_(__NR_guarded_pwrite_np, guarded_pwrite_np),    // 486
@@ -10832,7 +10832,7 @@ const SyscallTableEntry ML_(syscall_table)[] = {
 // _____(__NR_kdebug_typefilter),                       // 177
 // _____(__NR_clonefileat),                             // 462
 // _____(__NR_renameatx_np),                            // 488
-   MACXY(__NR_getentropy, getentropy),                  // 500
+   MACX_(__NR_getentropy, getentropy),                  // 500
 // _____(__NR_necp_open),                               // 501
 // _____(__NR_necp_client_action),                      // 502
    _____(VG_DARWIN_SYSCALL_CONSTRUCT_UNIX(503)),        // ???
@@ -11030,7 +11030,7 @@ const SyscallTableEntry ML_(mach_trap_table)[] = {
    _____(VG_DARWIN_SYSCALL_CONSTRUCT_MACH(68)),
    _____(VG_DARWIN_SYSCALL_CONSTRUCT_MACH(69)),
 #if DARWIN_VERS >= DARWIN_10_12
-   MACXY(__NR_host_create_mach_voucher_trap, host_create_mach_voucher_trap),
+   MACX_(__NR_host_create_mach_voucher_trap, host_create_mach_voucher_trap),
 #else
    _____(VG_DARWIN_SYSCALL_CONSTRUCT_MACH(70)),
 #endif

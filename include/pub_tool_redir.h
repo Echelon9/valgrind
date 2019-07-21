@@ -8,7 +8,7 @@
    framework.
 
    Copyright (C) 2000-2017 Julian Seward
-      jseward@acm.org
+	  jseward@acm.org
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -85,18 +83,18 @@
    ~~~~~~~~~~~
    To write a replacement function, do this:
 
-      ret_type 
-      VG_REPLACE_FUNCTION_ZU(zEncodedSoname,fnname) ( .. args .. )
-      {
-         ... body ...
-      }
+	  ret_type
+	  VG_REPLACE_FUNCTION_ZU(zEncodedSoname,fnname) ( .. args .. )
+	  {
+		 ... body ...
+	  }
 
    zEncodedSoname should be a Z-encoded soname (see below for
    Z-encoding details) and fnname should be an unencoded fn name.  A
    default-safe equivalence tag of 00000 is assumed (see comments
    above).  The resulting name is
 
-      _vgr00000ZU_zEncodedSoname_fnname
+	  _vgr00000ZU_zEncodedSoname_fnname
 
    The "_vgr00000ZU_" is a prefix that gets discarded upon decoding.
    It identifies this function as a replacement and specifies its
@@ -104,20 +102,20 @@
 
    It is also possible to write
 
-      ret_type 
-      VG_REPLACE_FUNCTION_ZZ(zEncodedSoname,zEncodedFnname) ( .. args .. )
-      {
-         ... body ...
-      }
-   
+	  ret_type
+	  VG_REPLACE_FUNCTION_ZZ(zEncodedSoname,zEncodedFnname) ( .. args .. )
+	  {
+		 ... body ...
+	  }
+
    which means precisely the same, but the function name is also
    Z-encoded.  This can sometimes be necessary.  In this case the
    resulting function name is
 
-      _vgr00000ZZ_zEncodedSoname_zEncodedFnname
+	  _vgr00000ZZ_zEncodedSoname_zEncodedFnname
 
    When it sees this either such name, the core's symbol-table reading
-   machinery and redirection machinery first Z-decode the soname and 
+   machinery and redirection machinery first Z-decode the soname and
    if necessary the fnname.  They are encoded so that they may include
    arbitrary characters, and in particular they may contain '*', which
    acts as a wildcard.
@@ -141,16 +139,16 @@
    client space, so it runs on the simulated CPU.  So it must be in
    either vgpreload_<tool>.so or vgpreload_core.so.  It also only works
    with functions in shared objects, I think.
-   
+
    It is important that the Z-encoded names contain no unencoded
    underscores, since the intercept-handlers in m_redir.c detect the
    end of the soname by looking for the first trailing underscore.
 
    To write function names which explicitly state the equivalence class
    tag, use
-     VG_REPLACE_FUNCTION_EZU(5-digit-tag,zEncodedSoname,fnname)
+	 VG_REPLACE_FUNCTION_EZU(5-digit-tag,zEncodedSoname,fnname)
    or
-     VG_REPLACE_FUNCTION_EZZ(5-digit-tag,zEncodedSoname,zEncodedFnname)
+	 VG_REPLACE_FUNCTION_EZZ(5-digit-tag,zEncodedSoname,zEncodedFnname)
 
    As per comments above, the tag must be a 5 digit decimal number,
    padded with leading zeroes, in the range 00010 to 99999 inclusive.
@@ -161,10 +159,10 @@
    This is identical to replacement, except that you should use the
    macro names
 
-      VG_WRAP_FUNCTION_ZU
-      VG_WRAP_FUNCTION_ZZ
-      VG_WRAP_FUNCTION_EZU
-      VG_WRAP_FUNCTION_EZZ
+	  VG_WRAP_FUNCTION_ZU
+	  VG_WRAP_FUNCTION_ZZ
+	  VG_WRAP_FUNCTION_EZU
+	  VG_WRAP_FUNCTION_EZZ
 
    instead.
 
@@ -175,20 +173,20 @@
    "_vgrZU_" or "_vgrZZ_" prefix is added, and then the following
    characters are transformed.
 
-     *         -->  Za    (asterisk)
-     :         -->  Zc    (colon)
-     .         -->  Zd    (dot)
-     -         -->  Zh    (hyphen)
-     +         -->  Zp    (plus)
-     (space)   -->  Zs    (space)
-     _         -->  Zu    (underscore)
-     @         -->  ZA    (at)
-     $         -->  ZD    (dollar)
-     (         -->  ZL    (left)
-     %         -->  ZP    (percent)
-     )         -->  ZR    (right)
-     /         -->  ZS    (slash) 
-     Z         -->  ZZ    (Z)
+	 *         -->  Za    (asterisk)
+	 :         -->  Zc    (colon)
+	 .         -->  Zd    (dot)
+	 -         -->  Zh    (hyphen)
+	 +         -->  Zp    (plus)
+	 (space)   -->  Zs    (space)
+	 _         -->  Zu    (underscore)
+	 @         -->  ZA    (at)
+	 $         -->  ZD    (dollar)
+	 (         -->  ZL    (left)
+	 %         -->  ZP    (percent)
+	 )         -->  ZR    (right)
+	 /         -->  ZS    (slash)
+	 Z         -->  ZZ    (Z)
 
    Everything else is left unchanged.
 */
@@ -253,15 +251,15 @@
 #  define  VG_Z_LIBC_SONAME  libSystemZdZaZddylib    // libSystem.*.dylib
 
 #elif defined(VGO_darwin) && (DARWIN_VERS == DARWIN_10_7 \
-                              || DARWIN_VERS == DARWIN_10_8)
+							  || DARWIN_VERS == DARWIN_10_8)
 #  define  VG_Z_LIBC_SONAME  libsystemZucZaZddylib   // libsystem_c*.dylib
    /* Note that the idea of a single name for the C library falls
-      apart on more recent Darwins (10.8 and later) since the
-      functionality (malloc, free, str*) is split between
-      libsystem_c.dylib, libsystem_malloc.dylib and
-      libsystem_platform.dylib.  This makes VG_Z_LIBC_SONAME somewhat useless
-      at least inside vg_replace_strmem.c, and that hardwires some dylib
-      names directly, for OSX 10.9. */
+	  apart on more recent Darwins (10.8 and later) since the
+	  functionality (malloc, free, str*) is split between
+	  libsystem_c.dylib, libsystem_malloc.dylib and
+	  libsystem_platform.dylib.  This makes VG_Z_LIBC_SONAME somewhat useless
+	  at least inside vg_replace_strmem.c, and that hardwires some dylib
+	  names directly, for OSX 10.9. */
 
 #elif defined(VGO_darwin) && (DARWIN_VERS >= DARWIN_10_9)
 #  define  VG_Z_LIBC_SONAME  libsystemZumallocZddylib  // libsystem_malloc.dylib
@@ -303,7 +301,7 @@
 #define  VG_U_LD_LINUX_SO_2         "ld-linux.so.2"
 
 #define  VG_Z_LD_LINUX_X86_64_SO_2  ldZhlinuxZhx86Zh64ZdsoZd2
-                                                        // ld-linux-x86-64.so.2
+														// ld-linux-x86-64.so.2
 #define  VG_U_LD_LINUX_X86_64_SO_2  "ld-linux-x86-64.so.2"
 
 #define  VG_Z_LD64_SO_1             ld64ZdsoZd1                // ld64.so.1
@@ -313,7 +311,9 @@
 #define  VG_Z_LD_SO_1               ldZdsoZd1                  // ld.so.1
 #define  VG_U_LD_SO_1               "ld.so.1"
 
+#define  VG_Z_LD_LINUX_AARCH64_SO_1  ldZhlinuxZhaarch64ZdsoZd1
 #define  VG_U_LD_LINUX_AARCH64_SO_1 "ld-linux-aarch64.so.1"
+
 #define  VG_U_LD_LINUX_ARMHF_SO_3   "ld-linux-armhf.so.3"
 
 #endif

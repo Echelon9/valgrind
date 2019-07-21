@@ -1,4 +1,68 @@
 
+Release 3.16.0 (?? ?????? 2019)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+3.16.0 is a feature release with many improvements and the usual collection of
+bug fixes.
+
+This release supports X86/Linux, AMD64/Linux, ARM32/Linux, ARM64/Linux,
+PPC32/Linux, PPC64BE/Linux, PPC64LE/Linux, S390X/Linux, MIPS32/Linux,
+MIPS64/Linux, ARM/Android, ARM64/Android, MIPS32/Android, X86/Android,
+X86/Solaris, AMD64/Solaris and AMD64/MacOSX 10.12.  There is also preliminary
+support for X86/macOS 10.13 and AMD64/macOS 10.13.
+
+* ==================== CORE CHANGES ===================
+
+* ==================== TOOL CHANGES ====================
+
+* DHAT:
+
+* Cachegrind:
+
+* Callgrind:
+
+* Massif:
+
+* Memcheck:
+
+* ==================== OTHER CHANGES ====================
+
+* New and modified GDB server monitor features:
+
+  - The gdbserver monitor commands that require an address and an optional
+    length argument now accepts the alternate 'C like' syntax "address[length]".
+    For example, the memcheck command "monitor who_points_at 0x12345678 120"
+    can now also be given as "monitor who_points_at 0x12345678[120]".
+
+* ==================== FIXED BUGS ====================
+
+The following bugs have been fixed or resolved.  Note that "n-i-bz"
+stands for "not in bugzilla" -- that is, a bug that was reported to us
+but never got a bugzilla entry.  We encourage you to file bugs in
+bugzilla (https://bugs.kde.org/enter_bug.cgi?product=valgrind) rather
+than mailing the developers (or mailing lists) directly -- bugs that
+are not entered into bugzilla tend to get forgotten about or ignored.
+
+To see details of a given bug, visit
+  https://bugs.kde.org/show_bug.cgi?id=XXXXXX
+where XXXXXX is the bug number as listed below.
+
+406561  mcinfcallWSRU gdbserver_test fails on ppc64
+406824  Unsupported baseline
+407218  Add support for the copy_file_range syscall
+407307  Intercept stpcpy also in ld.so for arm64
+407764  drd cond_post_wait gets wrong (?) condition on s390x z13 system
+408009  Expose rdrand and f16c even on avx if host cpu supports them
+408091  Missing pkey syscalls
+408414  Add support for missing for preadv2 and pwritev2 syscalls
+404406  s390x: z14 miscellaneous instructions not implemented
+409141  Valgrind hangs when SIGKILLed
+409367  exit_group() after signal to thread waiting in futex() causes hangs
+
+n-i-bz  Fix minor one time leaks in dhat.
+n-i-bz  Add --run-cxx-freeres=no in outer args to avoid inner crashes.
+n-i-bz  Add support for the Linux io_uring system calls
+
 Release 3.15.0 (12 April 2019)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -147,6 +211,8 @@ where XXXXXX is the bug number as listed below.
 405782  "VEX temporary storage exhausted" when attempting to debug slic3r-pe
 406198  none/tests/ppc64/test_isa_3_0_other test sporadically including CA
         bit in output.
+406256  PPC64, vector floating point instructions don't handle subnormal
+        according to VSCR[NJ] bit setting.
 406352  cachegrind/callgrind fails ann tests because of missing a.c
 406354  dhat is broken on x86 (32bit)
 406355  mcsignopass, mcsigpass, mcbreak fail due to difference in gdb output
@@ -154,6 +220,7 @@ where XXXXXX is the bug number as listed below.
 406360  memcheck/tests/libstdc++.supp needs more supression variants
 406422  none/tests/amd64-linux/map_32bits.vgtest fails too easily
 406465  arm64 insn selector fails on "t0 = <expr>" where <expr> has type Ity_F16
+407340  PPC64, does not support the vlogefp, vexptefp instructions.
 n-i-bz  add syswrap for PTRACE_GET|SET_THREAD_AREA on amd64.
 n-i-bz  Fix callgrind_annotate non deterministic order for equal total
 n-i-bz  callgrind_annotate --threshold=100 does not print all functions.
