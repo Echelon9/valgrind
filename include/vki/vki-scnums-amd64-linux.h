@@ -8,8 +8,8 @@
    This file is part of Valgrind, a dynamic binary instrumentation
    framework.
 
-   Copyright (C) 2000-2017 Julian Seward
-	  jseward@acm.org
+   Copyright (C) 2000-2017 Julian Seward 
+      jseward@acm.org
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -257,7 +257,7 @@
 #define __NR_getpmsg                           181	/* reserved for LiS/STREAMS */
 #define __NR_putpmsg                           182	/* reserved for LiS/STREAMS */
 
-#define __NR_afs_syscall                       183	/* reserved for AFS */
+#define __NR_afs_syscall                       183	/* reserved for AFS */ 
 
 #define __NR_tuxcall      		184 /* reserved for tux */
 

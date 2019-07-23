@@ -98,6 +98,8 @@ model_info models[] = {
    { "2828", "zBC12"  },
    { "2964", "z13"    },
    { "2965", "z13s"   },
+   { "3906", "z14"    },
+   { "3907", "z14 ZR1"},
 };
 
 
@@ -247,6 +249,8 @@ static int go(char *feature, char *cpu)
       match = facilities[2] & FAC_BIT(0);
    } else if (strcmp(feature, "s390x-msa5") == 0 ) {
       match = facilities[0] & FAC_BIT(57); /* message security assist 5 facility */
+   } else if (strcmp(feature, "s390x-mi2") == 0 ) {
+      match = facilities[0] & FAC_BIT(58);
    } else {
       return 2;          // Unrecognised feature.
    }

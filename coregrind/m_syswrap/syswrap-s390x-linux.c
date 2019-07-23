@@ -70,68 +70,68 @@
    But then, why only for the GPRs and not the FPRs ? */
 __attribute__((noreturn))
 void ML_(call_on_new_stack_0_1) ( Addr stack,
-								  Addr retaddr,
-								  void (*f)(Word),
-								  Word arg1 );
+                                  Addr retaddr,
+                                  void (*f)(Word),
+                                  Word arg1 );
 /* Upon entering this function we have the following setup:
-	 r2 = stack
-	 r3 = retaddr
-	 r4 = f_desc
-	 r5 = arg1
+     r2 = stack
+     r3 = retaddr
+     r4 = f_desc
+     r5 = arg1
 */
 asm(
-	".text\n"
-	".align 4\n"
-	".globl vgModuleLocal_call_on_new_stack_0_1\n"
-	".type vgModuleLocal_call_on_new_stack_0_1, @function\n"
-	"vgModuleLocal_call_on_new_stack_0_1:\n"
-	"   lgr %r15,%r2\n"     // stack to r15
-	"   lgr %r14,%r3\n"     // retaddr to r14
-	"   lgr %r2,%r5\n"      // arg1 to r2
-	// zero all gprs to get a defined state
-	"   lghi  %r0,0\n"
-	"   lghi  %r1,0\n"
-	// r2 holds the argument for the callee
-	"   lghi  %r3,0\n"
-	// r4 holds the callee address
-	"   lghi  %r5,0\n"
-	"   lghi  %r6,0\n"
-	"   lghi  %r7,0\n"
-	"   lghi  %r8,0\n"
-	"   lghi  %r9,0\n"
-	"   lghi  %r10,0\n"
-	"   lghi  %r11,0\n"
-	"   lghi  %r12,0\n"
-	"   lghi  %r13,0\n"
-	// r14 holds the return address for the callee
-	// r15 is the stack pointer
-	"   br  %r4\n"          // jump to f
-	".previous\n"
-	);
+    ".text\n"
+    ".align 4\n"
+    ".globl vgModuleLocal_call_on_new_stack_0_1\n"
+    ".type vgModuleLocal_call_on_new_stack_0_1, @function\n"
+    "vgModuleLocal_call_on_new_stack_0_1:\n"
+    "   lgr %r15,%r2\n"     // stack to r15
+    "   lgr %r14,%r3\n"     // retaddr to r14
+    "   lgr %r2,%r5\n"      // arg1 to r2
+    // zero all gprs to get a defined state
+    "   lghi  %r0,0\n"
+    "   lghi  %r1,0\n"
+    // r2 holds the argument for the callee
+    "   lghi  %r3,0\n"
+    // r4 holds the callee address
+    "   lghi  %r5,0\n"
+    "   lghi  %r6,0\n"
+    "   lghi  %r7,0\n"
+    "   lghi  %r8,0\n"
+    "   lghi  %r9,0\n"
+    "   lghi  %r10,0\n"
+    "   lghi  %r11,0\n"
+    "   lghi  %r12,0\n"
+    "   lghi  %r13,0\n"
+    // r14 holds the return address for the callee
+    // r15 is the stack pointer
+    "   br  %r4\n"          // jump to f
+    ".previous\n"
+    );
 
 /*
-		Perform a clone system call.  clone is strange because it has
-		fork()-like return-twice semantics, so it needs special
-		handling here.
+        Perform a clone system call.  clone is strange because it has
+        fork()-like return-twice semantics, so it needs special
+        handling here.
 
-		Upon entry, we have:
-			void*  child_stack   in r2
-			long   flags         in r3
-			int*   parent_tid    in r4
-			int*   child_tid     in r5
-			int*   tls address   in r6
-			Word   (*fn)(void *) 160(r15)
-			void   *arg          168(r15)
+        Upon entry, we have:
+            void*  child_stack   in r2
+            long   flags         in r3
+            int*   parent_tid    in r4
+            int*   child_tid     in r5
+            int*   tls address   in r6
+            Word   (*fn)(void *) 160(r15)
+            void   *arg          168(r15)
 
-		System call requires:
-			void*  child_stack  in r2  (sc arg1)
-			long   flags        in r3  (sc arg2)
-			int*   parent_tid   in r4  (sc arg3)
-			int*   child_tid    in r5  (sc arg4)
-			void*  tlsaddr      in r6  (sc arg5)
+        System call requires:
+            void*  child_stack  in r2  (sc arg1)
+            long   flags        in r3  (sc arg2)
+            int*   parent_tid   in r4  (sc arg3)
+            int*   child_tid    in r5  (sc arg4)
+            void*  tlsaddr      in r6  (sc arg5)
 
-		Returns a ULong encoded as: top half is %cr following syscall,
-		low half is syscall return value (r3).
+        Returns a ULong encoded as: top half is %cr following syscall,
+        low half is syscall return value (r3).
  */
 #define __NR_CLONE        VG_STRINGIFY(__NR_clone)
 #define __NR_EXIT         VG_STRINGIFY(__NR_exit)
@@ -203,66 +203,66 @@ PRE(sys_ptrace)
 {
    PRINT("sys_ptrace ( %ld, %ld, %#lx, %#lx )", SARG1, SARG2, ARG3, ARG4);
    PRE_REG_READ4(int, "ptrace",
-				 long, request, long, pid, unsigned long, addr,
-				 unsigned long, data);
+                 long, request, long, pid, unsigned long, addr,
+                 unsigned long, data);
    switch (ARG1) {
    case VKI_PTRACE_PEEKTEXT:
    case VKI_PTRACE_PEEKDATA:
    case VKI_PTRACE_PEEKUSR:
-	  PRE_MEM_WRITE( "ptrace(peek)", ARG4,
-			 sizeof (long));
-	  break;
+      PRE_MEM_WRITE( "ptrace(peek)", ARG4,
+		     sizeof (long));
+      break;
    case VKI_PTRACE_GETEVENTMSG:
-	  PRE_MEM_WRITE( "ptrace(geteventmsg)", ARG4, sizeof(unsigned long));
-	  break;
+      PRE_MEM_WRITE( "ptrace(geteventmsg)", ARG4, sizeof(unsigned long));
+      break;
    case VKI_PTRACE_GETSIGINFO:
-	  PRE_MEM_WRITE( "ptrace(getsiginfo)", ARG4, sizeof(vki_siginfo_t));
-	  break;
+      PRE_MEM_WRITE( "ptrace(getsiginfo)", ARG4, sizeof(vki_siginfo_t));
+      break;
    case VKI_PTRACE_SETSIGINFO:
-	  PRE_MEM_READ( "ptrace(setsiginfo)", ARG4, sizeof(vki_siginfo_t));
-	  break;
+      PRE_MEM_READ( "ptrace(setsiginfo)", ARG4, sizeof(vki_siginfo_t));
+      break;
    case VKI_PTRACE_PEEKUSR_AREA:
-	  {
-		 vki_ptrace_area *pa;
+      {
+         vki_ptrace_area *pa;
 
-		 /* Reads a part of the user area into memory at pa->process_addr */
+         /* Reads a part of the user area into memory at pa->process_addr */
 	 pa = (vki_ptrace_area *) ARG3;
-		 PRE_MEM_READ("ptrace(peekusrarea ptrace_area->len)",
-					  (unsigned long) &pa->vki_len, sizeof(pa->vki_len));
-		 PRE_MEM_READ("ptrace(peekusrarea ptrace_area->kernel_addr)",
-					  (unsigned long) &pa->vki_kernel_addr, sizeof(pa->vki_kernel_addr));
-		 PRE_MEM_READ("ptrace(peekusrarea ptrace_area->process_addr)",
-					  (unsigned long) &pa->vki_process_addr, sizeof(pa->vki_process_addr));
-		 PRE_MEM_WRITE("ptrace(peekusrarea *(ptrace_area->process_addr))",
-					   pa->vki_process_addr, pa->vki_len);
-		 break;
-	  }
+         PRE_MEM_READ("ptrace(peekusrarea ptrace_area->len)",
+                      (unsigned long) &pa->vki_len, sizeof(pa->vki_len));
+         PRE_MEM_READ("ptrace(peekusrarea ptrace_area->kernel_addr)",
+                      (unsigned long) &pa->vki_kernel_addr, sizeof(pa->vki_kernel_addr));
+         PRE_MEM_READ("ptrace(peekusrarea ptrace_area->process_addr)",
+                      (unsigned long) &pa->vki_process_addr, sizeof(pa->vki_process_addr));
+         PRE_MEM_WRITE("ptrace(peekusrarea *(ptrace_area->process_addr))",
+                       pa->vki_process_addr, pa->vki_len);
+         break;
+      }
    case VKI_PTRACE_POKEUSR_AREA:
-	  {
-		 vki_ptrace_area *pa;
+      {
+         vki_ptrace_area *pa;
 
-		 /* Updates a part of the user area from memory at pa->process_addr */
+         /* Updates a part of the user area from memory at pa->process_addr */
 	 pa = (vki_ptrace_area *) ARG3;
-		 PRE_MEM_READ("ptrace(pokeusrarea ptrace_area->len)",
-					  (unsigned long) &pa->vki_len, sizeof(pa->vki_len));
-		 PRE_MEM_READ("ptrace(pokeusrarea ptrace_area->kernel_addr)",
-					  (unsigned long) &pa->vki_kernel_addr,
-					  sizeof(pa->vki_kernel_addr));
-		 PRE_MEM_READ("ptrace(pokeusrarea ptrace_area->process_addr)",
-					  (unsigned long) &pa->vki_process_addr,
-					  sizeof(pa->vki_process_addr));
-		 PRE_MEM_READ("ptrace(pokeusrarea *(ptrace_area->process_addr))",
-					   pa->vki_process_addr, pa->vki_len);
-		 break;
-	  }
+         PRE_MEM_READ("ptrace(pokeusrarea ptrace_area->len)",
+                      (unsigned long) &pa->vki_len, sizeof(pa->vki_len));
+         PRE_MEM_READ("ptrace(pokeusrarea ptrace_area->kernel_addr)",
+                      (unsigned long) &pa->vki_kernel_addr,
+                      sizeof(pa->vki_kernel_addr));
+         PRE_MEM_READ("ptrace(pokeusrarea ptrace_area->process_addr)",
+                      (unsigned long) &pa->vki_process_addr,
+                      sizeof(pa->vki_process_addr));
+         PRE_MEM_READ("ptrace(pokeusrarea *(ptrace_area->process_addr))",
+                       pa->vki_process_addr, pa->vki_len);
+         break;
+      }
    case VKI_PTRACE_GETREGSET:
-	  ML_(linux_PRE_getregset)(tid, ARG3, ARG4);
-	  break;
+      ML_(linux_PRE_getregset)(tid, ARG3, ARG4);
+      break;
    case VKI_PTRACE_SETREGSET:
-	  ML_(linux_PRE_setregset)(tid, ARG3, ARG4);
-	  break;
+      ML_(linux_PRE_setregset)(tid, ARG3, ARG4);
+      break;
    default:
-	  break;
+      break;
    }
 }
 
@@ -270,35 +270,35 @@ POST(sys_ptrace)
 {
    switch (ARG1) {
    case VKI_PTRACE_TRACEME:
-	  ML_(linux_POST_traceme)(tid);
-	  break;
+      ML_(linux_POST_traceme)(tid);
+      break;
    case VKI_PTRACE_PEEKTEXT:
    case VKI_PTRACE_PEEKDATA:
    case VKI_PTRACE_PEEKUSR:
-	  POST_MEM_WRITE( ARG4, sizeof (long));
-	  break;
+      POST_MEM_WRITE( ARG4, sizeof (long));
+      break;
    case VKI_PTRACE_GETEVENTMSG:
-	  POST_MEM_WRITE( ARG4, sizeof(unsigned long));
-	  break;
+      POST_MEM_WRITE( ARG4, sizeof(unsigned long));
+      break;
    case VKI_PTRACE_GETSIGINFO:
-	  /* XXX: This is a simplification. Different parts of the
-	   * siginfo_t are valid depending on the type of signal.
-	   */
-	  POST_MEM_WRITE( ARG4, sizeof(vki_siginfo_t));
-	  break;
+      /* XXX: This is a simplification. Different parts of the
+       * siginfo_t are valid depending on the type of signal.
+       */
+      POST_MEM_WRITE( ARG4, sizeof(vki_siginfo_t));
+      break;
    case VKI_PTRACE_PEEKUSR_AREA:
-	  {
-		 vki_ptrace_area *pa;
+      {
+         vki_ptrace_area *pa;
 
 	 pa = (vki_ptrace_area *) ARG3;
-		 POST_MEM_WRITE(pa->vki_process_addr, pa->vki_len);
+         POST_MEM_WRITE(pa->vki_process_addr, pa->vki_len);
 	 break;
-	  }
+      }
    case VKI_PTRACE_GETREGSET:
-	  ML_(linux_POST_getregset)(tid, ARG3, ARG4);
-	  break;
+      ML_(linux_POST_getregset)(tid, ARG3, ARG4);
+      break;
    default:
-	  break;
+      break;
    }
 }
 
@@ -319,7 +319,7 @@ PRE(sys_mmap)
    a5 = args[5];
 
    PRINT("sys_mmap ( %#lx, %lu, %ld, %ld, %ld, %ld )",
-		 a0, a1, (Word)a2, (Word)a3, (Word)a4, (Word)a5 );
+         a0, a1, (Word)a2, (Word)a3, (Word)a4, (Word)a5 );
 
    r = ML_(generic_PRE_sys_mmap)( tid, a0, a1, a2, a3, a4, (Off64T)a5 );
    SET_STATUS_from_SysRes(r);
@@ -337,14 +337,14 @@ PRE(sys_sigreturn)
    tst = VG_(get_ThreadState)(tid);
 
    /* This is only so that the IA is (might be) useful to report if
-	  something goes wrong in the sigreturn */
+      something goes wrong in the sigreturn */
    ML_(fixup_guest_state_to_restart_syscall)(&tst->arch);
 
    /* Restore register state from frame and remove it */
    VG_(sigframe_destroy)(tid, False);
 
    /* Tell the driver not to update the guest state with the "result",
-	  and set a bogus result to keep it happy. */
+      and set a bogus result to keep it happy. */
    *flags |= SfNoWriteResult;
    SET_STATUS_Success(0);
 
@@ -356,7 +356,7 @@ PRE(sys_sigreturn)
 PRE(sys_rt_sigreturn)
 {
    /* See comments on PRE(sys_rt_sigreturn) in syswrap-amd64-linux.c for
-	  an explanation of what follows. */
+      an explanation of what follows. */
 
    ThreadState* tst;
    PRINT("sys_rt_sigreturn ( )");
@@ -368,14 +368,14 @@ PRE(sys_rt_sigreturn)
    tst = VG_(get_ThreadState)(tid);
 
    /* This is only so that the IA is (might be) useful to report if
-	  something goes wrong in the sigreturn */
+      something goes wrong in the sigreturn */
    ML_(fixup_guest_state_to_restart_syscall)(&tst->arch);
 
    /* Restore register state from frame and remove it */
    VG_(sigframe_destroy)(tid, True);
 
    /* Tell the driver not to update the guest state with the "result",
-	  and set a bogus result to keep it happy. */
+      and set a bogus result to keep it happy. */
    *flags |= SfNoWriteResult;
    SET_STATUS_Success(0);
 
@@ -388,7 +388,7 @@ PRE(sys_fadvise64)
 {
    PRINT("sys_fadvise64 ( %ld, %ld, %ld, %ld )", SARG1, SARG2, SARG3, SARG4);
    PRE_REG_READ4(long, "fadvise64",
-				 int, fd, vki_loff_t, offset, vki_loff_t, len, int, advice);
+                 int, fd, vki_loff_t, offset, vki_loff_t, len, int, advice);
 }
 
 #undef PRE
@@ -862,15 +862,15 @@ static SyscallTableEntry syscall_table[] = {
 SyscallTableEntry* ML_(get_linux_syscall_entry) ( UInt sysno )
 {
    const UInt syscall_table_size
-	  = sizeof(syscall_table) / sizeof(syscall_table[0]);
+      = sizeof(syscall_table) / sizeof(syscall_table[0]);
 
    /* Is it in the contiguous initial section of the table? */
    if (sysno < syscall_table_size) {
-	  SyscallTableEntry* sys = &syscall_table[sysno];
-	  if (sys->before == NULL)
-		 return NULL; /* no entry */
-	  else
-		 return sys;
+      SyscallTableEntry* sys = &syscall_table[sysno];
+      if (sys->before == NULL)
+         return NULL; /* no entry */
+      else
+         return sys;
    }
 
    /* Can't find a wrapper */

@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -1757,6 +1755,7 @@ PRE(fcntl)
 	  // FIXME: Dejan
 	  break;
 #  endif
+
    default:
 	  PRINT("fcntl ( %lu, %lu [??] )", ARG1, ARG2);
 	  log_decaying("UNKNOWN fcntl %lu!", ARG2);
@@ -10105,8 +10104,6 @@ PRE(ulock_wait)
 	  log_decaying("UNKNOWN ulock_wait %ld (opcode: %u [??], flags: %#x)!", ARG1, ul_opcode, ul_flags);
 	  break;
 	}
-
-	*flags |= SfMayBlock;
 }
 
 PRE(host_create_mach_voucher_trap)
@@ -10963,7 +10960,6 @@ const SyscallTableEntry ML_(mach_trap_table)[] = {
    MACX_(__NR_semaphore_wait_signal_trap, semaphore_wait_signal),
    MACX_(__NR_semaphore_timedwait_trap, semaphore_timedwait),
    MACX_(__NR_semaphore_timedwait_signal_trap, semaphore_timedwait_signal),
-
 #  if DARWIN_VERS >= DARWIN_10_14
 // _____(__NR_kernelrpc_mach_port_get_attributes_trap),
 #  else

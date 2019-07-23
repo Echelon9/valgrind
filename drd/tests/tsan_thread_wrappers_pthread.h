@@ -3,7 +3,7 @@
   framework.
 
   Copyright (C) 2008-2008 Google Inc
-	 opensource@google.com
+     opensource@google.com
 
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License as
@@ -16,9 +16,7 @@
   General Public License for more details.
 
   You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-  02111-1307, USA.
+  along with this program; if not, see <http://www.gnu.org/licenses/>.
 
   The GNU General Public License is contained in the file COPYING.
 */
@@ -66,7 +64,7 @@ using namespace std;
 #include "../../drd/drd.h"
 #define ANNOTATE_NO_OP(arg) do { } while(0)
 #define ANNOTATE_EXPECT_RACE(addr, descr)                \
-	ANNOTATE_BENIGN_RACE_SIZED(addr, 4, "expected race")
+    ANNOTATE_BENIGN_RACE_SIZED(addr, 4, "expected race")
 static inline bool RunningOnValgrind() { return RUNNING_ON_VALGRIND; }
 
 #include <assert.h>
@@ -88,8 +86,8 @@ static inline int64_t GetCurrentTimeMillis() {
 
 /// Copy tv to ts adding offset in milliseconds.
 static inline void timeval2timespec(timeval *const tv,
-									 timespec *ts,
-									 int64_t offset_milli) {
+                                     timespec *ts,
+                                     int64_t offset_milli) {
   const int64_t ten_9 = 1000000000LL;
   const int64_t ten_6 = 1000000LL;
   const int64_t ten_3 = 1000LL;
@@ -110,20 +108,20 @@ class CondVar;
 class SpinLock {
  public:
   SpinLock() {
-	CHECK(0 == pthread_spin_init(&mu_, 0));
-	ANNOTATE_RWLOCK_CREATE((void*)&mu_);
+    CHECK(0 == pthread_spin_init(&mu_, 0));
+    ANNOTATE_RWLOCK_CREATE((void*)&mu_);
   }
   ~SpinLock() {
-	ANNOTATE_RWLOCK_DESTROY((void*)&mu_);
-	CHECK(0 == pthread_spin_destroy(&mu_));
+    ANNOTATE_RWLOCK_DESTROY((void*)&mu_);
+    CHECK(0 == pthread_spin_destroy(&mu_));
   }
   void Lock() {
-	CHECK(0 == pthread_spin_lock(&mu_));
-	ANNOTATE_RWLOCK_ACQUIRED((void*)&mu_, 1);
+    CHECK(0 == pthread_spin_lock(&mu_));
+    ANNOTATE_RWLOCK_ACQUIRED((void*)&mu_, 1);
   }
   void Unlock() {
-	ANNOTATE_RWLOCK_RELEASED((void*)&mu_, 1);
-	CHECK(0 == pthread_spin_unlock(&mu_));
+    ANNOTATE_RWLOCK_RELEASED((void*)&mu_, 1);
+    CHECK(0 == pthread_spin_unlock(&mu_));
   }
  private:
   pthread_spinlock_t mu_;
@@ -135,18 +133,18 @@ class SpinLock {
  public:
   // Mac OS X version.
   SpinLock() : mu_(OS_SPINLOCK_INIT) {
-	ANNOTATE_RWLOCK_CREATE((void*)&mu_);
+    ANNOTATE_RWLOCK_CREATE((void*)&mu_);
   }
   ~SpinLock() {
-	ANNOTATE_RWLOCK_DESTROY((void*)&mu_);
+    ANNOTATE_RWLOCK_DESTROY((void*)&mu_);
   }
   void Lock() {
-	OSSpinLockLock(&mu_);
-	ANNOTATE_RWLOCK_ACQUIRED((void*)&mu_, 1);
+    OSSpinLockLock(&mu_);
+    ANNOTATE_RWLOCK_ACQUIRED((void*)&mu_, 1);
   }
   void Unlock() {
-	ANNOTATE_RWLOCK_RELEASED((void*)&mu_, 1);
-	OSSpinLockUnlock(&mu_);
+    ANNOTATE_RWLOCK_RELEASED((void*)&mu_, 1);
+    OSSpinLockUnlock(&mu_);
   }
  private:
   OSSpinLock mu_;
@@ -191,22 +189,22 @@ class Mutex {
   friend class CondVar;
  public:
   Mutex() {
-	CHECK(0 == pthread_mutex_init(&mu_, NULL));
-	CHECK(0 == pthread_cond_init(&cv_, NULL));
-	signal_at_unlock_ = true;  // Always signal at Unlock to make
-							   // Mutex more friendly to hybrid detectors.
+    CHECK(0 == pthread_mutex_init(&mu_, NULL));
+    CHECK(0 == pthread_cond_init(&cv_, NULL));
+    signal_at_unlock_ = true;  // Always signal at Unlock to make
+                               // Mutex more friendly to hybrid detectors.
   }
   ~Mutex() {
-	CHECK(0 == pthread_cond_destroy(&cv_));
-	CHECK(0 == pthread_mutex_destroy(&mu_));
+    CHECK(0 == pthread_cond_destroy(&cv_));
+    CHECK(0 == pthread_mutex_destroy(&mu_));
   }
   void Lock()          { CHECK(0 == pthread_mutex_lock(&mu_));}
   bool TryLock()       { return (0 == pthread_mutex_trylock(&mu_));}
   void Unlock() {
-	if (signal_at_unlock_) {
-	  CHECK(0 == pthread_cond_signal(&cv_));
-	}
-	CHECK(0 == pthread_mutex_unlock(&mu_));
+    if (signal_at_unlock_) {
+      CHECK(0 == pthread_cond_signal(&cv_));
+    }
+    CHECK(0 == pthread_mutex_unlock(&mu_));
   }
   void ReaderLock()    { Lock(); }
   bool ReaderTryLock() { return TryLock();}
@@ -221,41 +219,41 @@ class Mutex {
 
   template <typename T>
   bool ReaderLockWhenWithTimeout(const Condition<T>& cond, int millis)
-	{ Lock(); return WaitLoopWithTimeout(cond, millis); }
+    { Lock(); return WaitLoopWithTimeout(cond, millis); }
   template <typename T>
   bool LockWhenWithTimeout(const Condition<T>& cond, int millis)
-	{ Lock(); return WaitLoopWithTimeout(cond, millis); }
+    { Lock(); return WaitLoopWithTimeout(cond, millis); }
   template <typename T>
   bool AwaitWithTimeout(const Condition<T>& cond, int millis)
-	{ return WaitLoopWithTimeout(cond, millis); }
+    { return WaitLoopWithTimeout(cond, millis); }
 
  private:
 
   template <typename T>
   void WaitLoop(const Condition<T>& cond) {
-	signal_at_unlock_ = true;
-	while(cond.Eval() == false) {
-	  pthread_cond_wait(&cv_, &mu_);
-	}
-	ANNOTATE_CONDVAR_LOCK_WAIT(&cv_, &mu_);
+    signal_at_unlock_ = true;
+    while(cond.Eval() == false) {
+      pthread_cond_wait(&cv_, &mu_);
+    }
+    ANNOTATE_CONDVAR_LOCK_WAIT(&cv_, &mu_);
   }
 
   template <typename T>
   bool WaitLoopWithTimeout(const Condition<T>& cond, int millis) {
-	struct timeval now;
-	struct timespec timeout;
-	int retcode = 0;
-	gettimeofday(&now, NULL);
-	timeval2timespec(&now, &timeout, millis);
+    struct timeval now;
+    struct timespec timeout;
+    int retcode = 0;
+    gettimeofday(&now, NULL);
+    timeval2timespec(&now, &timeout, millis);
 
-	signal_at_unlock_ = true;
-	while (cond.Eval() == false && retcode == 0) {
-	  retcode = pthread_cond_timedwait(&cv_, &mu_, &timeout);
-	}
-	if(retcode == 0) {
-	  ANNOTATE_CONDVAR_LOCK_WAIT(&cv_, &mu_);
-	}
-	return cond.Eval();
+    signal_at_unlock_ = true;
+    while (cond.Eval() == false && retcode == 0) {
+      retcode = pthread_cond_timedwait(&cv_, &mu_, &timeout);
+    }
+    if(retcode == 0) {
+      ANNOTATE_CONDVAR_LOCK_WAIT(&cv_, &mu_);
+    }
+    return cond.Eval();
   }
 
   // A hack. cv_ should be the first data member so that
@@ -270,11 +268,11 @@ class Mutex {
 class MutexLock {  // Scoped Mutex Locker/Unlocker
  public:
   MutexLock(Mutex *mu)
-	: mu_(mu) {
-	mu_->Lock();
+    : mu_(mu) {
+    mu_->Lock();
   }
   ~MutexLock() {
-	mu_->Unlock();
+    mu_->Unlock();
   }
  private:
   Mutex *mu_;
@@ -288,11 +286,11 @@ class CondVar {
   ~CondVar()  { CHECK(0 == pthread_cond_destroy(&cv_)); }
   void Wait(Mutex *mu) { CHECK(0 == pthread_cond_wait(&cv_, &mu->mu_)); }
   bool WaitWithTimeout(Mutex *mu, int millis) {
-	struct timeval now;
-	struct timespec timeout;
-	gettimeofday(&now, NULL);
-	timeval2timespec(&now, &timeout, millis);
-	return 0 != pthread_cond_timedwait(&cv_, &mu->mu_, &timeout);
+    struct timeval now;
+    struct timespec timeout;
+    gettimeofday(&now, NULL);
+    timeval2timespec(&now, &timeout, millis);
+    return 0 != pthread_cond_timedwait(&cv_, &mu->mu_, &timeout);
   }
   void Signal() { CHECK(0 == pthread_cond_signal(&cv_)); }
   void SignalAll() { CHECK(0 == pthread_cond_broadcast(&cv_)); }
@@ -321,11 +319,11 @@ class RWLock {
 class ReaderLockScoped {  // Scoped RWLock Locker/Unlocker
  public:
   ReaderLockScoped(RWLock *mu)
-	: mu_(mu) {
-	mu_->ReaderLock();
+    : mu_(mu) {
+    mu_->ReaderLock();
   }
   ~ReaderLockScoped() {
-	mu_->ReaderUnlock();
+    mu_->ReaderUnlock();
   }
  private:
   RWLock *mu_;
@@ -334,11 +332,11 @@ class ReaderLockScoped {  // Scoped RWLock Locker/Unlocker
 class WriterLockScoped {  // Scoped RWLock Locker/Unlocker
  public:
   WriterLockScoped(RWLock *mu)
-	: mu_(mu) {
-	mu_->Lock();
+    : mu_(mu) {
+    mu_->Lock();
   }
   ~WriterLockScoped() {
-	mu_->Unlock();
+    mu_->Unlock();
   }
  private:
   RWLock *mu_;
@@ -351,28 +349,28 @@ class WriterLockScoped {  // Scoped RWLock Locker/Unlocker
 class MyThread {
  public:
   MyThread(void* (*worker)(void *), void *arg = NULL, const char *name = NULL)
-	  :wpvpv_(worker), wvv_(), wvpv_(), arg_(arg), name_(name) {}
+      :wpvpv_(worker), wvv_(), wvpv_(), arg_(arg), name_(name) {}
   MyThread(void (*worker)(void), void *arg = NULL, const char *name = NULL)
-	  :wpvpv_(), wvv_(worker), wvpv_(), arg_(arg), name_(name) {}
+      :wpvpv_(), wvv_(worker), wvpv_(), arg_(arg), name_(name) {}
   MyThread(void (*worker)(void *), void *arg = NULL, const char *name = NULL)
-	  :wpvpv_(), wvv_(), wvpv_(worker), arg_(arg), name_(name) {}
+      :wpvpv_(), wvv_(), wvpv_(worker), arg_(arg), name_(name) {}
 
   void Start() { CHECK(0 == pthread_create(&t_, NULL, ThreadBody, this));}
   void Join()  { CHECK(0 == pthread_join(t_, NULL));}
   pthread_t tid() const { return t_; }
  private:
   static void *ThreadBody(void *arg) {
-	MyThread *my_thread = reinterpret_cast<MyThread*>(arg);
-	if (my_thread->name_) {
-	  ANNOTATE_THREAD_NAME(my_thread->name_);
-	}
-	if (my_thread->wpvpv_)
-	  return my_thread->wpvpv_(my_thread->arg_);
-	if (my_thread->wvpv_)
-	  my_thread->wvpv_(my_thread->arg_);
-	if (my_thread->wvv_)
-	  my_thread->wvv_();
-	return NULL;
+    MyThread *my_thread = reinterpret_cast<MyThread*>(arg);
+    if (my_thread->name_) {
+      ANNOTATE_THREAD_NAME(my_thread->name_);
+    }
+    if (my_thread->wpvpv_)
+      return my_thread->wpvpv_(my_thread->arg_);
+    if (my_thread->wvpv_)
+      my_thread->wvpv_(my_thread->arg_);
+    if (my_thread->wvv_)
+      my_thread->wvv_();
+    return NULL;
   }
   pthread_t t_;
   void *(*wpvpv_)(void*);
@@ -387,41 +385,41 @@ class MyThread {
 class ProducerConsumerQueue {
  public:
   ProducerConsumerQueue(int unused) {
-	//ANNOTATE_PCQ_CREATE(this);
+    //ANNOTATE_PCQ_CREATE(this);
   }
   ~ProducerConsumerQueue() {
-	CHECK(q_.empty());
-	//ANNOTATE_PCQ_DESTROY(this);
+    CHECK(q_.empty());
+    //ANNOTATE_PCQ_DESTROY(this);
   }
 
   // Put.
   void Put(void *item) {
-	mu_.Lock();
-	  q_.push(item);
-	  ANNOTATE_CONDVAR_SIGNAL(&mu_); // LockWhen in Get()
-	  //ANNOTATE_PCQ_PUT(this);
-	mu_.Unlock();
+    mu_.Lock();
+      q_.push(item);
+      ANNOTATE_CONDVAR_SIGNAL(&mu_); // LockWhen in Get()
+      //ANNOTATE_PCQ_PUT(this);
+    mu_.Unlock();
   }
 
   // Get.
   // Blocks if the queue is empty.
   void *Get() {
-	mu_.LockWhen(Condition<typeof(q_)>(IsQueueNotEmpty, &q_));
-	  void * item = NULL;
-	  bool ok = TryGetInternal(&item);
-	  CHECK(ok);
-	mu_.Unlock();
-	return item;
+    mu_.LockWhen(Condition<typeof(q_)>(IsQueueNotEmpty, &q_));
+      void * item = NULL;
+      bool ok = TryGetInternal(&item);
+      CHECK(ok);
+    mu_.Unlock();
+    return item;
   }
 
   // If queue is not empty,
   // remove an element from queue, put it into *res and return true.
   // Otherwise return false.
   bool TryGet(void **res) {
-	mu_.Lock();
-	  bool ok = TryGetInternal(res);
-	mu_.Unlock();
-	return ok;
+    mu_.Lock();
+      bool ok = TryGetInternal(res);
+    mu_.Unlock();
+    return ok;
   }
 
  private:
@@ -430,16 +428,16 @@ class ProducerConsumerQueue {
 
   // Requires mu_
   bool TryGetInternal(void ** item_ptr) {
-	if (q_.empty())
-	  return false;
-	*item_ptr = q_.front();
-	q_.pop();
-	//ANNOTATE_PCQ_GET(this);
-	return true;
+    if (q_.empty())
+      return false;
+    *item_ptr = q_.front();
+    q_.pop();
+    //ANNOTATE_PCQ_GET(this);
+    return true;
   }
 
   static bool IsQueueNotEmpty(std::queue<void*> * queue) {
-	 return !queue->empty();
+     return !queue->empty();
   }
 };
 
@@ -456,15 +454,15 @@ struct Closure {
   void *param2;
 
   void Execute() {
-	if (n_params == 0) {
-	  (F0(f))();
-	} else if (n_params == 1) {
-	  (F1(f))(param1);
-	} else {
-	  CHECK(n_params == 2);
-	  (F2(f))(param1, param2);
-	}
-	delete this;
+    if (n_params == 0) {
+      (F0(f))();
+    } else if (n_params == 1) {
+      (F1(f))(param1);
+    } else {
+      CHECK(n_params == 2);
+      (F2(f))(param1, param2);
+    }
+    delete this;
   }
 };
 
@@ -502,65 +500,65 @@ Closure *NewCallback(void (*f)(P1, P2), P1 p1, P2 p2) {
 /*! A thread pool that uses ProducerConsumerQueue.
   Usage:
   {
-	ThreadPool pool(n_workers);
-	pool.StartWorkers();
-	pool.Add(NewCallback(func_with_no_args));
-	pool.Add(NewCallback(func_with_one_arg, arg));
-	pool.Add(NewCallback(func_with_two_args, arg1, arg2));
-	... // more calls to pool.Add()
+    ThreadPool pool(n_workers);
+    pool.StartWorkers();
+    pool.Add(NewCallback(func_with_no_args));
+    pool.Add(NewCallback(func_with_one_arg, arg));
+    pool.Add(NewCallback(func_with_two_args, arg1, arg2));
+    ... // more calls to pool.Add()
 
-	// the ~ThreadPool() is called: we wait workers to finish
-	// and then join all threads in the pool.
+    // the ~ThreadPool() is called: we wait workers to finish
+    // and then join all threads in the pool.
   }
 */
 class ThreadPool {
  public:
   //! Create n_threads threads, but do not start.
   explicit ThreadPool(int n_threads)
-	: queue_(INT_MAX) {
-	for (int i = 0; i < n_threads; i++) {
-	  MyThread *thread = new MyThread(&ThreadPool::Worker, this);
-	  workers_.push_back(thread);
-	}
+    : queue_(INT_MAX) {
+    for (int i = 0; i < n_threads; i++) {
+      MyThread *thread = new MyThread(&ThreadPool::Worker, this);
+      workers_.push_back(thread);
+    }
   }
 
   //! Start all threads.
   void StartWorkers() {
-	for (size_t i = 0; i < workers_.size(); i++) {
-	  workers_[i]->Start();
-	}
+    for (size_t i = 0; i < workers_.size(); i++) {
+      workers_[i]->Start();
+    }
   }
 
   //! Add a closure.
   void Add(Closure *closure) {
-	queue_.Put(closure);
+    queue_.Put(closure);
   }
 
   int num_threads() { return workers_.size();}
 
   //! Wait workers to finish, then join all threads.
   ~ThreadPool() {
-	for (size_t i = 0; i < workers_.size(); i++) {
-	  Add(NULL);
-	}
-	for (size_t i = 0; i < workers_.size(); i++) {
-	  workers_[i]->Join();
-	  delete workers_[i];
-	}
+    for (size_t i = 0; i < workers_.size(); i++) {
+      Add(NULL);
+    }
+    for (size_t i = 0; i < workers_.size(); i++) {
+      workers_[i]->Join();
+      delete workers_[i];
+    }
   }
  private:
   std::vector<MyThread*>   workers_;
   ProducerConsumerQueue  queue_;
 
   static void *Worker(void *p) {
-	ThreadPool *pool = reinterpret_cast<ThreadPool*>(p);
-	while (true) {
-	  Closure *closure = reinterpret_cast<Closure*>(pool->queue_.Get());
-	  if(closure == NULL) {
-		return NULL;
-	  }
-	  closure->Execute();
-	}
+    ThreadPool *pool = reinterpret_cast<ThreadPool*>(p);
+    while (true) {
+      Closure *closure = reinterpret_cast<Closure*>(pool->queue_.Get());
+      if(closure == NULL) {
+        return NULL;
+      }
+      closure->Execute();
+    }
   }
 };
 
@@ -571,11 +569,11 @@ class Barrier{
   explicit Barrier(int n_threads) {CHECK(0 == pthread_barrier_init(&b_, 0, n_threads));}
   ~Barrier()                      {CHECK(0 == pthread_barrier_destroy(&b_));}
   void Block() {
-	// helgrind 3.3.0 does not have an interceptor for barrier.
-	// but our current local version does.
-	// ANNOTATE_CONDVAR_SIGNAL(this);
-	pthread_barrier_wait(&b_);
-	// ANNOTATE_CONDVAR_WAIT(this, this);
+    // helgrind 3.3.0 does not have an interceptor for barrier.
+    // but our current local version does.
+    // ANNOTATE_CONDVAR_SIGNAL(this);
+    pthread_barrier_wait(&b_);
+    // ANNOTATE_CONDVAR_WAIT(this, this);
   }
  private:
   pthread_barrier_t b_;
@@ -586,15 +584,15 @@ class Barrier{
 class BlockingCounter {
  public:
   explicit BlockingCounter(int initial_count) :
-	count_(initial_count) {}
+    count_(initial_count) {}
   bool DecrementCount() {
-	MutexLock lock(&mu_);
-	count_--;
-	return count_ == 0;
+    MutexLock lock(&mu_);
+    count_--;
+    return count_ == 0;
   }
   void Wait() {
-	mu_.LockWhen(Condition<int>(&IsZero, &count_));
-	mu_.Unlock();
+    mu_.LockWhen(Condition<int>(&IsZero, &count_));
+    mu_.Unlock();
   }
  private:
   static bool IsZero(int *arg) { return *arg == 0; }

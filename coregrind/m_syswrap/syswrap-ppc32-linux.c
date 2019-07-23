@@ -62,9 +62,9 @@
    the integer registers before entering f.*/
 __attribute__((noreturn))
 void ML_(call_on_new_stack_0_1) ( Addr stack,
-								  Addr retaddr,
-								  void (*f)(Word),
-								  Word arg1 );
+                                  Addr retaddr,
+                                  void (*f)(Word),
+                                  Word arg1 );
 //    r3 = stack
 //    r4 = retaddr
 //    r5 = f
@@ -115,31 +115,31 @@ asm(
 
 
 /*
-		Perform a clone system call.  clone is strange because it has
-		fork()-like return-twice semantics, so it needs special
-		handling here.
+        Perform a clone system call.  clone is strange because it has
+        fork()-like return-twice semantics, so it needs special
+        handling here.
 
-		Upon entry, we have:
+        Upon entry, we have:
 
-			int (fn)(void*)     in r3
-			void* child_stack   in r4
-			int flags           in r5
-			void* arg           in r6
-			pid_t* child_tid    in r7
-			pid_t* parent_tid   in r8
-			void* ???           in r9
+            int (fn)(void*)     in r3
+            void* child_stack   in r4
+            int flags           in r5
+            void* arg           in r6
+            pid_t* child_tid    in r7
+            pid_t* parent_tid   in r8
+            void* ???           in r9
 
-		System call requires:
+        System call requires:
 
-			int    $__NR_clone  in r0  (sc number)
-			int    flags        in r3  (sc arg1)
-			void*  child_stack  in r4  (sc arg2)
-			pid_t* parent_tid   in r5  (sc arg3)
-			??     child_tls    in r6  (sc arg4)
-			pid_t* child_tid    in r7  (sc arg5)
-			void*  ???          in r8  (sc arg6)
+            int    $__NR_clone  in r0  (sc number)
+            int    flags        in r3  (sc arg1)
+            void*  child_stack  in r4  (sc arg2)
+            pid_t* parent_tid   in r5  (sc arg3)
+            ??     child_tls    in r6  (sc arg4)
+            pid_t* child_tid    in r7  (sc arg5)
+            void*  ???          in r8  (sc arg6)
 
-		Returns an Int encoded in the linux-ppc32 way, not a SysRes.
+        Returns an Int encoded in the linux-ppc32 way, not a SysRes.
  */
 #define __NR_CLONE        VG_STRINGIFY(__NR_clone)
 #define __NR_EXIT         VG_STRINGIFY(__NR_exit)
@@ -156,16 +156,16 @@ asm(
 "       mr      30,3\n"              // preserve fn
 "       mr      31,6\n"              // preserve arg
 
-		// setup child stack
+        // setup child stack
 "       rlwinm  4,4,0,~0xf\n"        // trim sp to multiple of 16 bytes
 "       li      0,0\n"
 "       stwu    0,-16(4)\n"          // make initial stack frame
 "       mr      29,4\n"              // preserve sp
 
-		// setup syscall
+        // setup syscall
 "       li      0,"__NR_CLONE"\n"    // syscall number
 "       mr      3,5\n"               // syscall arg1: flags
-		// r4 already setup          // syscall arg2: child_stack
+        // r4 already setup          // syscall arg2: child_stack
 "       mr      5,8\n"               // syscall arg3: parent_tid
 "       mr      6,2\n"               // syscall arg4: REAL THREAD tls
 "       mr      7,7\n"               // syscall arg5: child_tid
@@ -178,24 +178,24 @@ asm(
 "       cmpwi   3,0\n"               // child if retval == 0
 "       bne     1f\n"                // jump if !child
 
-		/* CHILD - call thread function */
-		/* Note: 2.4 kernel doesn't set the child stack pointer,
-		   so we do it here.
-		   That does leave a small window for a signal to be delivered
-		   on the wrong stack, unfortunately. */
+        /* CHILD - call thread function */
+        /* Note: 2.4 kernel doesn't set the child stack pointer,
+           so we do it here.
+           That does leave a small window for a signal to be delivered
+           on the wrong stack, unfortunately. */
 "       mr      1,29\n"
 "       mtctr   30\n"                // ctr reg = fn
 "       mr      3,31\n"              // r3 = arg
 "       bctrl\n"                     // call fn()
 
-		// exit with result
+        // exit with result
 "       li      0,"__NR_EXIT"\n"
 "       sc\n"
 
-		// Exit returned?!
+        // Exit returned?!
 "       .long   0\n"
 
-		// PARENT or ERROR - return
+        // PARENT or ERROR - return
 "1:     lwz     29,20(1)\n"
 "       lwz     30,24(1)\n"
 "       lwz     31,28(1)\n"
@@ -214,7 +214,7 @@ asm(
 
 void VG_(cleanup_thread) ( ThreadArchState* arch )
 {
-}
+}  
 
 /* ---------------------------------------------------------------------
    PRE/POST wrappers for ppc32/Linux-specific syscalls
@@ -246,14 +246,14 @@ PRE(sys_mmap)
    SysRes r;
 
    PRINT("sys_mmap ( %#lx, %lu, %lu, %lu, %lu, %lu )",
-		 ARG1, ARG2, ARG3, ARG4, ARG5, ARG6 );
+         ARG1, ARG2, ARG3, ARG4, ARG5, ARG6 );
    PRE_REG_READ6(long, "mmap",
-				 unsigned long, start, unsigned long, length,
-				 unsigned long, prot,  unsigned long, flags,
-				 unsigned long, fd,    unsigned long, offset);
+                 unsigned long, start, unsigned long, length,
+                 unsigned long, prot,  unsigned long, flags,
+                 unsigned long, fd,    unsigned long, offset);
 
-   r = ML_(generic_PRE_sys_mmap)( tid, ARG1, ARG2, ARG3, ARG4, ARG5,
-									   (Off64T)ARG6 );
+   r = ML_(generic_PRE_sys_mmap)( tid, ARG1, ARG2, ARG3, ARG4, ARG5, 
+                                       (Off64T)ARG6 );
    SET_STATUS_from_SysRes(r);
 }
 
@@ -265,14 +265,14 @@ PRE(sys_mmap2)
    //  - the file offset is specified in 4K units rather than bytes,
    //    so that it can be used for files bigger than 2^32 bytes.
    PRINT("sys_mmap2 ( %#lx, %lu, %lu, %lu, %lu, %lu )",
-		 ARG1, ARG2, ARG3, ARG4, ARG5, ARG6 );
+         ARG1, ARG2, ARG3, ARG4, ARG5, ARG6 );
    PRE_REG_READ6(long, "mmap2",
-				 unsigned long, start, unsigned long, length,
-				 unsigned long, prot,  unsigned long, flags,
-				 unsigned long, fd,    unsigned long, offset);
+                 unsigned long, start, unsigned long, length,
+                 unsigned long, prot,  unsigned long, flags,
+                 unsigned long, fd,    unsigned long, offset);
 
-   r = ML_(generic_PRE_sys_mmap)( tid, ARG1, ARG2, ARG3, ARG4, ARG5,
-									   4096 * (Off64T)ARG6 );
+   r = ML_(generic_PRE_sys_mmap)( tid, ARG1, ARG2, ARG3, ARG4, ARG5, 
+                                       4096 * (Off64T)ARG6 );
    SET_STATUS_from_SysRes(r);
 }
 
@@ -305,16 +305,16 @@ POST(sys_lstat64)
 {
    vg_assert(SUCCESS);
    if (RES == 0) {
-	  POST_MEM_WRITE( ARG2, sizeof(struct vki_stat64) );
+      POST_MEM_WRITE( ARG2, sizeof(struct vki_stat64) );
    }
 }
 
 PRE(sys_fstatat64)
 {
    PRINT("sys_fstatat64 ( %ld, %#lx(%s), %#lx )", SARG1, ARG2, (HChar*)ARG2,
-		 ARG3);
+         ARG3);
    PRE_REG_READ3(long, "fstatat64",
-				 int, dfd, char *, file_name, struct stat64 *, buf);
+                 int, dfd, char *, file_name, struct stat64 *, buf);
    PRE_MEM_RASCIIZ( "fstatat64(file_name)", ARG2 );
    PRE_MEM_WRITE( "fstatat64(buf)", ARG3, sizeof(struct vki_stat64) );
 }
@@ -348,17 +348,17 @@ POST(sys_fstat64)
 //..    */
 //..    PRE_REG_READ1(long, "old_select", struct sel_arg_struct *, args);
 //..    PRE_MEM_READ( "old_select(args)", ARG1, 5*sizeof(UWord) );
-//..
+//.. 
 //..    {
 //..       UInt* arg_struct = (UInt*)ARG1;
 //..       UInt a1, a2, a3, a4, a5;
-//..
+//.. 
 //..       a1 = arg_struct[0];
 //..       a2 = arg_struct[1];
 //..       a3 = arg_struct[2];
 //..       a4 = arg_struct[3];
 //..       a5 = arg_struct[4];
-//..
+//.. 
 //..       PRINT("old_select ( %d, %p, %p, %p, %p )", a1,a2,a3,a4,a5);
 //..       if (a2 != (Addr)NULL)
 //.. 	 PRE_MEM_READ( "old_select(readfds)",   a2, a1/8 /* __FD_SETSIZE/8 */ );
@@ -374,7 +374,7 @@ POST(sys_fstat64)
 PRE(sys_sigreturn)
 {
    /* See comments on PRE(sys_rt_sigreturn) in syswrap-amd64-linux.c for
-	  an explanation of what follows. */
+      an explanation of what follows. */
 
    //ThreadState* tst;
    PRINT("sys_sigreturn ( )");
@@ -398,7 +398,7 @@ PRE(sys_sigreturn)
    VG_(sigframe_destroy)(tid, False);
 
    /* Tell the driver not to update the guest state with the "result",
-	  and set a bogus result to keep it happy. */
+      and set a bogus result to keep it happy. */
    *flags |= SfNoWriteResult;
    SET_STATUS_Success(0);
 
@@ -409,7 +409,7 @@ PRE(sys_sigreturn)
 PRE(sys_rt_sigreturn)
 {
    /* See comments on PRE(sys_rt_sigreturn) in syswrap-amd64-linux.c for
-	  an explanation of what follows. */
+      an explanation of what follows. */
 
    //ThreadState* tst;
    PRINT("rt_sigreturn ( )");
@@ -433,7 +433,7 @@ PRE(sys_rt_sigreturn)
    VG_(sigframe_destroy)(tid, True);
 
    /* Tell the driver not to update the guest state with the "result",
-	  and set a bogus result to keep it happy. */
+      and set a bogus result to keep it happy. */
    *flags |= SfNoWriteResult;
    SET_STATUS_Success(0);
 
@@ -447,7 +447,7 @@ PRE(sys_rt_sigreturn)
 //..    PRINT("sys_modify_ldt ( %d, %p, %d )", ARG1,ARG2,ARG3);
 //..    PRE_REG_READ3(int, "modify_ldt", int, func, void *, ptr,
 //..                  unsigned long, bytecount);
-//..
+//..    
 //..    if (ARG1 == 0) {
 //..       /* read the LDT into ptr */
 //..       PRE_MEM_WRITE( "modify_ldt(ptr)", ARG2, ARG3 );
@@ -458,7 +458,7 @@ PRE(sys_rt_sigreturn)
 //..    }
 //..    /* "do" the syscall ourselves; the kernel never sees it */
 //..    SET_RESULT( VG_(sys_modify_ldt)( tid, ARG1, (void*)ARG2, ARG3 ) );
-//..
+//.. 
 //..    if (ARG1 == 0 && !VG_(is_kerror)(RES) && RES > 0) {
 //..       POST_MEM_WRITE( ARG2, RES );
 //..    }
@@ -469,7 +469,7 @@ PRE(sys_rt_sigreturn)
 //..    PRINT("sys_set_thread_area ( %p )", ARG1);
 //..    PRE_REG_READ1(int, "set_thread_area", struct user_desc *, u_info)
 //..    PRE_MEM_READ( "set_thread_area(u_info)", ARG1, sizeof(vki_modify_ldt_t) );
-//..
+//.. 
 //..    /* "do" the syscall ourselves; the kernel never sees it */
 //..    SET_RESULT( VG_(sys_set_thread_area)( tid, (void *)ARG1 ) );
 //.. }
@@ -479,10 +479,10 @@ PRE(sys_rt_sigreturn)
 //..    PRINT("sys_get_thread_area ( %p )", ARG1);
 //..    PRE_REG_READ1(int, "get_thread_area", struct user_desc *, u_info)
 //..    PRE_MEM_WRITE( "get_thread_area(u_info)", ARG1, sizeof(vki_modify_ldt_t) );
-//..
+//.. 
 //..    /* "do" the syscall ourselves; the kernel never sees it */
 //..    SET_RESULT( VG_(sys_get_thread_area)( tid, (void *)ARG1 ) );
-//..
+//.. 
 //..    if (!VG_(is_kerror)(RES)) {
 //..       POST_MEM_WRITE( ARG1, sizeof(vki_modify_ldt_t) );
 //..    }
@@ -493,37 +493,37 @@ PRE(sys_rt_sigreturn)
 //.. PRE(sys_ptrace, 0)
 //.. {
 //..    PRINT("sys_ptrace ( %d, %d, %p, %p )", ARG1,ARG2,ARG3,ARG4);
-//..    PRE_REG_READ4(int, "ptrace",
+//..    PRE_REG_READ4(int, "ptrace", 
 //..                  long, request, long, pid, long, addr, long, data);
 //..    switch (ARG1) {
 //..    case VKI_PTRACE_PEEKTEXT:
 //..    case VKI_PTRACE_PEEKDATA:
 //..    case VKI_PTRACE_PEEKUSR:
-//..       PRE_MEM_WRITE( "ptrace(peek)", ARG4,
+//..       PRE_MEM_WRITE( "ptrace(peek)", ARG4, 
 //.. 		     sizeof (long));
 //..       break;
 //..    case VKI_PTRACE_GETREGS:
-//..       PRE_MEM_WRITE( "ptrace(getregs)", ARG4,
+//..       PRE_MEM_WRITE( "ptrace(getregs)", ARG4, 
 //.. 		     sizeof (struct vki_user_regs_struct));
 //..       break;
 //..    case VKI_PTRACE_GETFPREGS:
-//..       PRE_MEM_WRITE( "ptrace(getfpregs)", ARG4,
+//..       PRE_MEM_WRITE( "ptrace(getfpregs)", ARG4, 
 //.. 		     sizeof (struct vki_user_i387_struct));
 //..       break;
 //..    case VKI_PTRACE_GETFPXREGS:
-//..       PRE_MEM_WRITE( "ptrace(getfpxregs)", ARG4,
+//..       PRE_MEM_WRITE( "ptrace(getfpxregs)", ARG4, 
 //..                      sizeof(struct vki_user_fxsr_struct) );
 //..       break;
 //..    case VKI_PTRACE_SETREGS:
-//..       PRE_MEM_READ( "ptrace(setregs)", ARG4,
+//..       PRE_MEM_READ( "ptrace(setregs)", ARG4, 
 //.. 		     sizeof (struct vki_user_regs_struct));
 //..       break;
 //..    case VKI_PTRACE_SETFPREGS:
-//..       PRE_MEM_READ( "ptrace(setfpregs)", ARG4,
+//..       PRE_MEM_READ( "ptrace(setfpregs)", ARG4, 
 //.. 		     sizeof (struct vki_user_i387_struct));
 //..       break;
 //..    case VKI_PTRACE_SETFPXREGS:
-//..       PRE_MEM_READ( "ptrace(setfpxregs)", ARG4,
+//..       PRE_MEM_READ( "ptrace(setfpxregs)", ARG4, 
 //..                      sizeof(struct vki_user_fxsr_struct) );
 //..       break;
 //..    default:
@@ -558,12 +558,12 @@ PRE(sys_rt_sigreturn)
 PRE(sys_sigsuspend)
 {
    /* The C library interface to sigsuspend just takes a pointer to
-	  a signal mask but this system call only takes the first word of
-	  the signal mask as an argument so only 32 signals are supported.
-
-	  In fact glibc normally uses rt_sigsuspend if it is available as
-	  that takes a pointer to the signal mask so supports more signals.
-	*/
+      a signal mask but this system call only takes the first word of
+      the signal mask as an argument so only 32 signals are supported.
+     
+      In fact glibc normally uses rt_sigsuspend if it is available as
+      that takes a pointer to the signal mask so supports more signals.
+    */
    *flags |= SfMayBlock;
    PRINT("sys_sigsuspend ( %lu )", ARG1 );
    PRE_REG_READ1(int, "sigsuspend", vki_old_sigset_t, mask);
@@ -582,13 +582,13 @@ PRE(sys_spu_run)
 {
    *flags |= SfMayBlock;
    if (ARG2 != 0)
-	  PRE_MEM_WRITE("npc", ARG2, sizeof(unsigned int));
+      PRE_MEM_WRITE("npc", ARG2, sizeof(unsigned int));
    PRE_MEM_READ("event", ARG3, sizeof(unsigned int));
 }
 POST(sys_spu_run)
 {
    if (ARG2 != 0)
-	  POST_MEM_WRITE(ARG2, sizeof(unsigned int));
+      POST_MEM_WRITE(ARG2, sizeof(unsigned int));
 }
 
 #undef PRE
@@ -599,7 +599,7 @@ POST(sys_spu_run)
    ------------------------------------------------------------------ */
 
 /* Add an ppc32-linux specific wrapper to a syscall table. */
-#define PLAX_(sysno, name)    WRAPPER_ENTRY_X_(ppc32_linux, sysno, name)
+#define PLAX_(sysno, name)    WRAPPER_ENTRY_X_(ppc32_linux, sysno, name) 
 #define PLAXY(sysno, name)    WRAPPER_ENTRY_XY(ppc32_linux, sysno, name)
 
 // This table maps from __NR_xxx syscall numbers (from
@@ -628,31 +628,31 @@ static SyscallTableEntry syscall_table[] = {
    GENX_(__NR_chdir,             sys_chdir),             // 12
    GENXY(__NR_time,              sys_time),              // 13
    GENX_(__NR_mknod,             sys_mknod),             // 14
-//..
+//.. 
    GENX_(__NR_chmod,             sys_chmod),             // 15
    GENX_(__NR_lchown,            sys_lchown),          // 16 ## P
 //..    GENX_(__NR_break,             sys_ni_syscall),        // 17
 //..    //   (__NR_oldstat,           sys_stat),              // 18 (obsolete)
    LINX_(__NR_lseek,             sys_lseek),             // 19
-//..
+//.. 
    GENX_(__NR_getpid,            sys_getpid),            // 20
    LINX_(__NR_mount,             sys_mount),             // 21
    LINX_(__NR_umount,            sys_oldumount),         // 22
    GENX_(__NR_setuid,            sys_setuid),            // 23 ## P
    GENX_(__NR_getuid,            sys_getuid),            // 24 ## P
-//..
+//.. 
 //..    //   (__NR_stime,             sys_stime),             // 25 * (SVr4,SVID,X/OPEN)
 //..    PLAXY(__NR_ptrace,            sys_ptrace),            // 26
    GENX_(__NR_alarm,             sys_alarm),             // 27
 //..    //   (__NR_oldfstat,          sys_fstat),             // 28 * L -- obsolete
    GENX_(__NR_pause,             sys_pause),             // 29
-//..
+//.. 
    LINX_(__NR_utime,             sys_utime),                  // 30
 //..    GENX_(__NR_stty,              sys_ni_syscall),        // 31
 //..    GENX_(__NR_gtty,              sys_ni_syscall),        // 32
    GENX_(__NR_access,            sys_access),            // 33
 //..    GENX_(__NR_nice,              sys_nice),              // 34
-//..
+//.. 
 //..    GENX_(__NR_ftime,             sys_ni_syscall),        // 35
    GENX_(__NR_sync,              sys_sync),              // 36
    GENX_(__NR_kill,              sys_kill),              // 37
@@ -664,7 +664,7 @@ static SyscallTableEntry syscall_table[] = {
    LINXY(__NR_pipe,              sys_pipe),              // 42
    GENXY(__NR_times,             sys_times),             // 43
 //..    GENX_(__NR_prof,              sys_ni_syscall),        // 44
-//..
+//.. 
    GENX_(__NR_brk,               sys_brk),               // 45
    GENX_(__NR_setgid,            sys_setgid),            // 46
    GENX_(__NR_getgid,            sys_getgid),            // 47
@@ -676,7 +676,7 @@ static SyscallTableEntry syscall_table[] = {
    LINX_(__NR_umount2,           sys_umount),            // 52
 //..    GENX_(__NR_lock,              sys_ni_syscall),        // 53
    LINXY(__NR_ioctl,             sys_ioctl),             // 54
-//..
+//.. 
    LINXY(__NR_fcntl,             sys_fcntl),             // 55
 //..    GENX_(__NR_mpx,               sys_ni_syscall),        // 56
    GENX_(__NR_setpgid,           sys_setpgid),           // 57
@@ -694,25 +694,25 @@ static SyscallTableEntry syscall_table[] = {
    LINXY(__NR_sigaction,         sys_sigaction),         // 67
 //..    //   (__NR_sgetmask,          sys_sgetmask),          // 68 */* (ANSI C)
 //..    //   (__NR_ssetmask,          sys_ssetmask),          // 69 */* (ANSI C)
-//..
+//.. 
    GENX_(__NR_setreuid,          sys_setreuid),          // 70
    GENX_(__NR_setregid,          sys_setregid),          // 71
    PLAX_(__NR_sigsuspend,        sys_sigsuspend),        // 72
    LINXY(__NR_sigpending,        sys_sigpending),        // 73
 //..    //   (__NR_sethostname,       sys_sethostname),       // 74 */*
-//..
+//.. 
    GENX_(__NR_setrlimit,         sys_setrlimit),              // 75
 //..    GENXY(__NR_getrlimit,         sys_old_getrlimit),     // 76
    GENXY(__NR_getrusage,         sys_getrusage),         // 77
    GENXY(__NR_gettimeofday,      sys_gettimeofday),           // 78
 //..    GENX_(__NR_settimeofday,      sys_settimeofday),      // 79
-//..
+//.. 
    GENXY(__NR_getgroups,         sys_getgroups),         // 80
    GENX_(__NR_setgroups,         sys_setgroups),         // 81
 //..    PLAX_(__NR_select,            old_select),            // 82
    GENX_(__NR_symlink,           sys_symlink),           // 83
 //..    //   (__NR_oldlstat,          sys_lstat),             // 84 -- obsolete
-//..
+//.. 
    GENX_(__NR_readlink,          sys_readlink),          // 85
 //..    //   (__NR_uselib,            sys_uselib),            // 86 */Linux
 //..    //   (__NR_swapon,            sys_swapon),            // 87 */Linux
@@ -730,7 +730,7 @@ static SyscallTableEntry syscall_table[] = {
    GENX_(__NR_setpriority,       sys_setpriority),       // 97
 //..    GENX_(__NR_profil,            sys_ni_syscall),        // 98
    GENXY(__NR_statfs,            sys_statfs),            // 99
-//..
+//.. 
    GENXY(__NR_fstatfs,           sys_fstatfs),           // 100
 //..    LINX_(__NR_ioperm,            sys_ioperm),            // 101
    LINXY(__NR_socketcall,        sys_socketcall),        // 102
@@ -742,19 +742,19 @@ static SyscallTableEntry syscall_table[] = {
    GENXY(__NR_lstat,             sys_newlstat),          // 107
    GENXY(__NR_fstat,             sys_newfstat),          // 108
 //..    //   (__NR_olduname,          sys_uname),             // 109 -- obsolete
-//..
+//.. 
 //..    GENX_(__NR_iopl,              sys_iopl),              // 110
    LINX_(__NR_vhangup,           sys_vhangup),           // 111
 //..    GENX_(__NR_idle,              sys_ni_syscall),        // 112
 //..    //   (__NR_vm86old,           sys_vm86old),           // 113 x86/Linux-only
    GENXY(__NR_wait4,             sys_wait4),             // 114
-//..
-//..    //   (__NR_swapoff,           sys_swapoff),           // 115 */Linux
+//.. 
+//..    //   (__NR_swapoff,           sys_swapoff),           // 115 */Linux 
    LINXY(__NR_sysinfo,           sys_sysinfo),           // 116
    LINXY(__NR_ipc,               sys_ipc),               // 117
    GENX_(__NR_fsync,             sys_fsync),             // 118
    PLAX_(__NR_sigreturn,         sys_sigreturn),         // 119 ?/Linux
-//..
+//.. 
    LINX_(__NR_clone,             sys_clone),             // 120
 //..    //   (__NR_setdomainname,     sys_setdomainname),     // 121 */*(?)
    GENXY(__NR_uname,             sys_newuname),          // 122
@@ -766,14 +766,14 @@ static SyscallTableEntry syscall_table[] = {
    GENX_(__NR_create_module,     sys_ni_syscall),        // 127
    LINX_(__NR_init_module,       sys_init_module),       // 128
    LINX_(__NR_delete_module,     sys_delete_module),     // 129
-//..
+//.. 
 //..    // Nb: get_kernel_syms() was removed 2.4-->2.6
 //..    GENX_(__NR_get_kernel_syms,   sys_ni_syscall),        // 130
 //..    LINX_(__NR_quotactl,          sys_quotactl),          // 131
    GENX_(__NR_getpgid,           sys_getpgid),           // 132
    GENX_(__NR_fchdir,            sys_fchdir),            // 133
 //..    //   (__NR_bdflush,           sys_bdflush),           // 134 */Linux
-//..
+//.. 
 //..    //   (__NR_sysfs,             sys_sysfs),             // 135 SVr4
    LINX_(__NR_personality,       sys_personality),       // 136
 //..    GENX_(__NR_afs_syscall,       sys_ni_syscall),        // 137
@@ -785,19 +785,19 @@ static SyscallTableEntry syscall_table[] = {
    GENX_(__NR__newselect,        sys_select),            // 142
    GENX_(__NR_flock,             sys_flock),             // 143
    GENX_(__NR_msync,             sys_msync),             // 144
-//..
+//.. 
    GENXY(__NR_readv,             sys_readv),             // 145
    GENX_(__NR_writev,            sys_writev),            // 146
    GENX_(__NR_getsid,            sys_getsid),            // 147
    GENX_(__NR_fdatasync,         sys_fdatasync),         // 148
    LINXY(__NR__sysctl,           sys_sysctl),            // 149
-//..
+//.. 
    GENX_(__NR_mlock,             sys_mlock),             // 150
    GENX_(__NR_munlock,           sys_munlock),           // 151
    GENX_(__NR_mlockall,          sys_mlockall),          // 152
    LINX_(__NR_munlockall,        sys_munlockall),        // 153
    LINXY(__NR_sched_setparam,    sys_sched_setparam),    // 154
-//..
+//.. 
    LINXY(__NR_sched_getparam,         sys_sched_getparam),        // 155
    LINX_(__NR_sched_setscheduler,     sys_sched_setscheduler),    // 156
    LINX_(__NR_sched_getscheduler,     sys_sched_getscheduler),    // 157
@@ -815,7 +815,7 @@ static SyscallTableEntry syscall_table[] = {
 //..    GENX_(__NR_query_module,      sys_ni_syscall),        // 166
    GENXY(__NR_poll,              sys_poll),              // 167
 //..    //   (__NR_nfsservctl,        sys_nfsservctl),        // 168 */Linux
-//..
+//.. 
    LINX_(__NR_setresgid,         sys_setresgid),         // 169
    LINXY(__NR_getresgid,         sys_getresgid),         // 170
    LINXY(__NR_prctl,             sys_prctl),             // 171
@@ -846,7 +846,7 @@ static SyscallTableEntry syscall_table[] = {
    PLAX_(__NR_mmap2,             sys_mmap2),             // 192
    GENX_(__NR_truncate64,        sys_truncate64),        // 193
    GENX_(__NR_ftruncate64,       sys_ftruncate64),       // 194
-//..
+//..    
 
    PLAXY(__NR_stat64,            sys_stat64),            // 195
    PLAXY(__NR_lstat64,           sys_lstat64),           // 196
@@ -885,13 +885,13 @@ static SyscallTableEntry syscall_table[] = {
 // __NR_tuxcall                                               // 225
 
    LINXY(__NR_sendfile64,        sys_sendfile64),        // 226
-//..
+//.. 
    LINX_(__NR_io_setup,          sys_io_setup),          // 227
    LINX_(__NR_io_destroy,        sys_io_destroy),        // 228
    LINXY(__NR_io_getevents,      sys_io_getevents),      // 229
    LINX_(__NR_io_submit,         sys_io_submit),         // 230
    LINXY(__NR_io_cancel,         sys_io_cancel),         // 231
-//..
+//.. 
    LINX_(__NR_set_tid_address,   sys_set_tid_address),   // 232
 
    LINX_(__NR_fadvise64,         sys_fadvise64),         // 233 */(Linux?)
@@ -1027,15 +1027,15 @@ static SyscallTableEntry syscall_table[] = {
 SyscallTableEntry* ML_(get_linux_syscall_entry) ( UInt sysno )
 {
    const UInt syscall_table_size
-	  = sizeof(syscall_table) / sizeof(syscall_table[0]);
+      = sizeof(syscall_table) / sizeof(syscall_table[0]);
 
    /* Is it in the contiguous initial section of the table? */
    if (sysno < syscall_table_size) {
-	  SyscallTableEntry* sys = &syscall_table[sysno];
-	  if (sys->before == NULL)
-		 return NULL; /* no entry */
-	  else
-		 return sys;
+      SyscallTableEntry* sys = &syscall_table[sysno];
+      if (sys->before == NULL)
+         return NULL; /* no entry */
+      else
+         return sys;
    }
 
    /* Can't find a wrapper */

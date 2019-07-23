@@ -8,7 +8,7 @@
    framework.
 
    Copyright (C) 2010-2017 RT-RK
-	  mips-valgrind@rt-rk.com
+      mips-valgrind@rt-rk.com
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -67,7 +67,7 @@
 #include <errno.h>
 
 /* ---------------------------------------------------------------------
-							 clone() handling
+                             clone() handling
    ------------------------------------------------------------------ */
 
 /* Call f(arg1), but first switch stacks, using 'stack' as the new stack, and
@@ -75,9 +75,9 @@
    before entering f. */
 __attribute__ ((noreturn))
 void ML_(call_on_new_stack_0_1) ( Addr stack,             /* $4 - $a0 */
-								  Addr retaddr,           /* $5 - $a1 */
-								  void (*f_desc) (Word),  /* $6 - $a2 */
-								  Word arg1 );            /* $7 - $a3 */
+                                  Addr retaddr,           /* $5 - $a1 */
+                                  void (*f_desc) (Word),  /* $6 - $a2 */
+                                  Word arg1 );            /* $7 - $a3 */
 asm (
 ".text\n"
 ".globl vgModuleLocal_call_on_new_stack_0_1\n"
@@ -114,29 +114,29 @@ asm (
 
    Upon entry, we have:
 
-	  word (fn)(void*)    in a0 = 4
-	  void* child_stack   in a1 = 5
-	  word flags          in a2 = 6
-	  void* arg           in a3 = 7
-	  pid_t* parent_tid   in a4 = 8
-	  void* tls           in a5 = 9
-	  pid_t* child_tid    in a6 = 10
+      word (fn)(void*)    in a0 = 4
+      void* child_stack   in a1 = 5
+      word flags          in a2 = 6
+      void* arg           in a3 = 7
+      pid_t* parent_tid   in a4 = 8
+      void* tls           in a5 = 9
+      pid_t* child_tid    in a6 = 10  
 
    System call requires:
 
-	  int    $__NR_clone  in v0
-	  int    flags        in a0 = 4
-	  void*  child_stack  in a1 = 5
-	  pid_t* parent_tid   in a2 = 6
-	  void*  tls_ptr      in a3 = 7
-	  pid_t* child_tid    in a4 = 8 */
+      int    $__NR_clone  in v0 
+      int    flags        in a0 = 4 
+      void*  child_stack  in a1 = 5 
+      pid_t* parent_tid   in a2 = 6
+      void*  tls_ptr      in a3 = 7 
+      pid_t* child_tid    in a4 = 8 */
 
 #define __NR_CLONE        __NR_clone
 #define __NR_EXIT         __NR_exit
 
 // See priv_syswrap-linux.h for arg profile.
 asm(
-".text\n"
+".text\n" 
 ".set noreorder\n"
 ".set nomacro\n"
 ".globl do_syscall_clone_mips64_linux\n"
@@ -193,7 +193,7 @@ asm(
 static SysRes sys_set_tls ( ThreadId tid, Addr tlsptr);
 
 /* ---------------------------------------------------------------------
-						  More thread stuff
+                          More thread stuff
    ------------------------------------------------------------------ */
 void VG_(cleanup_thread) ( ThreadArchState * arch ) { };
 
@@ -204,7 +204,7 @@ SysRes sys_set_tls ( ThreadId tid, Addr tlsptr )
 }
 
 /* ---------------------------------------------------------------------
-		   PRE/POST wrappers for mips/Linux-specific syscalls
+           PRE/POST wrappers for mips/Linux-specific syscalls
    ------------------------------------------------------------------ */
 
 #define PRE(name)       DEFN_PRE_TEMPLATE(mips_linux, name)
@@ -239,27 +239,27 @@ DECL_TEMPLATE (mips_linux, sys_fadvise64);
 PRE(sys_tee)
 {
    PRINT("sys_tee ( %ld, %ld, %" FMT_REGWORD "u, %#" FMT_REGWORD "x )",
-		 SARG1, SARG2, ARG3, ARG4);
+         SARG1, SARG2, ARG3, ARG4);
    PRE_REG_READ4(long, "sys_tee", int, fdin, int, fdout, vki_size_t, len,
-				 int, flags);
+                 int, flags);
 }
 
 PRE(sys_splice)
 {
    PRINT("sys_splice ( %ld, %#" FMT_REGWORD "x, %ld, %#" FMT_REGWORD
-		 "x, %" FMT_REGWORD "u, %#" FMT_REGWORD "x )",
-		 SARG1, ARG2, SARG3, ARG4, ARG5, ARG6);
+         "x, %" FMT_REGWORD "u, %#" FMT_REGWORD "x )",
+         SARG1, ARG2, SARG3, ARG4, ARG5, ARG6);
 
    PRE_REG_READ6(long, "sys_splice", int, fdin, vki_loff_t, sizein, int,
-				 fdout, vki_loff_t, sizeout, vki_size_t, len, int, flags);
+                 fdout, vki_loff_t, sizeout, vki_size_t, len, int, flags);
 }
 
 PRE(sys_vmsplice)
 {
    PRINT("sys_vmsplice ( %ld, %#" FMT_REGWORD "x, %" FMT_REGWORD "u, %ld )",
-		 SARG1, ARG2, ARG3, SARG4);
+         SARG1, ARG2, ARG3, SARG4);
    PRE_REG_READ4(long, "sys_vmsplice", int, fdin, struct vki_iovec *, v,
-				 vki_size_t, len, int, flags);
+                 vki_size_t, len, int, flags);
 }
 
 PRE(sys_unshare)
@@ -272,7 +272,7 @@ PRE(sys_sched_rr_get_interval)
 {
    PRINT("sys_sched_rr_get_interval ( %ld, %#" FMT_REGWORD "x)", SARG1, ARG2);
    PRE_REG_READ2(long, "sched_rr_get_interval", vki_pid_t, pid,
-				 struct timespec *, timer);
+                 struct timespec *, timer);
    *flags |= SfMayBlock;
 }
 
@@ -297,7 +297,7 @@ PRE(sys_swapoff)
 PRE(sys_sysfs)
 {
    PRINT("sys_sysfs ( %ld, %#" FMT_REGWORD "x, %#" FMT_REGWORD "x )",
-		 SARG1, ARG2, ARG3);
+         SARG1, ARG2, ARG3);
    PRE_REG_READ3(long, "sysfs", int, flags, int, desc, const void *, path);
 }
 
@@ -305,23 +305,23 @@ PRE(sys_sysfs)
 PRE(sys_cacheflush)
 {
    PRINT("cacheflush (%" FMT_REGWORD "x, %" FMT_REGWORD "x, %" FMT_REGWORD
-		 "x)", ARG1, ARG2, ARG3);
+         "x)", ARG1, ARG2, ARG3);
    PRE_REG_READ3(long, "cacheflush", unsigned long, addr,
-				 unsigned long, nbytes, unsigned int, cache);
+                 unsigned long, nbytes, unsigned int, cache);
    VG_ (discard_translations) ((Addr)ARG1, (ULong) ARG2,
-							   "PRE(sys_cacheflush)");
+                               "PRE(sys_cacheflush)");
    SET_STATUS_Success(0);
 }
 
 PRE(sys_reboot)
 {
    PRINT("sys_reboot ( %ld, %" FMT_REGWORD "u, %" FMT_REGWORD "u, %#"
-		 FMT_REGWORD "x )", SARG1, ARG2, ARG3, ARG4);
+         FMT_REGWORD "x )", SARG1, ARG2, ARG3, ARG4);
    // An approximation. ARG4 is only read conditionally by the kernel
    PRE_REG_READ4(int, "reboot",
-				 int, magic1, int, magic2, unsigned int, cmd,
-				 void *, arg);
-
+                 int, magic1, int, magic2, unsigned int, cmd,
+                 void *, arg);
+   
    *flags |= SfMayBlock;
 }
 
@@ -340,55 +340,55 @@ PRE(sys_sethostname)
 PRE(sys_ptrace)
 {
    PRINT("sys_ptrace ( %ld, %ld, %#" FMT_REGWORD "x, %#" FMT_REGWORD "x )",
-		 SARG1, SARG2, ARG3, ARG4);
+         SARG1, SARG2, ARG3, ARG4);
    PRE_REG_READ4(int, "ptrace",
-				 long, request, long, pid, unsigned long, addr,
-				 unsigned long, data);
+                 long, request, long, pid, unsigned long, addr,
+                 unsigned long, data);
    switch (ARG1) {
-	  case VKI_PTRACE_PEEKTEXT:
-	  case VKI_PTRACE_PEEKDATA:
-	  case VKI_PTRACE_PEEKUSR:
-		 PRE_MEM_WRITE("ptrace(peek)", ARG4, sizeof(long));
-		 break;
-	  case VKI_PTRACE_GETEVENTMSG:
-		 PRE_MEM_WRITE("ptrace(geteventmsg)", ARG4, sizeof(unsigned long));
-		 break;
-	  case VKI_PTRACE_GETSIGINFO:
-		 PRE_MEM_WRITE("ptrace(getsiginfo)", ARG4, sizeof(vki_siginfo_t));
-		 break;
-	  case VKI_PTRACE_SETSIGINFO:
-		 PRE_MEM_READ("ptrace(setsiginfo)", ARG4, sizeof(vki_siginfo_t));
-		 break;
-	  case VKI_PTRACE_GETREGSET:
-		 ML_(linux_PRE_getregset)(tid, ARG3, ARG4);
-		 break;
-	  default:
-		break;
+      case VKI_PTRACE_PEEKTEXT:
+      case VKI_PTRACE_PEEKDATA:
+      case VKI_PTRACE_PEEKUSR:
+         PRE_MEM_WRITE("ptrace(peek)", ARG4, sizeof(long));
+         break;
+      case VKI_PTRACE_GETEVENTMSG:
+         PRE_MEM_WRITE("ptrace(geteventmsg)", ARG4, sizeof(unsigned long));
+         break;
+      case VKI_PTRACE_GETSIGINFO:
+         PRE_MEM_WRITE("ptrace(getsiginfo)", ARG4, sizeof(vki_siginfo_t));
+         break;
+      case VKI_PTRACE_SETSIGINFO:
+         PRE_MEM_READ("ptrace(setsiginfo)", ARG4, sizeof(vki_siginfo_t));
+         break;
+      case VKI_PTRACE_GETREGSET:
+         ML_(linux_PRE_getregset)(tid, ARG3, ARG4);
+         break;
+      default:
+        break;
    }
 }
 
 POST(sys_ptrace)
 {
    switch (ARG1) {
-	  case VKI_PTRACE_TRACEME:
-		 ML_(linux_POST_traceme)(tid);
-		 break;
-	  case VKI_PTRACE_PEEKTEXT:
-	  case VKI_PTRACE_PEEKDATA:
-	  case VKI_PTRACE_PEEKUSR:
-		 POST_MEM_WRITE (ARG4, sizeof(long));
-		 break;
-	  case VKI_PTRACE_GETEVENTMSG:
-		 POST_MEM_WRITE (ARG4, sizeof(unsigned long));
-	  break;
-	  case VKI_PTRACE_GETSIGINFO:
-		 POST_MEM_WRITE (ARG4, sizeof(vki_siginfo_t));
-		 break;
-	  case VKI_PTRACE_GETREGSET:
-		 ML_(linux_POST_getregset)(tid, ARG3, ARG4);
-		 break;
-	  default:
-	  break;
+      case VKI_PTRACE_TRACEME:
+         ML_(linux_POST_traceme)(tid);
+         break;
+      case VKI_PTRACE_PEEKTEXT:
+      case VKI_PTRACE_PEEKDATA:
+      case VKI_PTRACE_PEEKUSR:
+         POST_MEM_WRITE (ARG4, sizeof(long));
+         break;
+      case VKI_PTRACE_GETEVENTMSG:
+         POST_MEM_WRITE (ARG4, sizeof(unsigned long));
+      break;
+      case VKI_PTRACE_GETSIGINFO:
+         POST_MEM_WRITE (ARG4, sizeof(vki_siginfo_t));
+         break;
+      case VKI_PTRACE_GETREGSET:
+         ML_(linux_POST_getregset)(tid, ARG3, ARG4);
+         break;
+      default:
+      break;
    }
 }
 
@@ -396,18 +396,18 @@ PRE(sys_mmap)
 {
    SysRes r;
    PRINT("sys_mmap ( %#" FMT_REGWORD "x, %" FMT_REGWORD "u, %ld, %ld, %ld, %"
-		 FMT_REGWORD "u )",
-		 ARG1, ARG2, SARG3, SARG4, SARG5, ARG6);
+         FMT_REGWORD "u )",
+         ARG1, ARG2, SARG3, SARG4, SARG5, ARG6);
    PRE_REG_READ6(long, "mmap", unsigned long, start, vki_size_t, length,
-				 int, prot, int, flags, int, fd, unsigned long, offset);
+                 int, prot, int, flags, int, fd, unsigned long, offset);
    r = ML_(generic_PRE_sys_mmap)(tid, ARG1, ARG2, ARG3, ARG4, ARG5,
-								 (Off64T) ARG6);
+                                 (Off64T) ARG6);
    SET_STATUS_from_SysRes(r);
 }
 PRE(sys_rt_sigreturn)
 {
    /* See comments on PRE(sys_rt_sigreturn) in syswrap-s390x-linux.c for
-	  an explanation of what follows. */
+      an explanation of what follows. */
    ThreadState* tst;
    PRINT("sys_rt_sigreturn ( )");
 
@@ -418,14 +418,14 @@ PRE(sys_rt_sigreturn)
    tst = VG_(get_ThreadState)(tid);
 
    /* This is only so that the IA is (might be) useful to report if
-	  something goes wrong in the sigreturn */
+      something goes wrong in the sigreturn */
    ML_(fixup_guest_state_to_restart_syscall)(&tst->arch);
 
    /* Restore register state from frame and remove it */
    VG_(sigframe_destroy)(tid, True);
 
    /* Tell the driver not to update the guest state with the "result",
-	  and set a bogus result to keep it happy. */
+      and set a bogus result to keep it happy. */
    *flags |= SfNoWriteResult;
    SET_STATUS_Success(0);
 
@@ -455,61 +455,61 @@ POST(sys_pipe)
    p1 = sr_ResEx(status->sres);
 
    if (!ML_(fd_allowed)(p0, "pipe", tid, True) ||
-	   !ML_(fd_allowed)(p1, "pipe", tid, True)) {
-	  VG_(close)(p0);
-	  VG_(close)(p1);
-	  SET_STATUS_Failure( VKI_EMFILE );
+       !ML_(fd_allowed)(p1, "pipe", tid, True)) {
+      VG_(close)(p0);
+      VG_(close)(p1);
+      SET_STATUS_Failure( VKI_EMFILE );
    } else {
-	  if (VG_(clo_track_fds)) {
-		 ML_(record_fd_open_nameless)(tid, p0);
-		 ML_(record_fd_open_nameless)(tid, p1);
-	  }
+      if (VG_(clo_track_fds)) {
+         ML_(record_fd_open_nameless)(tid, p0);
+         ML_(record_fd_open_nameless)(tid, p1);
+      }
    }
 }
 
 PRE(sys_prctl)
 {
    switch (ARG1) {
-	  case VKI_PR_SET_FP_MODE:
-	  {
-		 VexArchInfo vai;
-		 VG_(machine_get_VexArchInfo)(NULL, &vai);
-		 /* Reject unsupported modes */
-		 if ((ARG2 & ~VKI_PR_FP_MODE_FR) ||
-			 ((ARG2 & VKI_PR_FP_MODE_FR) &&
-			  !VEX_MIPS_HOST_FP_MODE(vai.hwcaps))) {
-			SET_STATUS_Failure(VKI_EOPNOTSUPP);
-		 } else {
-			if (!(VG_(threads)[tid].arch.vex.guest_CP0_status &
-				  MIPS_CP0_STATUS_FR) != !(ARG2 & VKI_PR_FP_MODE_FR)) {
-			   ThreadId t;
-			   for (t = 1; t < VG_N_THREADS; t++) {
-				  if (VG_(threads)[t].status != VgTs_Empty) {
-					 if (ARG2 & VKI_PR_FP_MODE_FR) {
-						VG_(threads)[t].arch.vex.guest_CP0_status |=
-						MIPS_CP0_STATUS_FR;
-					 } else {
-						VG_(threads)[t].arch.vex.guest_CP0_status &=
-						~MIPS_CP0_STATUS_FR;
-					 }
-				  }
-			   }
-			   /* Discard all translations */
-			   VG_(discard_translations)(0, (ULong)(-1ll), "prctl(PR_SET_FP_MODE)");
-			}
-			SET_STATUS_Success(0);
-		 }
-		 break;
-	  }
-	  case VKI_PR_GET_FP_MODE:
-		 if (VG_(threads)[tid].arch.vex.guest_CP0_status & MIPS_CP0_STATUS_FR)
-			SET_STATUS_Success(VKI_PR_FP_MODE_FR);
-		 else
-			SET_STATUS_Success(0);
-		 break;
-	  default:
-		 WRAPPER_PRE_NAME(linux, sys_prctl)(tid, layout, arrghs, status, flags);
-		 break;
+      case VKI_PR_SET_FP_MODE:
+      {
+         VexArchInfo vai;
+         VG_(machine_get_VexArchInfo)(NULL, &vai);
+         /* Reject unsupported modes */
+         if ((ARG2 & ~VKI_PR_FP_MODE_FR) ||
+             ((ARG2 & VKI_PR_FP_MODE_FR) &&
+              !VEX_MIPS_HOST_FP_MODE(vai.hwcaps))) {
+            SET_STATUS_Failure(VKI_EOPNOTSUPP);
+         } else {
+            if (!(VG_(threads)[tid].arch.vex.guest_CP0_status &
+                  MIPS_CP0_STATUS_FR) != !(ARG2 & VKI_PR_FP_MODE_FR)) {
+               ThreadId t;
+               for (t = 1; t < VG_N_THREADS; t++) {
+                  if (VG_(threads)[t].status != VgTs_Empty) {
+                     if (ARG2 & VKI_PR_FP_MODE_FR) {
+                        VG_(threads)[t].arch.vex.guest_CP0_status |=
+                        MIPS_CP0_STATUS_FR;
+                     } else {
+                        VG_(threads)[t].arch.vex.guest_CP0_status &=
+                        ~MIPS_CP0_STATUS_FR;
+                     }
+                  }
+               }
+               /* Discard all translations */
+               VG_(discard_translations)(0, (ULong)(-1ll), "prctl(PR_SET_FP_MODE)");
+            }
+            SET_STATUS_Success(0);
+         }
+         break;
+      }
+      case VKI_PR_GET_FP_MODE:
+         if (VG_(threads)[tid].arch.vex.guest_CP0_status & MIPS_CP0_STATUS_FR)
+            SET_STATUS_Success(VKI_PR_FP_MODE_FR);
+         else
+            SET_STATUS_Success(0);
+         break;
+      default:
+         WRAPPER_PRE_NAME(linux, sys_prctl)(tid, layout, arrghs, status, flags);
+         break;
    }
 }
 
@@ -521,9 +521,9 @@ POST(sys_prctl)
 PRE(sys_fadvise64)
 {
    PRINT("sys_fadvise64 ( %ld, %ld, %" FMT_REGWORD "u, %ld )", SARG1, SARG2,
-		 ARG3, SARG4);
+         ARG3, SARG4);
    PRE_REG_READ4(long, "fadvise64",
-				 int, fd, vki_loff_t, offset, vki_loff_t, len, int, advice);
+                 int, fd, vki_loff_t, offset, vki_loff_t, len, int, advice);
 }
 
 #undef PRE
@@ -826,27 +826,29 @@ static SyscallTableEntry syscall_main_table[] = {
    LINXY (__NR_clock_adjtime, sys_clock_adjtime),
    LINXY (__NR_process_vm_readv, sys_process_vm_readv),
    LINX_ (__NR_process_vm_writev, sys_process_vm_writev),
-   LINXY(__NR_getrandom, sys_getrandom),
-   LINXY(__NR_memfd_create, sys_memfd_create),
-   LINX_(__NR_membarrier, sys_membarrier),
-   LINX_(__NR_copy_file_range, sys_copy_file_range),
-   LINX_(__NR_preadv2, sys_preadv2),
-   LINX_(__NR_pwritev2, sys_pwritev2),
-   LINX_(__NR_syncfs, sys_syncfs),
-   LINXY(__NR_statx, sys_statx),
+   LINXY (__NR_getrandom, sys_getrandom),
+   LINXY (__NR_memfd_create, sys_memfd_create),
+   LINX_ (__NR_membarrier, sys_membarrier),
+   LINX_ (__NR_copy_file_range, sys_copy_file_range),
+   LINXY (__NR_preadv, sys_preadv),
+   LINX_ (__NR_pwritev, sys_pwritev),
+   LINXY (__NR_preadv2, sys_preadv2),
+   LINX_ (__NR_pwritev2, sys_pwritev2),
+   LINX_ (__NR_syncfs, sys_syncfs),
+   LINXY (__NR_statx, sys_statx),
 };
 
 SyscallTableEntry * ML_(get_linux_syscall_entry) ( UInt sysno )
 {
    const UInt syscall_main_table_size
-	  = sizeof(syscall_main_table) / sizeof(syscall_main_table[0]);
+      = sizeof(syscall_main_table) / sizeof(syscall_main_table[0]);
 
    if (sysno < syscall_main_table_size) {
-	  SyscallTableEntry * sys = &syscall_main_table[sysno];
-	  if (sys->before == NULL)
-		 return NULL;  /* no entry */
-	  else
-		 return sys;
+      SyscallTableEntry * sys = &syscall_main_table[sysno];
+      if (sys->before == NULL)
+         return NULL;  /* no entry */
+      else
+         return sys;
    }
    /* Can't find a wrapper */
    return NULL;
@@ -854,6 +856,6 @@ SyscallTableEntry * ML_(get_linux_syscall_entry) ( UInt sysno )
 
 #endif  /* defined(VGP_mips64_linux) */
 
-/*--------------------------------------------------------------------*/
-/*--- end                                   syswrap-mips64-linux.c ---*/
-/*--------------------------------------------------------------------*/
+/*--------------------------------------------------------------------*/ 
+/*--- end                                   syswrap-mips64-linux.c ---*/ 
+/*--------------------------------------------------------------------*/ 

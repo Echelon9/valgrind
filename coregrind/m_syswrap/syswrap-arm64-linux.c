@@ -8,7 +8,7 @@
    framework.
 
    Copyright (C) 2013-2017 OpenWorks
-	  info@open-works.net
+      info@open-works.net
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -58,9 +58,9 @@
    the integer registers before entering f.*/
 __attribute__((noreturn))
 void ML_(call_on_new_stack_0_1) ( Addr stack,
-								  Addr retaddr,
-								  void (*f)(Word),
-								  Word arg1 );
+                                  Addr retaddr,
+                                  void (*f)(Word),
+                                  Word arg1 );
 //    r0 = stack
 //    r1 = retaddr
 //    r2 = f
@@ -108,28 +108,28 @@ asm(
 
 
 /*
-		Perform a clone system call.  clone is strange because it has
-		fork()-like return-twice semantics, so it needs special
-		handling here.
+        Perform a clone system call.  clone is strange because it has
+        fork()-like return-twice semantics, so it needs special
+        handling here.
 
 	Upon entry, we have:
 
-		Word (*fn)(void*)	in x0
-		void*  child_stack	in x1
-		int    flags	in x2
-		void*  arg		in x3
-		pid_t* child_tid	in x4
-		pid_t* parent_tid	in x5
-		void*  tls_ptr      in x6
+	    Word (*fn)(void*)	in x0
+	    void*  child_stack	in x1
+	    int    flags	in x2
+	    void*  arg		in x3
+	    pid_t* child_tid	in x4
+	    pid_t* parent_tid	in x5
+	    void*  tls_ptr      in x6
 
 	System call requires:
 
-		int    $__NR_clone  in x8
-		int    flags	in x0
-		void*  child_stack	in x1
-		pid_t* parent_tid	in x2
-		void*  tls_ptr      in x3
-		pid_t* child_tid	in x4
+	    int    $__NR_clone  in x8
+	    int    flags	in x0
+	    void*  child_stack	in x1
+	    pid_t* parent_tid	in x2
+	    void*  tls_ptr      in x3
+	    pid_t* child_tid	in x4
 
 	Returns a Long encoded in the linux-arm64 way, not a SysRes.
 */
@@ -141,12 +141,12 @@ asm(
 ".text\n"
 ".globl do_syscall_clone_arm64_linux\n"
 "do_syscall_clone_arm64_linux:\n"
-		// set up child stack, temporarily preserving fn and arg
+        // set up child stack, temporarily preserving fn and arg
 "       sub    x1, x1, #16\n"       // make space on stack
 "       str    x3, [x1, #8]\n"      // save arg
-"       str    x0, [x1, #0]\n"      // save fn
-
-		// setup syscall
+"       str    x0, [x1, #0]\n"      // save fn 
+        
+        // setup syscall
 "       mov    x8, #"__NR_CLONE"\n" // syscall number
 "       mov    x0, x2\n"            // syscall arg1: flags
 "       mov    x1, x1\n"            // syscall arg2: child_stack
@@ -159,19 +159,19 @@ asm(
 "       cmp    x0, #0\n"            // child if retval == 0
 "       bne    1f\n"
 
-		// CHILD - call thread function
+        // CHILD - call thread function
 "       ldr    x1, [sp, #0]\n"      // pop fn
 "       ldr    x0, [sp, #8]\n"      // pop fn arg1: arg
 "       add    sp, sp, #16\n"
 "       blr    x1\n"                // call fn
 
-		// exit with result
+        // exit with result
 "       mov    x0, x0\n"            // arg1: return value from fn
 "       mov    x8, #"__NR_EXIT"\n"
 
 "       svc    0\n"
 
-		// Exit returned?!
+        // Exit returned?!
 "       .word 0xFFFFFFFF\n"
 
 "1:\n"  // PARENT or ERROR.  x0 holds return value from the clone syscall.
@@ -184,7 +184,7 @@ asm(
 
 // forward declaration
 //ZZ static SysRes sys_set_tls ( ThreadId tid, Addr tlsptr );
-
+            
 /* ---------------------------------------------------------------------
    More thread stuff
    ------------------------------------------------------------------ */
@@ -193,7 +193,7 @@ asm(
 // needs to be cleaned up
 void VG_(cleanup_thread) ( ThreadArchState* arch )
 {
-}
+}  
 
 //ZZ /* Assigns tlsptr to the guest TPIDRURO.
 //ZZ    If needed for the specific hardware, really executes
@@ -208,21 +208,21 @@ void VG_(cleanup_thread) ( ThreadArchState* arch )
 //ZZ       This emulated value is set by the __NR_ARM_set_tls syscall.
 //ZZ       The emulated value must be read by the kernel helper function
 //ZZ       located at 0xffff0fe0.
-//ZZ
+//ZZ       
 //ZZ       The emulated tlsptr is located at 0xffff0ff0
 //ZZ       (so slightly after the kernel helper function).
 //ZZ       Note that applications are not supposed to read this directly.
-//ZZ
+//ZZ       
 //ZZ       For compatibility : if there is a hw tls register, the kernel
 //ZZ       will put at 0xffff0fe0 the instructions to read it, so
 //ZZ       as to have old applications calling the kernel helper
 //ZZ       working properly.
-//ZZ
+//ZZ 
 //ZZ       For having emulated guest TLS working correctly with
 //ZZ       Valgrind, it is needed to execute the syscall to set
 //ZZ       the emulated TLS value in addition to the assignment
 //ZZ       of TPIDRURO.
-//ZZ
+//ZZ 
 //ZZ       Note: the below means that if we need thread local storage
 //ZZ       for Valgrind host, then there will be a conflict between
 //ZZ       the need of the guest tls and of the host tls.
@@ -268,7 +268,7 @@ DECL_TEMPLATE(arm64_linux, sys_ptrace);
 //ZZ PRE(sys_mmap2)
 //ZZ {
 //ZZ    SysRes r;
-//ZZ
+//ZZ 
 //ZZ    // Exactly like old_mmap() except:
 //ZZ    //  - all 6 args are passed in regs, rather than in a memory-block.
 //ZZ    //  - the file offset is specified in pagesize units rather than bytes,
@@ -282,8 +282,8 @@ DECL_TEMPLATE(arm64_linux, sys_ptrace);
 //ZZ                  unsigned long, start, unsigned long, length,
 //ZZ                  unsigned long, prot,  unsigned long, flags,
 //ZZ                  unsigned long, fd,    unsigned long, offset);
-//ZZ
-//ZZ    r = ML_(generic_PRE_sys_mmap)( tid, ARG1, ARG2, ARG3, ARG4, ARG5,
+//ZZ 
+//ZZ    r = ML_(generic_PRE_sys_mmap)( tid, ARG1, ARG2, ARG3, ARG4, ARG5, 
 //ZZ                                        4096 * (Off64T)ARG6 );
 //ZZ    SET_STATUS_from_SysRes(r);
 //ZZ }
@@ -293,7 +293,7 @@ PRE(sys_fadvise64)
 {
    PRINT("sys_fadvise64 ( %ld, %ld, %lu, %ld )", SARG1, SARG2, ARG3, SARG4);
    PRE_REG_READ4(long, "fadvise64",
-				 int, fd, vki_loff_t, offset, vki_size_t, len, int, advice);
+                 int, fd, vki_loff_t, offset, vki_size_t, len, int, advice);
 }
 
 // ARM64 FIXME is this correct?
@@ -302,17 +302,17 @@ PRE(sys_mmap)
    SysRes r;
 
    PRINT("sys_mmap ( %#lx, %lu, %lu, %#lx, %lu, %lu )",
-		 ARG1, ARG2, ARG3, ARG4, ARG5, ARG6 );
+         ARG1, ARG2, ARG3, ARG4, ARG5, ARG6 );
    PRE_REG_READ6(long, "mmap",
-				 unsigned long, start, unsigned long, length,
-				 unsigned long, prot,  unsigned long, flags,
-				 unsigned long, fd,    unsigned long, offset);
+                 unsigned long, start, unsigned long, length,
+                 unsigned long, prot,  unsigned long, flags,
+                 unsigned long, fd,    unsigned long, offset);
 
    r = ML_(generic_PRE_sys_mmap)( tid, ARG1, ARG2, ARG3, ARG4, ARG5, ARG6 );
    SET_STATUS_from_SysRes(r);
 }
 
-//ZZ
+//ZZ 
 //ZZ // XXX: lstat64/fstat64/stat64 are generic, but not necessarily
 //ZZ // applicable to every architecture -- I think only to 32-bit archs.
 //ZZ // We're going to need something like linux/core_os32.h for such
@@ -324,7 +324,7 @@ PRE(sys_mmap)
 //ZZ    PRE_MEM_RASCIIZ( "lstat64(file_name)", ARG1 );
 //ZZ    PRE_MEM_WRITE( "lstat64(buf)", ARG2, sizeof(struct vki_stat64) );
 //ZZ }
-//ZZ
+//ZZ 
 //ZZ POST(sys_lstat64)
 //ZZ {
 //ZZ    vg_assert(SUCCESS);
@@ -332,7 +332,7 @@ PRE(sys_mmap)
 //ZZ       POST_MEM_WRITE( ARG2, sizeof(struct vki_stat64) );
 //ZZ    }
 //ZZ }
-//ZZ
+//ZZ 
 //ZZ PRE(sys_stat64)
 //ZZ {
 //ZZ    PRINT("sys_stat64 ( %#lx(%s), %#lx )",ARG1,(char*)ARG1,ARG2);
@@ -340,12 +340,12 @@ PRE(sys_mmap)
 //ZZ    PRE_MEM_RASCIIZ( "stat64(file_name)", ARG1 );
 //ZZ    PRE_MEM_WRITE( "stat64(buf)", ARG2, sizeof(struct vki_stat64) );
 //ZZ }
-//ZZ
+//ZZ 
 //ZZ POST(sys_stat64)
 //ZZ {
 //ZZ    POST_MEM_WRITE( ARG2, sizeof(struct vki_stat64) );
 //ZZ }
-//ZZ
+//ZZ 
 //ZZ PRE(sys_fstatat64)
 //ZZ {
 //ZZ    PRINT("sys_fstatat64 ( %ld, %#lx(%s), %#lx )",ARG1,ARG2,(char*)ARG2,ARG3);
@@ -354,19 +354,19 @@ PRE(sys_mmap)
 //ZZ    PRE_MEM_RASCIIZ( "fstatat64(file_name)", ARG2 );
 //ZZ    PRE_MEM_WRITE( "fstatat64(buf)", ARG3, sizeof(struct vki_stat64) );
 //ZZ }
-//ZZ
+//ZZ 
 //ZZ POST(sys_fstatat64)
 //ZZ {
 //ZZ    POST_MEM_WRITE( ARG3, sizeof(struct vki_stat64) );
 //ZZ }
-//ZZ
+//ZZ 
 //ZZ PRE(sys_fstat64)
 //ZZ {
 //ZZ    PRINT("sys_fstat64 ( %ld, %#lx )",ARG1,ARG2);
 //ZZ    PRE_REG_READ2(long, "fstat64", unsigned long, fd, struct stat64 *, buf);
 //ZZ    PRE_MEM_WRITE( "fstat64(buf)", ARG2, sizeof(struct vki_stat64) );
 //ZZ }
-//ZZ
+//ZZ 
 //ZZ POST(sys_fstat64)
 //ZZ {
 //ZZ    POST_MEM_WRITE( ARG2, sizeof(struct vki_stat64) );
@@ -376,21 +376,21 @@ PRE(sys_mmap)
 //ZZ {
 //ZZ    /* See comments on PRE(sys_rt_sigreturn) in syswrap-amd64-linux.c for
 //ZZ      an explanation of what follows. */
-//ZZ
+//ZZ 
 //ZZ    PRINT("sys_sigreturn ( )");
-//ZZ
+//ZZ 
 //ZZ    vg_assert(VG_(is_valid_tid)(tid));
 //ZZ    vg_assert(tid >= 1 && tid < VG_N_THREADS);
 //ZZ    vg_assert(VG_(is_running_thread)(tid));
-//ZZ
+//ZZ 
 //ZZ    /* Restore register state from frame and remove it */
 //ZZ    VG_(sigframe_destroy)(tid, False);
-//ZZ
+//ZZ 
 //ZZ    /* Tell the driver not to update the guest state with the "result",
 //ZZ       and set a bogus result to keep it happy. */
 //ZZ    *flags |= SfNoWriteResult;
 //ZZ    SET_STATUS_Success(0);
-//ZZ
+//ZZ 
 //ZZ    /* Check to see if any signals arose as a result of this. */
 //ZZ    *flags |= SfPollAfter;
 //ZZ }
@@ -398,7 +398,7 @@ PRE(sys_mmap)
 PRE(sys_rt_sigreturn)
 {
   /* See comments on PRE(sys_rt_sigreturn) in syswrap-amd64-linux.c for
-	  an explanation of what follows. */
+      an explanation of what follows. */
 
    PRINT("rt_sigreturn ( )");
 
@@ -410,7 +410,7 @@ PRE(sys_rt_sigreturn)
    VG_(sigframe_destroy)(tid, True);
 
    /* Tell the driver not to update the guest state with the "result",
-	  and set a bogus result to keep it happy. */
+      and set a bogus result to keep it happy. */
    *flags |= SfNoWriteResult;
    SET_STATUS_Success(0);
 
@@ -427,7 +427,7 @@ PRE(sys_rt_sigreturn)
 //ZZ       two don't appear to be used by the kernel and are always passed as
 //ZZ       zero by glibc and the third is the first word of the signal mask
 //ZZ       so only 32 signals are supported.
-//ZZ
+//ZZ      
 //ZZ       In fact glibc normally uses rt_sigsuspend if it is available as
 //ZZ       that takes a pointer to the signal mask so supports more signals.
 //ZZ     */
@@ -437,17 +437,17 @@ PRE(sys_rt_sigreturn)
 //ZZ                  int, history0, int, history1,
 //ZZ                  vki_old_sigset_t, mask);
 //ZZ }
-//ZZ
+//ZZ 
 //ZZ /* Very much ARM specific */
-//ZZ
+//ZZ 
 //ZZ PRE(sys_set_tls)
 //ZZ {
 //ZZ    PRINT("set_tls (%lx)",ARG1);
 //ZZ    PRE_REG_READ1(long, "set_tls", unsigned long, addr);
-//ZZ
+//ZZ 
 //ZZ    SET_STATUS_from_SysRes( sys_set_tls( tid, ARG1 ) );
 //ZZ }
-//ZZ
+//ZZ 
 //ZZ PRE(sys_cacheflush)
 //ZZ {
 //ZZ    PRINT("cacheflush (%lx, %#lx, %#lx)",ARG1,ARG2,ARG3);
@@ -465,33 +465,33 @@ PRE(sys_rt_sigreturn)
 PRE(sys_ptrace)
 {
    PRINT("sys_ptrace ( %ld, %ld, %#lx, %#lx )",
-		 (Word)ARG1,(Word)ARG2,ARG3,ARG4);
+         (Word)ARG1,(Word)ARG2,ARG3,ARG4);
    PRE_REG_READ4(int, "ptrace",
-				 long, request, long, pid, long, addr, long, data);
+                 long, request, long, pid, long, addr, long, data);
    switch (ARG1) {
    case VKI_PTRACE_PEEKTEXT:
    case VKI_PTRACE_PEEKDATA:
    case VKI_PTRACE_PEEKUSR:
-	  PRE_MEM_WRITE( "ptrace(peek)", ARG4,
-			 sizeof (long));
-	  break;
+      PRE_MEM_WRITE( "ptrace(peek)", ARG4,
+		     sizeof (long));
+      break;
    case VKI_PTRACE_GETEVENTMSG:
-	  PRE_MEM_WRITE( "ptrace(geteventmsg)", ARG4, sizeof(unsigned long));
-	  break;
+      PRE_MEM_WRITE( "ptrace(geteventmsg)", ARG4, sizeof(unsigned long));
+      break;
    case VKI_PTRACE_GETSIGINFO:
-	  PRE_MEM_WRITE( "ptrace(getsiginfo)", ARG4, sizeof(vki_siginfo_t));
-	  break;
+      PRE_MEM_WRITE( "ptrace(getsiginfo)", ARG4, sizeof(vki_siginfo_t));
+      break;
    case VKI_PTRACE_SETSIGINFO:
-	  PRE_MEM_READ( "ptrace(setsiginfo)", ARG4, sizeof(vki_siginfo_t));
-	  break;
+      PRE_MEM_READ( "ptrace(setsiginfo)", ARG4, sizeof(vki_siginfo_t));
+      break;
    case VKI_PTRACE_GETREGSET:
-	  ML_(linux_PRE_getregset)(tid, ARG3, ARG4);
-	  break;
+      ML_(linux_PRE_getregset)(tid, ARG3, ARG4);
+      break;
    case VKI_PTRACE_SETREGSET:
-	  ML_(linux_PRE_setregset)(tid, ARG3, ARG4);
-	  break;
+      ML_(linux_PRE_setregset)(tid, ARG3, ARG4);
+      break;
    default:
-	  break;
+      break;
    }
 }
 
@@ -499,27 +499,27 @@ POST(sys_ptrace)
 {
    switch (ARG1) {
    case VKI_PTRACE_TRACEME:
-		 ML_(linux_POST_traceme)(tid);
-		 break;
+         ML_(linux_POST_traceme)(tid);
+         break;
    case VKI_PTRACE_PEEKTEXT:
    case VKI_PTRACE_PEEKDATA:
    case VKI_PTRACE_PEEKUSR:
-	  POST_MEM_WRITE( ARG4, sizeof (long));
-	  break;
+      POST_MEM_WRITE( ARG4, sizeof (long));
+      break;
    case VKI_PTRACE_GETEVENTMSG:
-	  POST_MEM_WRITE( ARG4, sizeof(unsigned long));
-	  break;
+      POST_MEM_WRITE( ARG4, sizeof(unsigned long));
+      break;
    case VKI_PTRACE_GETSIGINFO:
-	  /* XXX: This is a simplification. Different parts of the
-	   * siginfo_t are valid depending on the type of signal.
-	   */
-	  POST_MEM_WRITE( ARG4, sizeof(vki_siginfo_t));
-	  break;
+      /* XXX: This is a simplification. Different parts of the
+       * siginfo_t are valid depending on the type of signal.
+       */
+      POST_MEM_WRITE( ARG4, sizeof(vki_siginfo_t));
+      break;
    case VKI_PTRACE_GETREGSET:
-	  ML_(linux_POST_getregset)(tid, ARG3, ARG4);
-	  break;
+      ML_(linux_POST_getregset)(tid, ARG3, ARG4);
+      break;
    default:
-	  break;
+      break;
    }
 }
 
@@ -536,7 +536,7 @@ POST(sys_ptrace)
 //ZZ #define __NR_OABI_SYSCALL_BASE 0x0
 //ZZ #endif
 
-#define PLAX_(sysno, name)    WRAPPER_ENTRY_X_(arm64_linux, sysno, name)
+#define PLAX_(sysno, name)    WRAPPER_ENTRY_X_(arm64_linux, sysno, name) 
 #define PLAXY(sysno, name)    WRAPPER_ENTRY_XY(arm64_linux, sysno, name)
 
 // This table maps from __NR_xxx syscall numbers (from
@@ -715,7 +715,7 @@ static SyscallTableEntry syscall_main_table[] = {
    GENX_(__NR_setrlimit,         sys_setrlimit),         // 164
    GENXY(__NR_getrusage,         sys_getrusage),         // 165
    GENX_(__NR_umask,             sys_umask),             // 166
-   LINXY(__NR_prctl,             sys_prctl),             // 167
+   LINXY(__NR_prctl,             sys_prctl),             // 167 
    LINXY(__NR_getcpu,            sys_getcpu),            // 168
    GENXY(__NR_gettimeofday,      sys_gettimeofday),      // 169
    GENX_(__NR_settimeofday,      sys_settimeofday),      // 170
@@ -831,25 +831,25 @@ static SyscallTableEntry syscall_main_table[] = {
 //ZZ /* These are not in the main table because there indexes are not small
 //ZZ    integers, but rather values close to one million.  So their
 //ZZ    inclusion would force the main table to be huge (about 8 MB). */
-//ZZ
+//ZZ 
 //ZZ static SyscallTableEntry ste___ARM_set_tls
 //ZZ    = { WRAPPER_PRE_NAME(arm_linux,sys_set_tls), NULL };
-//ZZ
+//ZZ 
 //ZZ static SyscallTableEntry ste___ARM_cacheflush
 //ZZ    = { WRAPPER_PRE_NAME(arm_linux,sys_cacheflush), NULL };
 
 SyscallTableEntry* ML_(get_linux_syscall_entry) ( UInt sysno )
 {
    const UInt syscall_main_table_size
-	  = sizeof(syscall_main_table) / sizeof(syscall_main_table[0]);
+      = sizeof(syscall_main_table) / sizeof(syscall_main_table[0]);
 
    /* Is it in the contiguous initial section of the table? */
    if (sysno < syscall_main_table_size) {
-	  SyscallTableEntry* sys = &syscall_main_table[sysno];
-	  if (sys->before == NULL)
-		 return NULL; /* no entry */
-	  else
-		 return sys;
+      SyscallTableEntry* sys = &syscall_main_table[sysno];
+      if (sys->before == NULL)
+         return NULL; /* no entry */
+      else
+         return sys;
    }
 
 //ZZ    /* Check if it's one of the out-of-line entries. */

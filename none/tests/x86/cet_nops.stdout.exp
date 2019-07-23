@@ -1,1 +1,2 @@
-../amd64/cet_nops.stdout.exp
+start doing absolutely nothing without fs and gs prefixes ..
+done

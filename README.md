@@ -4,7 +4,7 @@ This repository contains a version of Valgrind including a few patches to improv
 
 ## Status
 
-Valgrind now builds on macOS Mojave (tested on 10.14.5).
+Valgrind now builds on macOS Mojave (tested on 10.14.6).
 
 ## Usage
 
@@ -19,7 +19,7 @@ In case you already have Valgrind installed, you will need to either `unlink` it
 ## CLion
 
 Valgridn executable:
-/usr/local/Cellar/valgrind/bin/valgrind
+/usr/local/bin/valgrind
 
 Analysis options:
 --leak-check=full --leak-resolution=med --track-origins=yes --vgdb=no

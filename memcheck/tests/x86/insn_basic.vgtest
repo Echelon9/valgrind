@@ -1,1 +1,2 @@
-../../../none/tests/x86/insn_basic.vgtest
+prog: ../../../none/tests/x86/insn_basic
+vgopts: -q

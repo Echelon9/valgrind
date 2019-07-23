@@ -1,1 +1,3 @@
-../../../none/tests/x86/insn_sse.vgtest
+prog: ../../../none/tests/x86/insn_sse
+prereq: ../../../tests/x86_amd64_features x86-sse && test -e ../../../none/tests/x86/insn_sse
+vgopts: -q

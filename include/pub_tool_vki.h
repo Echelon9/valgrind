@@ -9,11 +9,11 @@
    framework.
 
    Copyright (C) 2000-2017 Julian Seward
-	  jseward@acm.org
+      jseward@acm.org
    Copyright (C) 2005-2017 Nicholas Nethercote
-	  njn@valgrind.org
+      njn@valgrind.org
    Copyright (C) 2006-2017 OpenWorks LLP
-	  info@open-works.co.uk
+      info@open-works.co.uk
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as

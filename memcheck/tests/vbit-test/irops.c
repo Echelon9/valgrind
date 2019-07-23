@@ -18,9 +18,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -633,6 +631,7 @@ static irop_t irops[] = {
   { DEFOP(Iop_Sqrt32Fx4, UNDEF_UNKNOWN), },
   { DEFOP(Iop_Scale2_32Fx4, UNDEF_UNKNOWN), },
   { DEFOP(Iop_Log2_32Fx4, UNDEF_UNKNOWN), },
+  { DEFOP(Iop_Exp2_32Fx4, UNDEF_UNKNOWN), },
   { DEFOP(Iop_Neg32Fx4, UNDEF_UNKNOWN), },
   { DEFOP(Iop_RecipEst32Fx4, UNDEF_UNKNOWN), },
   { DEFOP(Iop_RecipStep32Fx4, UNDEF_UNKNOWN), },
@@ -1161,8 +1160,8 @@ static irop_t irops[] = {
 
 /* Force compile time failure in case libvex_ir.h::IROp was updated
    and the irops array is out of synch */
-// STATIC_ASSERT \
-//       (sizeof irops / sizeof *irops == Iop_LAST - Iop_INVALID - 1);
+STATIC_ASSERT \
+      (sizeof irops / sizeof *irops == Iop_LAST - Iop_INVALID - 1);
 
 /* Return a descriptor for OP, iff it exists and it is implemented
    for the current architecture. */

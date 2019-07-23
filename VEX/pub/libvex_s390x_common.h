@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-   02110-1301, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -64,9 +62,9 @@
 
 /* Size of frame allocated by VG_(disp_run_translations)
    Need size for
-	   8 FPRs
-	 + 1 GPR  (SAVED_R2)
-	 + 2 FPCs (SAVED_FPC_C and SAVED_FPC_V).
+       8 FPRs
+     + 1 GPR  (SAVED_R2)
+     + 2 FPCs (SAVED_FPC_C and SAVED_FPC_V).
 
    Additionally, we need a standard frame for helper functions being called
    from client code. (See figure 1-16 in zSeries ABI) */

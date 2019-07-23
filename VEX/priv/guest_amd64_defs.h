@@ -8,7 +8,7 @@
    framework.
 
    Copyright (C) 2004-2017 OpenWorks LLP
-	  info@open-works.net
+      info@open-works.net
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-   02110-1301, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 
@@ -51,31 +49,31 @@
    guest_generic_bb_to_IR.h. */
 extern
 DisResult disInstr_AMD64 ( IRSB*        irbb,
-						   Bool         (*resteerOkFn) ( void*, Addr ),
-						   Bool         resteerCisOk,
-						   void*        callback_opaque,
-						   const UChar* guest_code,
-						   Long         delta,
-						   Addr         guest_IP,
-						   VexArch      guest_arch,
-						   const VexArchInfo* archinfo,
-						   const VexAbiInfo*  abiinfo,
-						   VexEndness   host_endness,
-						   Bool         sigill_diag );
+                           Bool         (*resteerOkFn) ( void*, Addr ),
+                           Bool         resteerCisOk,
+                           void*        callback_opaque,
+                           const UChar* guest_code,
+                           Long         delta,
+                           Addr         guest_IP,
+                           VexArch      guest_arch,
+                           const VexArchInfo* archinfo,
+                           const VexAbiInfo*  abiinfo,
+                           VexEndness   host_endness,
+                           Bool         sigill_diag );
 
 /* Used by the optimiser to specialise calls to helpers. */
 extern
 IRExpr* guest_amd64_spechelper ( const HChar* function_name,
-								 IRExpr** args,
-								 IRStmt** precedingStmts,
-								 Int      n_precedingStmts );
+                                 IRExpr** args,
+                                 IRStmt** precedingStmts,
+                                 Int      n_precedingStmts );
 
 /* Describes to the optimiser which part of the guest state require
    precise memory exceptions.  This is logically part of the guest
    state description. */
-extern
+extern 
 Bool guest_amd64_state_requires_precise_mem_exns ( Int, Int,
-												   VexRegisterUpdates );
+                                                   VexRegisterUpdates );
 
 extern
 VexGuestLayout amd64guest_layout;
@@ -87,31 +85,31 @@ VexGuestLayout amd64guest_layout;
 
 /* --- CLEAN HELPERS --- */
 
-extern ULong amd64g_calculate_rflags_all (
-				ULong cc_op,
-				ULong cc_dep1, ULong cc_dep2, ULong cc_ndep
-			 );
+extern ULong amd64g_calculate_rflags_all ( 
+                ULong cc_op, 
+                ULong cc_dep1, ULong cc_dep2, ULong cc_ndep 
+             );
 
-extern ULong amd64g_calculate_rflags_c (
-				ULong cc_op,
-				ULong cc_dep1, ULong cc_dep2, ULong cc_ndep
-			 );
+extern ULong amd64g_calculate_rflags_c ( 
+                ULong cc_op, 
+                ULong cc_dep1, ULong cc_dep2, ULong cc_ndep 
+             );
 
-extern ULong amd64g_calculate_condition (
-				ULong/*AMD64Condcode*/ cond,
-				ULong cc_op,
-				ULong cc_dep1, ULong cc_dep2, ULong cc_ndep
-			 );
+extern ULong amd64g_calculate_condition ( 
+                ULong/*AMD64Condcode*/ cond, 
+                ULong cc_op, 
+                ULong cc_dep1, ULong cc_dep2, ULong cc_ndep 
+             );
 
 extern ULong amd64g_calculate_FXAM ( ULong tag, ULong dbl );
 
-extern ULong amd64g_calculate_RCR  (
-				ULong arg, ULong rot_amt, ULong rflags_in, Long sz
-			 );
+extern ULong amd64g_calculate_RCR  ( 
+                ULong arg, ULong rot_amt, ULong rflags_in, Long sz 
+             );
 
-extern ULong amd64g_calculate_RCL  (
-				ULong arg, ULong rot_amt, ULong rflags_in, Long sz
-			 );
+extern ULong amd64g_calculate_RCL  ( 
+                ULong arg, ULong rot_amt, ULong rflags_in, Long sz 
+             );
 
 extern ULong amd64g_calculate_pclmul(ULong s1, ULong s2, ULong which);
 
@@ -135,10 +133,10 @@ extern void amd64g_dirtyhelper_FNSAVES ( VexGuestAMD64State*, HWord );
    consulting the supplied LDT/GDT structures.  Their representation
    must be as specified in pub/libvex_guest_amd64.h.  To indicate a
    translation failure, 1<<32 is returned.  On success, the lower 32
-   bits of the returned result indicate the linear address.
+   bits of the returned result indicate the linear address.  
 */
-//extern
-//ULong amd64g_use_seg_selector ( HWord ldt, HWord gdt,
+//extern 
+//ULong amd64g_use_seg_selector ( HWord ldt, HWord gdt, 
 //                              UInt seg_selector, UInt virtual_addr );
 
 extern ULong amd64g_calculate_mmx_pmaddwd  ( ULong, ULong );
@@ -152,8 +150,8 @@ extern ULong amd64g_calc_crc32l ( ULong crcIn, ULong l );
 extern ULong amd64g_calc_crc32q ( ULong crcIn, ULong q );
 
 extern ULong amd64g_calc_mpsadbw ( ULong sHi, ULong sLo,
-								   ULong dHi, ULong dLo,
-								   ULong imm_and_return_control_bit );
+                                   ULong dHi, ULong dLo,
+                                   ULong imm_and_return_control_bit );
 
 extern ULong amd64g_calculate_pext  ( ULong, ULong );
 extern ULong amd64g_calculate_pdep  ( ULong, ULong );
@@ -168,32 +166,32 @@ extern void  amd64g_dirtyhelper_CPUID_baseline ( VexGuestAMD64State* st );
 extern void  amd64g_dirtyhelper_CPUID_sse3_and_cx16 ( VexGuestAMD64State* st );
 extern void  amd64g_dirtyhelper_CPUID_sse42_and_cx16 ( VexGuestAMD64State* st );
 extern void  amd64g_dirtyhelper_CPUID_avx_and_cx16 ( VexGuestAMD64State* st,
-													 ULong hasF16C,
-													 ULong hasRDRAND );
+                                                     ULong hasF16C,
+                                                     ULong hasRDRAND );
 extern void  amd64g_dirtyhelper_CPUID_avx2 ( VexGuestAMD64State* st,
-											 ULong hasF16C, ULong hasRDRAND );
+                                             ULong hasF16C, ULong hasRDRAND );
 
 extern void  amd64g_dirtyhelper_FINIT ( VexGuestAMD64State* );
 
 extern void amd64g_dirtyhelper_XSAVE_COMPONENT_0
-			   ( VexGuestAMD64State* gst, HWord addr );
-extern void amd64g_dirtyhelper_XSAVE_COMPONENT_1_EXCLUDING_XMMREGS
-			   ( VexGuestAMD64State* gst, HWord addr );
+               ( VexGuestAMD64State* gst, HWord addr );
+extern void amd64g_dirtyhelper_XSAVE_COMPONENT_1_EXCLUDING_XMMREGS 
+               ( VexGuestAMD64State* gst, HWord addr );
 
 extern VexEmNote amd64g_dirtyhelper_XRSTOR_COMPONENT_0
-					( VexGuestAMD64State* gst, HWord addr );
-extern VexEmNote amd64g_dirtyhelper_XRSTOR_COMPONENT_1_EXCLUDING_XMMREGS
-					( VexGuestAMD64State* gst, HWord addr );
+                    ( VexGuestAMD64State* gst, HWord addr );
+extern VexEmNote amd64g_dirtyhelper_XRSTOR_COMPONENT_1_EXCLUDING_XMMREGS 
+                    ( VexGuestAMD64State* gst, HWord addr );
 
 extern ULong amd64g_dirtyhelper_RDTSC ( void );
 extern void  amd64g_dirtyhelper_RDTSCP ( VexGuestAMD64State* st );
 
 extern ULong amd64g_dirtyhelper_IN  ( ULong portno, ULong sz/*1,2 or 4*/ );
-extern void  amd64g_dirtyhelper_OUT ( ULong portno, ULong data,
-									  ULong sz/*1,2 or 4*/ );
+extern void  amd64g_dirtyhelper_OUT ( ULong portno, ULong data, 
+                                      ULong sz/*1,2 or 4*/ );
 
 extern void amd64g_dirtyhelper_SxDT ( void* address,
-									  ULong op /* 0 or 1 */ );
+                                      ULong op /* 0 or 1 */ );
 
 // This returns a 32-bit value from the host's RDRAND in bits 31:0, and the
 // resulting C flag value in bit 32.
@@ -212,10 +210,10 @@ extern ULong amd64g_dirtyhelper_RDRAND ( void );
    the callee knows which I/E and I/M variant it is dealing with and
    what the specific operation is.  4th byte of opcode is in the range
    0x60 to 0x63:
-	   istri  66 0F 3A 63
-	   istrm  66 0F 3A 62
-	   estri  66 0F 3A 61
-	   estrm  66 0F 3A 60
+       istri  66 0F 3A 63
+       istrm  66 0F 3A 62
+       estri  66 0F 3A 61
+       estrm  66 0F 3A 60
 
    gstOffL and gstOffR are the guest state offsets for the two XMM
    register inputs.  We never have to deal with the memory case since
@@ -238,18 +236,18 @@ extern ULong amd64g_dirtyhelper_RDRAND ( void );
    actually been validated, and will assert if otherwise.  The front
    end should ensure we're only called with verified values.
 */
-extern ULong amd64g_dirtyhelper_PCMPxSTRx (
-		  VexGuestAMD64State*,
-		  HWord opc4_and_imm,
-		  HWord gstOffL, HWord gstOffR,
-		  HWord edxIN, HWord eaxIN
-	   );
+extern ULong amd64g_dirtyhelper_PCMPxSTRx ( 
+          VexGuestAMD64State*,
+          HWord opc4_and_imm,
+          HWord gstOffL, HWord gstOffR,
+          HWord edxIN, HWord eaxIN
+       );
 
 /* Implementation of intel AES instructions as described in
    Intel  Advanced Vector Extensions
-		  Programming Reference
-		  MARCH 2008
-		  319433-002.
+          Programming Reference
+          MARCH 2008
+          319433-002.
 
    CALLED FROM GENERATED CODE: DIRTY HELPER(s).  (But not really,
    actually it could be a clean helper, but for the fact that we can't
@@ -267,13 +265,13 @@ extern ULong amd64g_dirtyhelper_PCMPxSTRx (
    by pre-loading the relevant value into the fake XMM16 register.
 
 */
-extern void amd64g_dirtyhelper_AES (
-		  VexGuestAMD64State* gst,
-		  HWord opc4, HWord gstOffD,
-		  HWord gstOffL, HWord gstOffR
-	   );
+extern void amd64g_dirtyhelper_AES ( 
+          VexGuestAMD64State* gst,
+          HWord opc4, HWord gstOffD,
+          HWord gstOffL, HWord gstOffR
+       );
 
-/* Implementation of AESKEYGENASSIST.
+/* Implementation of AESKEYGENASSIST. 
 
    CALLED FROM GENERATED CODE: DIRTY HELPER(s).  (But not really,
    actually it could be a clean helper, but for the fact that we can't
@@ -289,11 +287,11 @@ extern void amd64g_dirtyhelper_AES (
    XMM16 register.
 
 */
-extern void amd64g_dirtyhelper_AESKEYGENASSIST (
-		  VexGuestAMD64State* gst,
-		  HWord imm8,
-		  HWord gstOffL, HWord gstOffR
-	   );
+extern void amd64g_dirtyhelper_AESKEYGENASSIST ( 
+          VexGuestAMD64State* gst,
+          HWord imm8,
+          HWord gstOffL, HWord gstOffR
+       );
 
 //extern void  amd64g_dirtyhelper_CPUID_sse0 ( VexGuestAMD64State* );
 //extern void  amd64g_dirtyhelper_CPUID_sse1 ( VexGuestAMD64State* );
@@ -360,29 +358,29 @@ extern void amd64g_dirtyhelper_AESKEYGENASSIST (
 
    The four words are:
 
-	  CC_OP, which describes the operation.
+      CC_OP, which describes the operation.
 
-	  CC_DEP1 and CC_DEP2.  These are arguments to the operation.
-		 We want Memcheck to believe that the resulting flags are
-		 data-dependent on both CC_DEP1 and CC_DEP2, hence the
-		 name DEP.
+      CC_DEP1 and CC_DEP2.  These are arguments to the operation.
+         We want Memcheck to believe that the resulting flags are
+         data-dependent on both CC_DEP1 and CC_DEP2, hence the 
+         name DEP.
 
-	  CC_NDEP.  This is a 3rd argument to the operation which is
-		 sometimes needed.  We arrange things so that Memcheck does
-		 not believe the resulting flags are data-dependent on CC_NDEP
-		 ("not dependent").
+      CC_NDEP.  This is a 3rd argument to the operation which is
+         sometimes needed.  We arrange things so that Memcheck does
+         not believe the resulting flags are data-dependent on CC_NDEP
+         ("not dependent").
 
    To make Memcheck believe that (the definedness of) the encoded
    flags depends only on (the definedness of) CC_DEP1 and CC_DEP2
    requires two things:
 
    (1) In the guest state layout info (amd64guest_layout), CC_OP and
-	   CC_NDEP are marked as always defined.
+       CC_NDEP are marked as always defined.
 
    (2) When passing the thunk components to an evaluation function
-	   (calculate_condition, calculate_eflags, calculate_eflags_c) the
-	   IRCallee's mcx_mask must be set so as to exclude from
-	   consideration all passed args except CC_DEP1 and CC_DEP2.
+       (calculate_condition, calculate_eflags, calculate_eflags_c) the
+       IRCallee's mcx_mask must be set so as to exclude from
+       consideration all passed args except CC_DEP1 and CC_DEP2.
 
    Strictly speaking only (2) is necessary for correctness.  However,
    (1) helps efficiency in that since (2) means we never ask about the
@@ -394,7 +392,7 @@ extern void amd64g_dirtyhelper_AESKEYGENASSIST (
    CC_OP field (eg, CC_DEP2 is not used if CC_OP is CC_LOGIC1/2/4).
    This is important because otherwise Memcheck could give false
    positives as it does not understand the relationship between the
-   CC_OP field and CC_DEP1 and CC_DEP2, and so believes that the
+   CC_OP field and CC_DEP1 and CC_DEP2, and so believes that the 
    definedness of the stored flags always depends on both CC_DEP1 and
    CC_DEP2.
 
@@ -411,14 +409,14 @@ extern void amd64g_dirtyhelper_AESKEYGENASSIST (
    add/sub/mul        first arg          second arg         unused
 
    adc/sbb            first arg          (second arg)
-										 XOR old_carry      old_carry
+                                         XOR old_carry      old_carry
 
    and/or/xor         result             zero               unused
 
    inc/dec            result             zero               old_carry
 
    shl/shr/sar        result             subshifted-        unused
-										 result
+                                         result
 
    rol/ror            result             zero               old_flags
 
@@ -428,163 +426,163 @@ extern void amd64g_dirtyhelper_AESKEYGENASSIST (
    Therefore Memcheck will believe the following:
 
    * add/sub/mul -- definedness of result flags depends on definedness
-	 of both args.
+     of both args.
 
    * adc/sbb -- definedness of result flags depends on definedness of
-	 both args and definedness of the old C flag.  Because only two
-	 DEP fields are available, the old C flag is XOR'd into the second
-	 arg so that Memcheck sees the data dependency on it.  That means
-	 the NDEP field must contain a second copy of the old C flag
-	 so that the evaluation functions can correctly recover the second
-	 arg.
+     both args and definedness of the old C flag.  Because only two
+     DEP fields are available, the old C flag is XOR'd into the second
+     arg so that Memcheck sees the data dependency on it.  That means
+     the NDEP field must contain a second copy of the old C flag
+     so that the evaluation functions can correctly recover the second
+     arg.
 
    * and/or/xor are straightforward -- definedness of result flags
-	 depends on definedness of result value.
+     depends on definedness of result value.
 
    * inc/dec -- definedness of result flags depends only on
-	 definedness of result.  This isn't really true -- it also depends
-	 on the old C flag.  However, we don't want Memcheck to see that,
-	 and so the old C flag must be passed in NDEP and not in DEP2.
-	 It's inconceivable that a compiler would generate code that puts
-	 the C flag in an undefined state, then does an inc/dec, which
-	 leaves C unchanged, and then makes a conditional jump/move based
-	 on C.  So our fiction seems a good approximation.
+     definedness of result.  This isn't really true -- it also depends
+     on the old C flag.  However, we don't want Memcheck to see that,
+     and so the old C flag must be passed in NDEP and not in DEP2.
+     It's inconceivable that a compiler would generate code that puts
+     the C flag in an undefined state, then does an inc/dec, which
+     leaves C unchanged, and then makes a conditional jump/move based
+     on C.  So our fiction seems a good approximation.
 
    * shl/shr/sar -- straightforward, again, definedness of result
-	 flags depends on definedness of result value.  The subshifted
-	 value (value shifted one less) is also needed, but its
-	 definedness is the same as the definedness of the shifted value.
+     flags depends on definedness of result value.  The subshifted
+     value (value shifted one less) is also needed, but its
+     definedness is the same as the definedness of the shifted value.
 
    * rol/ror -- these only set O and C, and leave A Z C P alone.
-	 However it seems prudent (as per inc/dec) to say the definedness
-	 of all resulting flags depends on the definedness of the result,
-	 hence the old flags must go in as NDEP and not DEP2.
+     However it seems prudent (as per inc/dec) to say the definedness
+     of all resulting flags depends on the definedness of the result,
+     hence the old flags must go in as NDEP and not DEP2.
 
    * rcl/rcr are too difficult to do in-line, and so are done by a
-	 helper function.  They are not part of this scheme.  The helper
-	 function takes the value to be rotated, the rotate amount and the
-	 old flags, and returns the new flags and the rotated value.
-	 Since the helper's mcx_mask does not have any set bits, Memcheck
-	 will lazily propagate undefinedness from any of the 3 args into
-	 both results (flags and actual value).
+     helper function.  They are not part of this scheme.  The helper
+     function takes the value to be rotated, the rotate amount and the
+     old flags, and returns the new flags and the rotated value.
+     Since the helper's mcx_mask does not have any set bits, Memcheck
+     will lazily propagate undefinedness from any of the 3 args into 
+     both results (flags and actual value).
 */
 enum {
-	AMD64G_CC_OP_COPY=0,  /* DEP1 = current flags, DEP2 = 0, NDEP = unused */
-						  /* just copy DEP1 to output */
+    AMD64G_CC_OP_COPY=0,  /* DEP1 = current flags, DEP2 = 0, NDEP = unused */
+                          /* just copy DEP1 to output */
 
-	AMD64G_CC_OP_ADDB,    /* 1 */
-	AMD64G_CC_OP_ADDW,    /* 2 DEP1 = argL, DEP2 = argR, NDEP = unused */
-	AMD64G_CC_OP_ADDL,    /* 3 */
-	AMD64G_CC_OP_ADDQ,    /* 4 */
+    AMD64G_CC_OP_ADDB,    /* 1 */
+    AMD64G_CC_OP_ADDW,    /* 2 DEP1 = argL, DEP2 = argR, NDEP = unused */
+    AMD64G_CC_OP_ADDL,    /* 3 */
+    AMD64G_CC_OP_ADDQ,    /* 4 */
 
-	AMD64G_CC_OP_SUBB,    /* 5 */
-	AMD64G_CC_OP_SUBW,    /* 6 DEP1 = argL, DEP2 = argR, NDEP = unused */
-	AMD64G_CC_OP_SUBL,    /* 7 */
-	AMD64G_CC_OP_SUBQ,    /* 8 */
+    AMD64G_CC_OP_SUBB,    /* 5 */
+    AMD64G_CC_OP_SUBW,    /* 6 DEP1 = argL, DEP2 = argR, NDEP = unused */
+    AMD64G_CC_OP_SUBL,    /* 7 */
+    AMD64G_CC_OP_SUBQ,    /* 8 */
 
-	AMD64G_CC_OP_ADCB,    /* 9 */
-	AMD64G_CC_OP_ADCW,    /* 10 DEP1 = argL, DEP2 = argR ^ oldCarry, NDEP = oldCarry */
-	AMD64G_CC_OP_ADCL,    /* 11 */
-	AMD64G_CC_OP_ADCQ,    /* 12 */
+    AMD64G_CC_OP_ADCB,    /* 9 */
+    AMD64G_CC_OP_ADCW,    /* 10 DEP1 = argL, DEP2 = argR ^ oldCarry, NDEP = oldCarry */
+    AMD64G_CC_OP_ADCL,    /* 11 */
+    AMD64G_CC_OP_ADCQ,    /* 12 */
 
-	AMD64G_CC_OP_SBBB,    /* 13 */
-	AMD64G_CC_OP_SBBW,    /* 14 DEP1 = argL, DEP2 = argR ^ oldCarry, NDEP = oldCarry */
-	AMD64G_CC_OP_SBBL,    /* 15 */
-	AMD64G_CC_OP_SBBQ,    /* 16 */
+    AMD64G_CC_OP_SBBB,    /* 13 */
+    AMD64G_CC_OP_SBBW,    /* 14 DEP1 = argL, DEP2 = argR ^ oldCarry, NDEP = oldCarry */
+    AMD64G_CC_OP_SBBL,    /* 15 */
+    AMD64G_CC_OP_SBBQ,    /* 16 */
 
-	AMD64G_CC_OP_LOGICB,  /* 17 */
-	AMD64G_CC_OP_LOGICW,  /* 18 DEP1 = result, DEP2 = 0, NDEP = unused */
-	AMD64G_CC_OP_LOGICL,  /* 19 */
-	AMD64G_CC_OP_LOGICQ,  /* 20 */
+    AMD64G_CC_OP_LOGICB,  /* 17 */
+    AMD64G_CC_OP_LOGICW,  /* 18 DEP1 = result, DEP2 = 0, NDEP = unused */
+    AMD64G_CC_OP_LOGICL,  /* 19 */
+    AMD64G_CC_OP_LOGICQ,  /* 20 */
 
-	AMD64G_CC_OP_INCB,    /* 21 */
-	AMD64G_CC_OP_INCW,    /* 22 DEP1 = result, DEP2 = 0, NDEP = oldCarry (0 or 1) */
-	AMD64G_CC_OP_INCL,    /* 23 */
-	AMD64G_CC_OP_INCQ,    /* 24 */
+    AMD64G_CC_OP_INCB,    /* 21 */
+    AMD64G_CC_OP_INCW,    /* 22 DEP1 = result, DEP2 = 0, NDEP = oldCarry (0 or 1) */
+    AMD64G_CC_OP_INCL,    /* 23 */
+    AMD64G_CC_OP_INCQ,    /* 24 */
 
-	AMD64G_CC_OP_DECB,    /* 25 */
-	AMD64G_CC_OP_DECW,    /* 26 DEP1 = result, DEP2 = 0, NDEP = oldCarry (0 or 1) */
-	AMD64G_CC_OP_DECL,    /* 27 */
-	AMD64G_CC_OP_DECQ,    /* 28 */
+    AMD64G_CC_OP_DECB,    /* 25 */
+    AMD64G_CC_OP_DECW,    /* 26 DEP1 = result, DEP2 = 0, NDEP = oldCarry (0 or 1) */
+    AMD64G_CC_OP_DECL,    /* 27 */
+    AMD64G_CC_OP_DECQ,    /* 28 */
 
-	AMD64G_CC_OP_SHLB,    /* 29 DEP1 = res, DEP2 = res', NDEP = unused */
-	AMD64G_CC_OP_SHLW,    /* 30 where res' is like res but shifted one bit less */
-	AMD64G_CC_OP_SHLL,    /* 31 */
-	AMD64G_CC_OP_SHLQ,    /* 32 */
+    AMD64G_CC_OP_SHLB,    /* 29 DEP1 = res, DEP2 = res', NDEP = unused */
+    AMD64G_CC_OP_SHLW,    /* 30 where res' is like res but shifted one bit less */
+    AMD64G_CC_OP_SHLL,    /* 31 */
+    AMD64G_CC_OP_SHLQ,    /* 32 */
 
-	AMD64G_CC_OP_SHRB,    /* 33 DEP1 = res, DEP2 = res', NDEP = unused */
-	AMD64G_CC_OP_SHRW,    /* 34 where res' is like res but shifted one bit less */
-	AMD64G_CC_OP_SHRL,    /* 35 */
-	AMD64G_CC_OP_SHRQ,    /* 36 */
+    AMD64G_CC_OP_SHRB,    /* 33 DEP1 = res, DEP2 = res', NDEP = unused */
+    AMD64G_CC_OP_SHRW,    /* 34 where res' is like res but shifted one bit less */
+    AMD64G_CC_OP_SHRL,    /* 35 */
+    AMD64G_CC_OP_SHRQ,    /* 36 */
 
-	AMD64G_CC_OP_ROLB,    /* 37 */
-	AMD64G_CC_OP_ROLW,    /* 38 DEP1 = res, DEP2 = 0, NDEP = old flags */
-	AMD64G_CC_OP_ROLL,    /* 39 */
-	AMD64G_CC_OP_ROLQ,    /* 40 */
+    AMD64G_CC_OP_ROLB,    /* 37 */
+    AMD64G_CC_OP_ROLW,    /* 38 DEP1 = res, DEP2 = 0, NDEP = old flags */
+    AMD64G_CC_OP_ROLL,    /* 39 */
+    AMD64G_CC_OP_ROLQ,    /* 40 */
 
-	AMD64G_CC_OP_RORB,    /* 41 */
-	AMD64G_CC_OP_RORW,    /* 42 DEP1 = res, DEP2 = 0, NDEP = old flags */
-	AMD64G_CC_OP_RORL,    /* 43 */
-	AMD64G_CC_OP_RORQ,    /* 44 */
+    AMD64G_CC_OP_RORB,    /* 41 */
+    AMD64G_CC_OP_RORW,    /* 42 DEP1 = res, DEP2 = 0, NDEP = old flags */
+    AMD64G_CC_OP_RORL,    /* 43 */
+    AMD64G_CC_OP_RORQ,    /* 44 */
 
-	AMD64G_CC_OP_UMULB,   /* 45 */
-	AMD64G_CC_OP_UMULW,   /* 46 DEP1 = argL, DEP2 = argR, NDEP = unused */
-	AMD64G_CC_OP_UMULL,   /* 47 */
-	AMD64G_CC_OP_UMULQ,   /* 48 */
+    AMD64G_CC_OP_UMULB,   /* 45 */
+    AMD64G_CC_OP_UMULW,   /* 46 DEP1 = argL, DEP2 = argR, NDEP = unused */
+    AMD64G_CC_OP_UMULL,   /* 47 */
+    AMD64G_CC_OP_UMULQ,   /* 48 */
 
-	AMD64G_CC_OP_SMULB,   /* 49 */
-	AMD64G_CC_OP_SMULW,   /* 50 DEP1 = argL, DEP2 = argR, NDEP = unused */
-	AMD64G_CC_OP_SMULL,   /* 51 */
-	AMD64G_CC_OP_SMULQ,   /* 52 */
+    AMD64G_CC_OP_SMULB,   /* 49 */
+    AMD64G_CC_OP_SMULW,   /* 50 DEP1 = argL, DEP2 = argR, NDEP = unused */
+    AMD64G_CC_OP_SMULL,   /* 51 */
+    AMD64G_CC_OP_SMULQ,   /* 52 */
 
-	AMD64G_CC_OP_ANDN32,  /* 53 */
-	AMD64G_CC_OP_ANDN64,  /* 54 DEP1 = res, DEP2 = 0, NDEP = unused */
+    AMD64G_CC_OP_ANDN32,  /* 53 */
+    AMD64G_CC_OP_ANDN64,  /* 54 DEP1 = res, DEP2 = 0, NDEP = unused */
 
-	AMD64G_CC_OP_BLSI32,  /* 55 */
-	AMD64G_CC_OP_BLSI64,  /* 56 DEP1 = res, DEP2 = arg, NDEP = unused */
+    AMD64G_CC_OP_BLSI32,  /* 55 */
+    AMD64G_CC_OP_BLSI64,  /* 56 DEP1 = res, DEP2 = arg, NDEP = unused */
 
-	AMD64G_CC_OP_BLSMSK32,/* 57 */
-	AMD64G_CC_OP_BLSMSK64,/* 58 DEP1 = res, DEP2 = arg, NDEP = unused */
+    AMD64G_CC_OP_BLSMSK32,/* 57 */
+    AMD64G_CC_OP_BLSMSK64,/* 58 DEP1 = res, DEP2 = arg, NDEP = unused */
 
-	AMD64G_CC_OP_BLSR32,  /* 59 */
-	AMD64G_CC_OP_BLSR64,  /* 60 DEP1 = res, DEP2 = arg, NDEP = unused */
+    AMD64G_CC_OP_BLSR32,  /* 59 */
+    AMD64G_CC_OP_BLSR64,  /* 60 DEP1 = res, DEP2 = arg, NDEP = unused */
 
-	AMD64G_CC_OP_ADCX32,  /* 61 DEP1 = argL, DEP2 = argR ^ oldCarry, .. */
-	AMD64G_CC_OP_ADCX64,  /* 62 .. NDEP = old flags */
+    AMD64G_CC_OP_ADCX32,  /* 61 DEP1 = argL, DEP2 = argR ^ oldCarry, .. */
+    AMD64G_CC_OP_ADCX64,  /* 62 .. NDEP = old flags */
 
-	AMD64G_CC_OP_ADOX32,  /* 63 DEP1 = argL, DEP2 = argR ^ oldOverflow, .. */
-	AMD64G_CC_OP_ADOX64,  /* 64 .. NDEP = old flags */
+    AMD64G_CC_OP_ADOX32,  /* 63 DEP1 = argL, DEP2 = argR ^ oldOverflow, .. */
+    AMD64G_CC_OP_ADOX64,  /* 64 .. NDEP = old flags */
 
-	AMD64G_CC_OP_NUMBER
+    AMD64G_CC_OP_NUMBER
 };
 
 typedef
    enum {
-	  AMD64CondO      = 0,  /* overflow           */
-	  AMD64CondNO     = 1,  /* no overflow        */
+      AMD64CondO      = 0,  /* overflow           */
+      AMD64CondNO     = 1,  /* no overflow        */
 
-	  AMD64CondB      = 2,  /* below              */
-	  AMD64CondNB     = 3,  /* not below          */
+      AMD64CondB      = 2,  /* below              */
+      AMD64CondNB     = 3,  /* not below          */
 
-	  AMD64CondZ      = 4,  /* zero               */
-	  AMD64CondNZ     = 5,  /* not zero           */
+      AMD64CondZ      = 4,  /* zero               */
+      AMD64CondNZ     = 5,  /* not zero           */
 
-	  AMD64CondBE     = 6,  /* below or equal     */
-	  AMD64CondNBE    = 7,  /* not below or equal */
+      AMD64CondBE     = 6,  /* below or equal     */
+      AMD64CondNBE    = 7,  /* not below or equal */
 
-	  AMD64CondS      = 8,  /* negative           */
-	  AMD64CondNS     = 9,  /* not negative       */
+      AMD64CondS      = 8,  /* negative           */
+      AMD64CondNS     = 9,  /* not negative       */
 
-	  AMD64CondP      = 10, /* parity even        */
-	  AMD64CondNP     = 11, /* not parity even    */
+      AMD64CondP      = 10, /* parity even        */
+      AMD64CondNP     = 11, /* not parity even    */
 
-	  AMD64CondL      = 12, /* less               */
-	  AMD64CondNL     = 13, /* not less           */
+      AMD64CondL      = 12, /* less               */
+      AMD64CondNL     = 13, /* not less           */
 
-	  AMD64CondLE     = 14, /* less or equal      */
-	  AMD64CondNLE    = 15, /* not less or equal  */
+      AMD64CondLE     = 14, /* less or equal      */
+      AMD64CondNLE    = 15, /* not less or equal  */
 
-	  AMD64CondAlways = 16  /* HACK */
+      AMD64CondAlways = 16  /* HACK */
    }
    AMD64Condcode;
 
