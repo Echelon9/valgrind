@@ -10,6 +10,7 @@
 #include <fcntl.h>     // open
 #include <unistd.h>    // lseek
 #include <sys/stat.h>  // S_IRUSR
+#include <features.h>  // __GLIBC_PREREQ
 
 // This file determines s390x features a processor supports.
 //
@@ -39,6 +40,17 @@ jmp_buf env;
 
 #if defined(VGA_s390x)
 
+// Features that require kernel support should be checked against HWCAP instead
+// of the CPU facility list.  To read the HWCAP, use 'getauxval' if available --
+// which should be the case with glibc versions >= 2.16.  A system with an older
+// glibc is unlikely to support any of these features anyhow.
+#if __GLIBC_PREREQ(2, 16)
+#include <sys/auxv.h>
+#define GET_HWCAP() getauxval(AT_HWCAP)
+#else
+#define GET_HWCAP() 0UL
+#endif
+
 /* Number of double words needed to store all facility bits. */
 #define S390_NUM_FACILITY_DW 3
 
@@ -52,7 +64,7 @@ static void clear_facilities(unsigned long long *ret)
    unsigned int index;
    for(index = 0; index < S390_NUM_FACILITY_DW; index++)
    {
-      ret[index] = 0ULL;
+	  ret[index] = 0ULL;
    }
 }
 
@@ -60,19 +72,19 @@ void stfle(unsigned long long *ret)
 {
    signal(SIGILL, handle_sigill);
    if (setjmp(env)) {
-      /* stfle not available: assume no facilities */
-      clear_facilities(ret);
+	  /* stfle not available: assume no facilities */
+	  clear_facilities(ret);
    } else {
-      register unsigned long long r0 asm("0") = S390_NUM_FACILITY_DW - 1;
-      asm volatile(".insn s,0xb2b00000,%0\n" /* stfle */
-       : "=m" (*ret), "+d"(r0) :: "cc", "memory");
+	  register unsigned long long r0 asm("0") = S390_NUM_FACILITY_DW - 1;
+	  asm volatile(".insn s,0xb2b00000,%0\n" /* stfle */
+	   : "=m" (*ret), "+d"(r0) :: "cc", "memory");
    }
 }
 
 
 /* Read /proc/cpuinfo. Look for lines like these
 
-      processor 0: version = FF,  identification = 0117C9,  machine = 2064
+	  processor 0: version = FF,  identification = 0117C9,  machine = 2064
 
    and return the machine model or NULL on error.
    Adapted from function VG_(get_machine_model) in coregrind/m_machine.c */
@@ -111,12 +123,12 @@ static model_info *locate_model(const char *name)
 
    /* Try cpuinfo name first */
    for (p = models; p != models + sizeof models / sizeof models[0]; ++p) {
-      if (strcmp(p->cpuinfo_name, name) == 0) return p;  // found it
+	  if (strcmp(p->cpuinfo_name, name) == 0) return p;  // found it
    }
 
    /* Now try external name */
    for (p = models; p != models + sizeof models / sizeof models[0]; ++p) {
-      if (strcmp(p->real_name, name) == 0) return p;  // found it
+	  if (strcmp(p->real_name, name) == 0) return p;  // found it
    }
 
    return NULL;
@@ -135,29 +147,29 @@ static model_info *get_host(void)
    if (fh < 0) return NULL;
 
    /* Determine the size of /proc/cpuinfo.
-      Work around broken-ness in /proc file system implementation.
-      fstat returns a zero size for /proc/cpuinfo although it is
-      claimed to be a regular file. */
+	  Work around broken-ness in /proc file system implementation.
+	  fstat returns a zero size for /proc/cpuinfo although it is
+	  claimed to be a regular file. */
    num_bytes = 0;
    file_buf_size = 1000;
    file_buf = malloc(file_buf_size + 1);
 
    while (42) {
-      n = read(fh, file_buf, file_buf_size);
-      if (n < 0) break;
+	  n = read(fh, file_buf, file_buf_size);
+	  if (n < 0) break;
 
-      num_bytes += n;
-      if (n < file_buf_size) break;  /* reached EOF */
+	  num_bytes += n;
+	  if (n < file_buf_size) break;  /* reached EOF */
    }
 
    if (n < 0) num_bytes = 0;   /* read error; ignore contents */
 
    if (num_bytes > file_buf_size) {
-      free(file_buf);
-      lseek(fh, 0, SEEK_SET);
-      file_buf = malloc(num_bytes + 1);
-      n = read(fh, file_buf, num_bytes);
-      if (n < 0) num_bytes = 0;
+	  free(file_buf);
+	  lseek(fh, 0, SEEK_SET);
+	  file_buf = malloc(num_bytes + 1);
+	  n = read(fh, file_buf, num_bytes);
+	  if (n < 0) num_bytes = 0;
    }
 
    file_buf[num_bytes] = '\0';
@@ -166,34 +178,34 @@ static model_info *get_host(void)
    /* Parse file */
    model = models + sizeof models / sizeof models[0];
    for (p = file_buf; *p; ++p) {
-      /* Beginning of line */
-      if (strncmp(p, "processor", sizeof "processor" - 1 ) != 0) continue;
+	  /* Beginning of line */
+	  if (strncmp(p, "processor", sizeof "processor" - 1 ) != 0) continue;
 
-      m = strstr(p, "machine");
-      if (m == NULL) continue;
+	  m = strstr(p, "machine");
+	  if (m == NULL) continue;
 
-      p = m + sizeof "machine" - 1;
-      while (isspace(*p) || *p == '=') {
-         if (*p == '\n') goto next_line;
-         ++p;
-      }
+	  p = m + sizeof "machine" - 1;
+	  while (isspace(*p) || *p == '=') {
+		 if (*p == '\n') goto next_line;
+		 ++p;
+	  }
 
-      model_name = p;
-      for (n = 0; n < sizeof models / sizeof models[0]; ++n) {
-         model_info *mm = models + n;
-         size_t len = strlen(mm->cpuinfo_name);
-         if (strncmp(mm->cpuinfo_name, model_name, len) == 0 &&
-             isspace(model_name[len])) {
-            /* In case there are different CPUs in this cluster return the
-               one with the dewest capabilities ("oldest" model). */
-            if (mm < model) model = mm;
-            p = model_name + len;
-            break;
-         }
-      }
-      /* Skip until end-of-line */
-      while (*p != '\n')
-         ++p;
+	  model_name = p;
+	  for (n = 0; n < sizeof models / sizeof models[0]; ++n) {
+		 model_info *mm = models + n;
+		 size_t len = strlen(mm->cpuinfo_name);
+		 if (strncmp(mm->cpuinfo_name, model_name, len) == 0 &&
+			 isspace(model_name[len])) {
+			/* In case there are different CPUs in this cluster return the
+			   one with the dewest capabilities ("oldest" model). */
+			if (mm < model) model = mm;
+			p = model_name + len;
+			break;
+		 }
+	  }
+	  /* Skip until end-of-line */
+	  while (*p != '\n')
+		 ++p;
    next_line: ;
    }
 
@@ -220,39 +232,40 @@ static int go(char *feature, char *cpu)
    stfle(facilities);
 
    if        (strcmp(feature, "s390x-zarch") == 0 ) {
-      match = (facilities[0] & FAC_BIT(1)) && (facilities[0] & FAC_BIT(2));
+	  match = (facilities[0] & FAC_BIT(1)) && (facilities[0] & FAC_BIT(2));
    } else if (strcmp(feature, "s390x-n3") == 0 ) {
-      match = facilities[0] & FAC_BIT(0);
+	  match = facilities[0] & FAC_BIT(0);
    } else if (strcmp(feature, "s390x-stfle") == 0 ) {
-      match = facilities[0] & FAC_BIT(7);
+	  match = facilities[0] & FAC_BIT(7);
    } else if (strcmp(feature, "s390x-ldisp") == 0 ) {
-      match = (facilities[0] & FAC_BIT(18)) && (facilities[0] & FAC_BIT(19));
+	  match = (facilities[0] & FAC_BIT(18)) && (facilities[0] & FAC_BIT(19));
    } else if (strcmp(feature, "s390x-eimm") == 0 ) {
-      match = facilities[0] & FAC_BIT(21);
+	  match = facilities[0] & FAC_BIT(21);
    } else if (strcmp(feature, "s390x-stckf") == 0 ) {
-      match = facilities[0] & FAC_BIT(25);
+	  match = facilities[0] & FAC_BIT(25);
    } else if (strcmp(feature, "s390x-genins") == 0 ) {
-      match = facilities[0] & FAC_BIT(34);
+	  match = facilities[0] & FAC_BIT(34);
    } else if (strcmp(feature, "s390x-exrl") == 0 ) {
-      match = facilities[0] & FAC_BIT(35);
+	  match = facilities[0] & FAC_BIT(35);
    } else if (strcmp(feature, "s390x-etf3") == 0 ) {
-      match = facilities[0] & FAC_BIT(30);
+	  match = facilities[0] & FAC_BIT(30);
    } else if (strcmp(feature, "s390x-fpext") == 0 ) {
-      match = facilities[0] & FAC_BIT(37);
+	  match = facilities[0] & FAC_BIT(37);
    } else if (strcmp(feature, "s390x-dfp") == 0 ) {
-      match = facilities[0] & FAC_BIT(42);
+	  match = facilities[0] & FAC_BIT(42);
    } else if (strcmp(feature, "s390x-pfpo") == 0 ) {
-      match = facilities[0] & FAC_BIT(44);
+	  match = facilities[0] & FAC_BIT(44);
    } else if (strcmp(feature, "s390x-highw") == 0 ) {
-      match = facilities[0] & FAC_BIT(45);
+	  match = facilities[0] & FAC_BIT(45);
    } else if (strcmp(feature, "s390x-vx") == 0 ) {
-      match = facilities[2] & FAC_BIT(0);
+	  /* VX needs kernel support; thus check the appropriate HWCAP bit. */
+	  match = GET_HWCAP() & 0x800;
    } else if (strcmp(feature, "s390x-msa5") == 0 ) {
-      match = facilities[0] & FAC_BIT(57); /* message security assist 5 facility */
+	  match = facilities[0] & FAC_BIT(57); /* message security assist 5 facility */
    } else if (strcmp(feature, "s390x-mi2") == 0 ) {
-      match = facilities[0] & FAC_BIT(58);
+	  match = facilities[0] & FAC_BIT(58);
    } else {
-      return 2;          // Unrecognised feature.
+	  return 2;          // Unrecognised feature.
    }
 
    if (match == 0) return 1;   // facility not provided
@@ -270,39 +283,39 @@ static int go(char *feature, char *cpu)
    colon = strchr(cpu, ':');
 
    if (colon == NULL) {
-      // match exact
-      from = to = locate_model(cpu);
+	  // match exact
+	  from = to = locate_model(cpu);
    } else if (colon == cpu) {
-      // :NAME  match machines up to and including CPU
-      from = models;
-      to   = locate_model(cpu + 1);
+	  // :NAME  match machines up to and including CPU
+	  from = models;
+	  to   = locate_model(cpu + 1);
    } else if (colon[1] == '\0') {
-      // NAME:  match machines beginning with CPU or later
-      *colon = '\0';
-      from = locate_model(cpu);
-      to   = models + sizeof models / sizeof models[0] - 1;
-      *colon = ':';
+	  // NAME:  match machines beginning with CPU or later
+	  *colon = '\0';
+	  from = locate_model(cpu);
+	  to   = models + sizeof models / sizeof models[0] - 1;
+	  *colon = ':';
    } else {
-      // NAME:NAME  match machines in interval
-      *colon = '\0';
-      from = locate_model(cpu);
-      to   = locate_model(colon + 1);
-      *colon = ':';
+	  // NAME:NAME  match machines in interval
+	  *colon = '\0';
+	  from = locate_model(cpu);
+	  to   = locate_model(colon + 1);
+	  *colon = ':';
    }
 
    if (from == NULL || to == NULL || from > to) {
-      fprintf(stderr, "invalid cpu specification '%s'\n", cpu);
-      return 3;
+	  fprintf(stderr, "invalid cpu specification '%s'\n", cpu);
+	  return 3;
    }
 
 #if 0
    printf("from  %s (%s)  to  %s (%s)\n", from->cpuinfo_name, from->real_name,
-          to->cpuinfo_name, to->real_name);
+		  to->cpuinfo_name, to->real_name);
 #endif
 
    /* Search for HOST. */
    for (p = from; p <= to; ++p) {
-      if (p == host) return 0;
+	  if (p == host) return 0;
    }
 
    return 1; // host does not match CPU specification
@@ -326,24 +339,24 @@ int main(int argc, char **argv)
    int rc, inverted = 0;
 
    if (argc < 2 || argc > 3) {
-      fprintf( stderr, "usage: s390x_features <feature> [<machine-model>]\n" );
-      exit(3);                // Usage error.
+	  fprintf( stderr, "usage: s390x_features <feature> [<machine-model>]\n" );
+	  exit(3);                // Usage error.
    }
 
    if (argv[1][0] == '!') {
-      assert(argv[2] == NULL);   // not allowed
-      inverted = 1;
-      ++argv[1];
+	  assert(argv[2] == NULL);   // not allowed
+	  inverted = 1;
+	  ++argv[1];
    }
 
    rc = go(argv[1], argv[2]);
-   
+
    if (inverted) {
-      switch (rc) {
-      case 0: rc = 1; break;
-      case 1: rc = 0; break;
-      case 2: rc = 2; break;
-      }
+	  switch (rc) {
+	  case 0: rc = 1; break;
+	  case 1: rc = 0; break;
+	  case 2: rc = 2; break;
+	  }
    }
 
    //   printf("rc = %d\n", rc);
