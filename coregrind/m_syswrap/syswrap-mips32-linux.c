@@ -410,6 +410,7 @@ DECL_TEMPLATE (mips_linux, sys_set_thread_area);
 DECL_TEMPLATE (mips_linux, sys_pipe);
 DECL_TEMPLATE (mips_linux, sys_prctl);
 DECL_TEMPLATE (mips_linux, sys_ptrace);
+DECL_TEMPLATE (mips_linux, sys_sync_file_range);
 
 PRE(sys_mmap2)
 {
@@ -724,6 +725,28 @@ POST(sys_prctl)
    WRAPPER_POST_NAME(linux, sys_prctl)(tid, arrghs, status);
 }
 
+PRE(sys_sync_file_range)
+{
+   *flags |= SfMayBlock;
+
+   PRINT("sys_sync_file_range ( %ld, %llu, %llu, %ld )",
+		  SARG1, MERGE64(ARG3,ARG4), MERGE64(ARG5, ARG6), SARG7);
+
+   if (VG_(tdict).track_pre_reg_read) {
+	  PRRSN;
+	  PRA1("sync_file_range", int, fd);
+	  PRA3("sync_file_range", vki_u32, MERGE64_FIRST(offset));
+	  PRA4("sync_file_range", vki_u32, MERGE64_SECOND(offset));
+	  PRA5("sync_file_range", vki_u32, MERGE64_FIRST(nbytes));
+	  PRA6("sync_file_range", vki_u32, MERGE64_SECOND(nbytes));
+	  PRA7("sync_file_range", int, flags);
+   }
+
+   if (!ML_(fd_allowed)(ARG1, "sync_file_range", tid, False)){
+	  SET_STATUS_Failure( VKI_EBADF );
+   }
+}
+
 #undef PRE
 #undef POST
 
@@ -897,14 +920,14 @@ static SyscallTableEntry syscall_main_table[] = {
    GENX_ (__NR_munlock,                sys_munlock),                 // 155
    GENX_ (__NR_mlockall,               sys_mlockall),                // 156
    LINX_ (__NR_munlockall,             sys_munlockall),              // 157
-   //..    LINXY(__NR_sched_setparam,    sys_sched_setparam),    // 158
+   LINXY (__NR_sched_setparam,         sys_sched_setparam),          // 158
    LINXY (__NR_sched_getparam,         sys_sched_getparam),          // 159
    LINX_ (__NR_sched_setscheduler,     sys_sched_setscheduler),      // 160
    LINX_ (__NR_sched_getscheduler,     sys_sched_getscheduler),      // 161
    LINX_ (__NR_sched_yield,            sys_sched_yield),             // 162
    LINX_ (__NR_sched_get_priority_max, sys_sched_get_priority_max),  // 163
    LINX_ (__NR_sched_get_priority_min, sys_sched_get_priority_min),  // 164
-   //.. //LINX?(__NR_sched_rr_get_interval,  sys_sched_rr_get_interval), // 165
+   LINXY (__NR_sched_rr_get_interval,  sys_sched_rr_get_interval),   // 165
    GENXY (__NR_nanosleep,              sys_nanosleep),               // 166
    GENX_ (__NR_mremap,                 sys_mremap),                  // 167
    LINXY (__NR_accept,                 sys_accept),                  // 168
@@ -964,7 +987,7 @@ static SyscallTableEntry syscall_main_table[] = {
    LINX_ (__NR_gettid,                 sys_gettid),                  // 222
    //..
    LINX_ (__NR_setxattr,               sys_setxattr),                // 224
-   //..
+   LINX_ (__NR_lsetxattr,              sys_lsetxattr),               // 225
    LINX_ (__NR_fsetxattr,              sys_fsetxattr),               // 226
    LINXY (__NR_getxattr,               sys_getxattr),                // 227
    LINXY (__NR_lgetxattr,              sys_lgetxattr),               // 228
@@ -1036,6 +1059,10 @@ static SyscallTableEntry syscall_main_table[] = {
    LINX_ (__NR_faccessat,              sys_faccessat),               // 300
    LINXY (__NR_pselect6,               sys_pselect6),                // 301
    LINXY (__NR_ppoll,                  sys_ppoll),                   // 302
+   //..
+   LINX_ (__NR_splice,                 sys_splice),                  // 304
+   PLAX_ (__NR_sync_file_range,        sys_sync_file_range),         // 305
+   LINX_ (__NR_tee,                    sys_tee),                     // 306
    //..
    LINX_ (__NR_set_robust_list,        sys_set_robust_list),         // 309
    LINXY (__NR_get_robust_list,        sys_get_robust_list),         // 310

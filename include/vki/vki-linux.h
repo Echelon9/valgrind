@@ -7,8 +7,8 @@
    This file is part of Valgrind, a dynamic binary instrumentation
    framework.
 
-   Copyright (C) 2000-2017 Julian Seward 
-      jseward@acm.org
+   Copyright (C) 2000-2017 Julian Seward
+	  jseward@acm.org
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -32,15 +32,15 @@
    All code is copied verbatim from kernel source files, except that:
    - VKI_/vki_ prefixes are added
    - some extra explanatory comments are included;  they are all within
-     "[[ ]]"
+	 "[[ ]]"
    - for some types, we only care about the size;  for a few of them (big
-     ones that are painful to fully drag in here), a VKI_SIZEOF_* constant
-     is used.
-   
+	 ones that are painful to fully drag in here), a VKI_SIZEOF_* constant
+	 is used.
+
    The files the code is taken from is indicated.
 
    Note especially that the types are not the glibc versions, many of which
-   are different to those in here. 
+   are different to those in here.
 
    Also note that this file contains all the generic header info, ie. that
    from linux/include/linux/ *.h.  The arch-specific header info, eg. that
@@ -50,20 +50,20 @@
    arch-specific VKI header.  It's possible in the future, as more stuff
    gets pulled in, that we might have to split files up some more to avoid
    further circular dependencies.)
-   
+
    Finally, note that it is assumed that __KERNEL__ is set for all these
    definitions, which affects some of them.
 */
 
 /* The structure is (aiui, jrs 20060504):
 
-     #include plat-specific posix types (vki-posixtypes-ARCH-linux.h)
+	 #include plat-specific posix types (vki-posixtypes-ARCH-linux.h)
 
-     Lots more types, structs, consts, in this file
+	 Lots more types, structs, consts, in this file
 
-     #include other plat-specific stuff (vki-ARCH-linux.h)
+	 #include other plat-specific stuff (vki-ARCH-linux.h)
 
-     Even more types, structs, consts, in this file
+	 Even more types, structs, consts, in this file
 
    The system call numbers are dealt with by
    pub_{core,tool}_vkiscnums.h, not via pub_{core,tool}_vki.h, which
@@ -112,7 +112,7 @@
 #ifdef __cplusplus
 template <bool b> struct vki_static_assert { int m_bitfield:(2*b-1); };
 #define VKI_STATIC_ASSERT(expr)                         \
-    (sizeof(vki_static_assert<(expr)>) - sizeof(int))
+	(sizeof(vki_static_assert<(expr)>) - sizeof(int))
 #else
 #define VKI_STATIC_ASSERT(expr) (sizeof(struct { int:-!(expr); }))
 #endif
@@ -123,9 +123,9 @@ template <bool b> struct vki_static_assert { int m_bitfield:(2*b-1); };
 
 /* provoke compile error for invalid uses of size argument */
 #define _VKI_IOC_TYPECHECK(t)                                           \
-    (VKI_STATIC_ASSERT((sizeof(t) == sizeof(t[1])                       \
-                        && sizeof(t) < (1 << _VKI_IOC_SIZEBITS)))       \
-     + sizeof(t))
+	(VKI_STATIC_ASSERT((sizeof(t) == sizeof(t[1])                       \
+						&& sizeof(t) < (1 << _VKI_IOC_SIZEBITS)))       \
+	 + sizeof(t))
 
 //----------------------------------------------------------------------
 // From linux-2.6.8.1/include/linux/compiler.h
@@ -298,8 +298,8 @@ struct vki_timezone {
 };
 
 struct  vki_itimerspec {
-        struct  vki_timespec it_interval;    /* timer period */
-        struct  vki_timespec it_value;       /* timer expiration */
+		struct  vki_timespec it_interval;    /* timer period */
+		struct  vki_timespec it_value;       /* timer expiration */
 };
 
 struct	vki_itimerval {
@@ -652,8 +652,8 @@ struct vki_mmsghdr {
 
 struct vki_cmsghdr {
 	__vki_kernel_size_t	cmsg_len;	/* data byte count, including hdr */
-        int		cmsg_level;	/* originating protocol */
-        int		cmsg_type;	/* protocol-specific type */
+		int		cmsg_level;	/* originating protocol */
+		int		cmsg_type;	/* protocol-specific type */
 };
 
 #define __VKI_CMSG_NXTHDR(ctl, len, cmsg) __vki_cmsg_nxthdr((ctl),(len),(cmsg))
@@ -670,12 +670,12 @@ struct vki_cmsghdr {
 
 // [[Urgh, this is revolting...]
 __KINLINE struct vki_cmsghdr * __vki_cmsg_nxthdr(void *__ctl, __vki_kernel_size_t __size,
-					       struct vki_cmsghdr *__cmsg)
+						   struct vki_cmsghdr *__cmsg)
 {
 	struct vki_cmsghdr * __ptr;
 
 	__ptr = ASSUME_ALIGNED(struct vki_cmsghdr *,
-        	((unsigned char *) __cmsg) +  VKI_CMSG_ALIGN(__cmsg->cmsg_len));
+			((unsigned char *) __cmsg) +  VKI_CMSG_ALIGN(__cmsg->cmsg_len));
 	if ((unsigned long)((char*)(__ptr+1) - (char *) __ctl) > __size)
 		return (struct vki_cmsghdr *)0;
 
@@ -728,7 +728,7 @@ struct vki_sockaddr_in {
 
 struct vki_in6_addr
 {
-	union 
+	union
 	{
 		__vki_u8	u6_addr8[16];
 		__vki_u16	u6_addr16[8];
@@ -770,10 +770,10 @@ struct vki_sockaddr_un {
 //----------------------------------------------------------------------
 
 struct vki_sockaddr_nl {
-        vki_sa_family_t    nl_family;      /* AF_NETLINK   */
-        unsigned short     nl_pad;         /* zero         */
-        __vki_u32          nl_pid;         /* port ID      */
-        __vki_u32          nl_groups;      /* multicast groups mask */
+		vki_sa_family_t    nl_family;      /* AF_NETLINK   */
+		unsigned short     nl_pad;         /* zero         */
+		__vki_u32          nl_pid;         /* port ID      */
+		__vki_u32          nl_groups;      /* multicast groups mask */
 };
 
 //----------------------------------------------------------------------
@@ -782,11 +782,11 @@ struct vki_sockaddr_nl {
 
 #define	VKI_IFNAMSIZ	16
 
-struct vki_ifmap 
+struct vki_ifmap
 {
 	unsigned long mem_start;
 	unsigned long mem_end;
-	unsigned short base_addr; 
+	unsigned short base_addr;
 	unsigned char irq;
 	unsigned char dma;
 	unsigned char port;
@@ -798,8 +798,8 @@ struct vki_if_settings
 	unsigned int type;	/* Type of physical device or protocol */
 	unsigned int size;	/* Size of the data allocated by the caller */
 	union {
-                // [[Nb: converted these all to void* to avoid pulling in
-                //   unnecessary headers]]]
+				// [[Nb: converted these all to void* to avoid pulling in
+				//   unnecessary headers]]]
 		/* {atm/eth/dsl}_settings anyone ? */
 		void /*raw_hdlc_proto		*/__user *raw_hdlc;
 		void /*cisco_proto		*/__user *cisco;
@@ -813,14 +813,14 @@ struct vki_if_settings
 	} ifs_ifsu;
 };
 
-struct vki_ifreq 
+struct vki_ifreq
 {
 #define VKI_IFHWADDRLEN	6
 	union
 	{
 		char	ifrn_name[VKI_IFNAMSIZ];		/* if name, e.g. "en0" */
 	} ifr_ifrn;
-	
+
 	union {
 		struct	vki_sockaddr ifru_addr;
 		struct	vki_sockaddr ifru_dstaddr;
@@ -856,10 +856,10 @@ struct vki_ifreq
 #define vki_ifr_newname	ifr_ifru.ifru_newname	/* New name		*/
 #define vki_ifr_settings ifr_ifru.ifru_settings	/* Device/proto settings*/
 
-struct vki_ifconf 
+struct vki_ifconf
 {
 	int	ifc_len;			/* size of buffer	*/
-	union 
+	union
 	{
 		char __user *ifcu_buf;
 		struct vki_ifreq __user *ifcu_req;
@@ -883,7 +883,7 @@ struct vki_arpreq {
 // From linux-2.6.8.1/include/linux/route.h
 //----------------------------------------------------------------------
 
-struct vki_rtentry 
+struct vki_rtentry
 {
 	unsigned long	rt_pad1;
 	struct vki_sockaddr	rt_dst;		/* target address		*/
@@ -921,11 +921,11 @@ enum vki_sctp_optname {
 #define VKI_SCTP_NODELAY	VKI_SCTP_NODELAY
 	VKI_SCTP_AUTOCLOSE,
 #define VKI_SCTP_AUTOCLOSE VKI_SCTP_AUTOCLOSE
-	VKI_SCTP_SET_PEER_PRIMARY_ADDR, 
+	VKI_SCTP_SET_PEER_PRIMARY_ADDR,
 #define VKI_SCTP_SET_PEER_PRIMARY_ADDR VKI_SCTP_SET_PEER_PRIMARY_ADDR
 	VKI_SCTP_PRIMARY_ADDR,
 #define VKI_SCTP_PRIMARY_ADDR VKI_SCTP_PRIMARY_ADDR
-	VKI_SCTP_ADAPTION_LAYER,      
+	VKI_SCTP_ADAPTION_LAYER,
 #define VKI_SCTP_ADAPTION_LAYER VKI_SCTP_ADAPTION_LAYER
 	VKI_SCTP_DISABLE_FRAGMENTS,
 #define VKI_SCTP_DISABLE_FRAGMENTS VKI_SCTP_DISABLE_FRAGMENTS
@@ -944,7 +944,7 @@ enum vki_sctp_optname {
 	VKI_SCTP_GET_PEER_ADDR_INFO,
 #define VKI_SCTP_GET_PEER_ADDR_INFO VKI_SCTP_GET_PEER_ADDR_INFO
 
-	/* Internal Socket Options. Some of the sctp library functions are 
+	/* Internal Socket Options. Some of the sctp library functions are
 	 * implemented using these socket options.
 	 */
 	VKI_SCTP_SOCKOPT_BINDX_ADD = 100,/* BINDX requests for adding addresses. */
@@ -1130,13 +1130,13 @@ typedef struct __vki_user_cap_header_struct {
 	__vki_u32 version;
 	int pid;
 } __user *vki_cap_user_header_t;
- 
+
 typedef struct __vki_user_cap_data_struct {
-        __vki_u32 effective;
-        __vki_u32 permitted;
-        __vki_u32 inheritable;
+		__vki_u32 effective;
+		__vki_u32 permitted;
+		__vki_u32 inheritable;
 } __user *vki_cap_user_data_t;
-  
+
 
 //----------------------------------------------------------------------
 // From linux-2.6.8.1/include/linux/module.h
@@ -1157,7 +1157,7 @@ struct vki_ipc_perm
 	__vki_kernel_gid_t	gid;
 	__vki_kernel_uid_t	cuid;
 	__vki_kernel_gid_t	cgid;
-	__vki_kernel_mode_t	mode; 
+	__vki_kernel_mode_t	mode;
 	unsigned short	seq;
 };
 
@@ -1171,7 +1171,7 @@ struct vki_ipc_perm
 #define VKI_IPC_INFO 3     /* see ipcs */
 
 #define VKI_IPC_64  0x0100  /* New version (support 32-bit UIDs, bigger
-			       message sizes, etc. */
+				   message sizes, etc. */
 // From /usr/include/bits/shm.h
 # define VKI_SHM_HUGETLB   04000
 
@@ -1192,7 +1192,7 @@ struct vki_semid_ds {
 	struct vki_ipc_perm	sem_perm;		/* permissions .. see ipc.h */
 	__vki_kernel_time_t	sem_otime;		/* last semop time */
 	__vki_kernel_time_t	sem_ctime;		/* last change time */
-        // [[Use void* to avoid excess header copying]]
+		// [[Use void* to avoid excess header copying]]
 	void/*struct sem	*/*sem_base;		/* ptr to first semaphore in array */
 	void/*struct sem_queue */*sem_pending;		/* pending operations to be processed */
 	void/*struct sem_queue */**sem_pending_last;	/* last pending operation */
@@ -1385,41 +1385,43 @@ struct vki_robust_list_head {
 #define VKI_S_IWOTH 00002
 #define VKI_S_IXOTH 00001
 
+#define VKI_STATX_ALL 0x00000FFFU
+
 struct vki_statx_timestamp {
-        __vki_s64   tv_sec;
-        __vki_u32   tv_nsec;
-        __vki_s32   __reserved;
+		__vki_s64   tv_sec;
+		__vki_u32   tv_nsec;
+		__vki_s32   __reserved;
 };
 
 struct vki_statx {
-        /* 0x00 */
-        __vki_u32   stx_mask;       /* What results were written [uncond] */
-        __vki_u32   stx_blksize;    /* Preferred general I/O size [uncond] */
-        __vki_u64   stx_attributes; /* Flags conveying information about the file [uncond] */
-        /* 0x10 */
-        __vki_u32   stx_nlink;      /* Number of hard links */
-        __vki_u32   stx_uid;        /* User ID of owner */
-        __vki_u32   stx_gid;        /* Group ID of owner */
-        __vki_u16   stx_mode;       /* File mode */
-        __vki_u16   __spare0[1];
-        /* 0x20 */
-        __vki_u64   stx_ino;        /* Inode number */
-        __vki_u64   stx_size;       /* File size */
-        __vki_u64   stx_blocks;     /* Number of 512-byte blocks allocated */
-        __vki_u64   stx_attributes_mask; /* Mask to show what's supported in stx_attributes */
-        /* 0x40 */
-        struct vki_statx_timestamp  stx_atime;      /* Last access time */
-        struct vki_statx_timestamp  stx_btime;      /* File creation time */
-        struct vki_statx_timestamp  stx_ctime;      /* Last attribute change time */
-        struct vki_statx_timestamp  stx_mtime;      /* Last data modification time */
-        /* 0x80 */
-        __vki_u32   stx_rdev_major; /* Device ID of special file [if bdev/cdev] */
-        __vki_u32   stx_rdev_minor;
-        __vki_u32   stx_dev_major;  /* ID of device containing file [uncond] */
-        __vki_u32   stx_dev_minor;
-        /* 0x90 */
-        __vki_u64   __spare2[14];   /* Spare space for future expansion */
-        /* 0x100 */
+		/* 0x00 */
+		__vki_u32   stx_mask;       /* What results were written [uncond] */
+		__vki_u32   stx_blksize;    /* Preferred general I/O size [uncond] */
+		__vki_u64   stx_attributes; /* Flags conveying information about the file [uncond] */
+		/* 0x10 */
+		__vki_u32   stx_nlink;      /* Number of hard links */
+		__vki_u32   stx_uid;        /* User ID of owner */
+		__vki_u32   stx_gid;        /* Group ID of owner */
+		__vki_u16   stx_mode;       /* File mode */
+		__vki_u16   __spare0[1];
+		/* 0x20 */
+		__vki_u64   stx_ino;        /* Inode number */
+		__vki_u64   stx_size;       /* File size */
+		__vki_u64   stx_blocks;     /* Number of 512-byte blocks allocated */
+		__vki_u64   stx_attributes_mask; /* Mask to show what's supported in stx_attributes */
+		/* 0x40 */
+		struct vki_statx_timestamp  stx_atime;      /* Last access time */
+		struct vki_statx_timestamp  stx_btime;      /* File creation time */
+		struct vki_statx_timestamp  stx_ctime;      /* Last attribute change time */
+		struct vki_statx_timestamp  stx_mtime;      /* Last data modification time */
+		/* 0x80 */
+		__vki_u32   stx_rdev_major; /* Device ID of special file [if bdev/cdev] */
+		__vki_u32   stx_rdev_minor;
+		__vki_u32   stx_dev_major;  /* ID of device containing file [uncond] */
+		__vki_u32   stx_dev_minor;
+		/* 0x90 */
+		__vki_u64   __spare2[14];   /* Spare space for future expansion */
+		/* 0x100 */
 };
 
 
@@ -1476,6 +1478,8 @@ struct vki_flock64 {
 	__vki_kernel_pid_t	l_pid;
 };
 
+#define VKI_AT_EMPTY_PATH       0x1000  /* Allow empty relative pathname */
+
 //----------------------------------------------------------------------
 // From linux-2.6.8.1/include/linux/sysctl.h
 //----------------------------------------------------------------------
@@ -1509,8 +1513,8 @@ enum {
 struct vki_io_event {
 	__vki_u64	data;		/* the data field from the iocb */
 	__vki_u64	obj;		/* what iocb this event came from */
-        // [[Nb: These fields renamed from 'res' and 'res2' because 'res' is
-        //   a macro in vg_syscalls.c!]]
+		// [[Nb: These fields renamed from 'res' and 'res2' because 'res' is
+		//   a macro in vg_syscalls.c!]]
 	__vki_s64	result;		/* result code for this event */
 	__vki_s64	result2;	/* secondary result */
 };
@@ -1591,13 +1595,13 @@ struct vki_msgbuf {
 
 struct vki_msginfo {
 	int msgpool;
-	int msgmap; 
-	int msgmax; 
-	int msgmnb; 
-	int msgmni; 
-	int msgssz; 
-	int msgtql; 
-	unsigned short  msgseg; 
+	int msgmap;
+	int msgmax;
+	int msgmnb;
+	int msgmni;
+	int msgssz;
+	int msgtql;
+	unsigned short  msgseg;
 };
 
 //----------------------------------------------------------------------
@@ -1845,29 +1849,29 @@ struct vki_ppdev_frob_struct {
 
 typedef struct vki_sg_io_hdr
 {
-    int interface_id;           /* [i] 'S' for SCSI generic (required) */
-    int dxfer_direction;        /* [i] data transfer direction  */
-    unsigned char cmd_len;      /* [i] SCSI command length ( <= 16 bytes) */
-    unsigned char mx_sb_len;    /* [i] max length to write to sbp */
-    unsigned short iovec_count; /* [i] 0 implies no scatter gather */
-    unsigned int dxfer_len;     /* [i] byte count of data transfer */
-    void __user *dxferp;	/* [i], [*io] points to data transfer memory
-					      or scatter gather list */
-    unsigned char __user *cmdp; /* [i], [*i] points to command to perform */
-    void __user *sbp;		/* [i], [*o] points to sense_buffer memory */
-    unsigned int timeout;       /* [i] MAX_UINT->no timeout (unit: millisec) */
-    unsigned int flags;         /* [i] 0 -> default, see SG_FLAG... */
-    int pack_id;                /* [i->o] unused internally (normally) */
-    void __user * usr_ptr;      /* [i->o] unused internally */
-    unsigned char status;       /* [o] scsi status */
-    unsigned char masked_status;/* [o] shifted, masked scsi status */
-    unsigned char msg_status;   /* [o] messaging level data (optional) */
-    unsigned char sb_len_wr;    /* [o] byte count actually written to sbp */
-    unsigned short host_status; /* [o] errors from host adapter */
-    unsigned short driver_status;/* [o] errors from software driver */
-    int resid;                  /* [o] dxfer_len - actual_transferred */
-    unsigned int duration;      /* [o] time taken by cmd (unit: millisec) */
-    unsigned int info;          /* [o] auxiliary information */
+	int interface_id;           /* [i] 'S' for SCSI generic (required) */
+	int dxfer_direction;        /* [i] data transfer direction  */
+	unsigned char cmd_len;      /* [i] SCSI command length ( <= 16 bytes) */
+	unsigned char mx_sb_len;    /* [i] max length to write to sbp */
+	unsigned short iovec_count; /* [i] 0 implies no scatter gather */
+	unsigned int dxfer_len;     /* [i] byte count of data transfer */
+	void __user *dxferp;	/* [i], [*io] points to data transfer memory
+						  or scatter gather list */
+	unsigned char __user *cmdp; /* [i], [*i] points to command to perform */
+	void __user *sbp;		/* [i], [*o] points to sense_buffer memory */
+	unsigned int timeout;       /* [i] MAX_UINT->no timeout (unit: millisec) */
+	unsigned int flags;         /* [i] 0 -> default, see SG_FLAG... */
+	int pack_id;                /* [i->o] unused internally (normally) */
+	void __user * usr_ptr;      /* [i->o] unused internally */
+	unsigned char status;       /* [o] scsi status */
+	unsigned char masked_status;/* [o] shifted, masked scsi status */
+	unsigned char msg_status;   /* [o] messaging level data (optional) */
+	unsigned char sb_len_wr;    /* [o] byte count actually written to sbp */
+	unsigned short host_status; /* [o] errors from host adapter */
+	unsigned short driver_status;/* [o] errors from software driver */
+	int resid;                  /* [o] dxfer_len - actual_transferred */
+	unsigned int duration;      /* [o] time taken by cmd (unit: millisec) */
+	unsigned int info;          /* [o] auxiliary information */
 } vki_sg_io_hdr_t;  /* 64 bytes long (on i386) */
 
 #define VKI_SG_DXFER_NONE -1        /* e.g. a SCSI Test Unit Ready command */
@@ -1879,14 +1883,14 @@ typedef struct vki_sg_io_hdr
 				   kernel buffers before the transfer */
 
 typedef struct vki_sg_scsi_id { /* used by SG_GET_SCSI_ID ioctl() */
-    int host_no;        /* as in "scsi<n>" where 'n' is one of 0, 1, 2 etc */
-    int channel;
-    int scsi_id;        /* scsi id of target device */
-    int lun;
-    int scsi_type;      /* TYPE_... defined in scsi/scsi.h */
-    short h_cmd_per_lun;/* host (adapter) maximum commands per lun */
-    short d_queue_depth;/* device (or adapter) maximum queue length */
-    int unused[2];      /* probably find a good use, set 0 for now */
+	int host_no;        /* as in "scsi<n>" where 'n' is one of 0, 1, 2 etc */
+	int channel;
+	int scsi_id;        /* scsi id of target device */
+	int lun;
+	int scsi_type;      /* TYPE_... defined in scsi/scsi.h */
+	short h_cmd_per_lun;/* host (adapter) maximum commands per lun */
+	short d_queue_depth;/* device (or adapter) maximum queue length */
+	int unused[2];      /* probably find a good use, set 0 for now */
 } vki_sg_scsi_id_t; /* 32 bytes long on i386 */
 
 #define VKI_SG_EMULATED_HOST 0x2203 /* true for emulated host adapter (ATAPI) */
@@ -1927,27 +1931,27 @@ struct vki_scsi_idlun {
 //----------------------------------------------------------------------
 
 #define VKI_CDROMPLAYMSF		0x5303 /* Play Audio MSF (struct cdrom_msf) */
-#define VKI_CDROMREADTOCHDR		0x5305 /* Read TOC header 
-                                	           (struct cdrom_tochdr) */
-#define VKI_CDROMREADTOCENTRY		0x5306 /* Read TOC entry 
-                                	           (struct cdrom_tocentry) */
+#define VKI_CDROMREADTOCHDR		0x5305 /* Read TOC header
+											   (struct cdrom_tochdr) */
+#define VKI_CDROMREADTOCENTRY		0x5306 /* Read TOC entry
+											   (struct cdrom_tocentry) */
 #define VKI_CDROMSTOP			0x5307 /* Stop the cdrom drive */
-#define VKI_CDROMSUBCHNL		0x530b /* Read subchannel data 
-                                	           (struct cdrom_subchnl) */
-#define VKI_CDROMREADMODE2		0x530c /* Read CDROM mode 2 data (2336 Bytes) 
-                                	           (struct cdrom_read) */
+#define VKI_CDROMSUBCHNL		0x530b /* Read subchannel data
+											   (struct cdrom_subchnl) */
+#define VKI_CDROMREADMODE2		0x530c /* Read CDROM mode 2 data (2336 Bytes)
+											   (struct cdrom_read) */
 #define VKI_CDROMREADMODE1		0x530d /* Read CDROM mode 1 data (2048 Bytes)
-                                                   (struct cdrom_read) */
+												   (struct cdrom_read) */
 #define VKI_CDROMREADAUDIO		0x530e /* (struct cdrom_read_audio) */
-#define VKI_CDROMMULTISESSION		0x5310 /* Obtain the start-of-last-session 
-                                	           address of multi session disks 
-                                	           (struct cdrom_multisession) */
-#define VKI_CDROM_GET_MCN		0x5311 /* Obtain the "Universal Product Code" 
-                                	           if available (struct cdrom_mcn) */
+#define VKI_CDROMMULTISESSION		0x5310 /* Obtain the start-of-last-session
+											   address of multi session disks
+											   (struct cdrom_multisession) */
+#define VKI_CDROM_GET_MCN		0x5311 /* Obtain the "Universal Product Code"
+											   if available (struct cdrom_mcn) */
 #define VKI_CDROMVOLREAD		0x5313 /* Get the drive's volume setting
-                                	          (struct cdrom_volctrl) */
+											  (struct cdrom_volctrl) */
 #define VKI_CDROMREADRAW		0x5314	/* read data in raw mode (2352 Bytes)
-                                	           (struct cdrom_read) */
+											   (struct cdrom_read) */
 #define VKI_CDROM_CLEAR_OPTIONS		0x5321  /* Clear behavior options */
 #define VKI_CDROM_DRIVE_STATUS		0x5326  /* Get tray position, etc. */
 #define VKI_CDROM_DISC_STATUS		0x5327	/* get CD type information */
@@ -1956,20 +1960,20 @@ struct vki_scsi_idlun {
 #define VKI_DVD_READ_STRUCT		0x5390  /* read structure */
 #define VKI_CDROM_SEND_PACKET		0x5393	/* send a packet to the drive */
 
-struct vki_cdrom_msf0		
+struct vki_cdrom_msf0
 {
 	__vki_u8	minute;
 	__vki_u8	second;
 	__vki_u8	frame;
 };
 
-union vki_cdrom_addr		
+union vki_cdrom_addr
 {
 	struct vki_cdrom_msf0	msf;
 	int			lba;
 };
 
-struct vki_cdrom_msf 
+struct vki_cdrom_msf
 {
 	__vki_u8	cdmsf_min0;	/* start minute */
 	__vki_u8	cdmsf_sec0;	/* start second */
@@ -1979,7 +1983,7 @@ struct vki_cdrom_msf
 	__vki_u8	cdmsf_frame1;	/* end frame */
 };
 
-struct vki_cdrom_tochdr 	
+struct vki_cdrom_tochdr
 {
 	__vki_u8	cdth_trk0;	/* start track */
 	__vki_u8	cdth_trk1;	/* end track */
@@ -1993,7 +1997,7 @@ struct vki_cdrom_volctrl
 	__vki_u8	channel3;
 };
 
-struct vki_cdrom_subchnl 
+struct vki_cdrom_subchnl
 {
 	__vki_u8	cdsc_format;
 	__vki_u8	cdsc_audiostatus;
@@ -2005,7 +2009,7 @@ struct vki_cdrom_subchnl
 	union vki_cdrom_addr cdsc_reladdr;
 };
 
-struct vki_cdrom_tocentry 
+struct vki_cdrom_tocentry
 {
 	__vki_u8	cdte_track;
 	__vki_u8	cdte_adr	:4;
@@ -2015,7 +2019,7 @@ struct vki_cdrom_tocentry
 	__vki_u8	cdte_datamode;
 };
 
-struct vki_cdrom_read      
+struct vki_cdrom_read
 {
 	int	cdread_lba;
 	char 	*cdread_bufaddr;
@@ -2032,14 +2036,14 @@ struct vki_cdrom_read_audio
 
 struct vki_cdrom_multisession
 {
-	union vki_cdrom_addr addr; /* frame address: start-of-last-session 
-	                           (not the new "frame 16"!).  Only valid
-	                           if the "xa_flag" is true. */
+	union vki_cdrom_addr addr; /* frame address: start-of-last-session
+							   (not the new "frame 16"!).  Only valid
+							   if the "xa_flag" is true. */
 	__vki_u8 xa_flag;        /* 1: "is XA disk" */
 	__vki_u8 addr_format;    /* CDROM_LBA or CDROM_MSF */
 };
 
-struct vki_cdrom_mcn 
+struct vki_cdrom_mcn
 {
   __vki_u8 medium_catalog_number[14]; /* 13 ASCII digits, null-terminated */
 };
@@ -2052,7 +2056,7 @@ struct vki_cdrom_generic_command
 	unsigned char		__user *buffer;
 	unsigned int 		buflen;
 	int			stat;
-        // [[replace with void* to reduce inclusion amounts]]
+		// [[replace with void* to reduce inclusion amounts]]
 	void/*struct vki_request_sense	*/__user *sense;
 	unsigned char		data_direction;
 	int			quiet;
@@ -2152,10 +2156,10 @@ typedef struct vki_audio_buf_info {
 //----------------------------------------------------------------------
 
 struct vki_hd_geometry {
-      unsigned char heads;
-      unsigned char sectors;
-      unsigned short cylinders;
-      unsigned long start;
+	  unsigned char heads;
+	  unsigned char sectors;
+	  unsigned short cylinders;
+	  unsigned long start;
 };
 
 #define VKI_HDIO_GETGEO		0x0301	/* get device geometry */
@@ -2182,7 +2186,7 @@ struct vki_fb_fix_screeninfo {
 	__vki_u32 smem_len;			/* Length of frame buffer mem */
 	__vki_u32 type;			/* see FB_TYPE_*		*/
 	__vki_u32 type_aux;		/* Interleave for interleaved Planes */
-	__vki_u32 visual;		/* see FB_VISUAL_*		*/ 
+	__vki_u32 visual;		/* see FB_VISUAL_*		*/
 	__vki_u16 xpanstep;		/* zero if no hardware panning  */
 	__vki_u16 ypanstep;		/* zero if no hardware panning  */
 	__vki_u16 ywrapstep;		/* zero if no hardware ywrap    */
@@ -2198,8 +2202,8 @@ struct vki_fb_fix_screeninfo {
 struct vki_fb_bitfield {
 	__vki_u32 offset;		/* beginning of bitfield	*/
 	__vki_u32 length;		/* length of bitfield		*/
-	__vki_u32 msb_right;		/* != 0 : Most significant bit is */ 
-					/* right */ 
+	__vki_u32 msb_right;		/* != 0 : Most significant bit is */
+					/* right */
 };
 
 struct vki_fb_var_screeninfo {
@@ -2216,7 +2220,7 @@ struct vki_fb_var_screeninfo {
 	struct vki_fb_bitfield red;	/* bitfield in fb mem if true color, */
 	struct vki_fb_bitfield green;	/* else only length is significant */
 	struct vki_fb_bitfield blue;
-	struct vki_fb_bitfield transp;	/* transparency			*/	
+	struct vki_fb_bitfield transp;	/* transparency			*/
 
 	__vki_u32 nonstd;		/* != 0 Non standard pixel format */
 
@@ -2328,10 +2332,10 @@ struct vki_kbsentry {
 #define VKI_KDSKBSENT      0x4B49  /* sets one function key string entry */
 
 struct vki_kbdiacr {
-        unsigned char diacr, base, result;
+		unsigned char diacr, base, result;
 };
 struct vki_kbdiacrs {
-        unsigned int kb_cnt;    /* number of entries in following array */
+		unsigned int kb_cnt;    /* number of entries in following array */
 	struct vki_kbdiacr kbdiacr[256];    /* MAX_DIACR from keyboard.h */
 };
 #define VKI_KDGKBDIACR     0x4B4A  /* read kernel accent table */
@@ -2351,7 +2355,7 @@ struct vki_kbd_repeat {
 			/* earlier this field was misnamed "rate" */
 };
 #define VKI_KDKBDREP       0x4B52  /* set keyboard delay/repeat rate;
-                                    * actually used values are returned */
+									* actually used values are returned */
 
 #define VKI_KDFONTOP       0x4B72  /* font operations */
 
@@ -2461,9 +2465,9 @@ struct vki_snd_ctl_elem_list {
 };
 
 struct vki_snd_ctl_tlv {
-    unsigned int numid;	/* control element numeric identification */
-    unsigned int length;	/* in bytes aligned to 4 */
-    unsigned int tlv[0];	/* first TLV */
+	unsigned int numid;	/* control element numeric identification */
+	unsigned int length;	/* in bytes aligned to 4 */
+	unsigned int tlv[0];	/* first TLV */
 };
 
 #define VKI_SNDRV_CTL_IOCTL_PVERSION	_VKI_IOR('U', 0x00, int)
@@ -2573,9 +2577,9 @@ struct vki_vt_consize {
 #define VKI_PR_GET_TIMING   13
 #define VKI_PR_SET_TIMING   14
 # define VKI_PR_TIMING_STATISTICAL  0       /* Normal, traditional,
-                                                   statistical process timing */
+												   statistical process timing */
 # define VKI_PR_TIMING_TIMESTAMP    1       /* Accurate timestamp based
-                                                   process timing */
+												   process timing */
 
 #define VKI_PR_SET_NAME    15		/* Set process name */
 #define VKI_PR_GET_NAME    16		/* Get process name */
@@ -2601,7 +2605,7 @@ struct vki_usbdevfs_ctrltransfer {
 	__vki_u16 wIndex;
 	__vki_u16 wLength;
 	__vki_u32 timeout;  /* in milliseconds */
- 	void __user *data;
+	void __user *data;
 };
 
 struct vki_usbdevfs_bulktransfer {
@@ -2670,11 +2674,11 @@ struct vki_usbdevfs_ioctl {
 
 // [[this is missing in usbdevice_fs.h]]
 struct vki_usbdevfs_setuppacket {
-       __vki_u8 bRequestType;
-       __vki_u8 bRequest;
-       __vki_u16 wValue;
-       __vki_u16 wIndex;
-       __vki_u16 wLength;
+	   __vki_u8 bRequestType;
+	   __vki_u8 bRequest;
+	   __vki_u16 wValue;
+	   __vki_u16 wIndex;
+	   __vki_u16 wLength;
 };
 
 //----------------------------------------------------------------------
@@ -2696,11 +2700,11 @@ struct vki_usbdevfs_setuppacket {
 #define VKI_I2C_SMBUS_WRITE 0
 
 #define VKI_I2C_SLAVE        0x0703  /* Change slave address                 */
-                                     /* Attn.: Slave address is 7 or 10 bits */
+									 /* Attn.: Slave address is 7 or 10 bits */
 #define VKI_I2C_SLAVE_FORCE  0x0706  /* Change slave address                 */
-                                     /* Attn.: Slave address is 7 or 10 bits */
-                                     /* This changes the address, even if it */
-                                     /* is already taken!                    */
+									 /* Attn.: Slave address is 7 or 10 bits */
+									 /* This changes the address, even if it */
+									 /* is already taken!                    */
 #define VKI_I2C_TENBIT       0x0704  /* 0 for 7 bit addrs, != 0 for 10 bit   */
 #define VKI_I2C_FUNCS        0x0705  /* Get the adapter functionality */
 #define VKI_I2C_RDWR         0x0707  /* Combined R/W transfer (one STOP only) */
@@ -2709,19 +2713,19 @@ struct vki_usbdevfs_setuppacket {
 
 #define VKI_I2C_SMBUS_BLOCK_MAX  32  /* As specified in SMBus standard */
 union vki_i2c_smbus_data {
-        __vki_u8 byte;
-        __vki_u16 word;
-        __vki_u8 block[VKI_I2C_SMBUS_BLOCK_MAX + 2];
-                 /* block[0] is used for length */
-                 /* and one more for PEC */
+		__vki_u8 byte;
+		__vki_u16 word;
+		__vki_u8 block[VKI_I2C_SMBUS_BLOCK_MAX + 2];
+				 /* block[0] is used for length */
+				 /* and one more for PEC */
 };
 
 /* This is the structure as used in the I2C_SMBUS ioctl call */
 struct vki_i2c_smbus_ioctl_data {
-        __vki_u8 read_write;
-        __vki_u8 command;
-        __vki_u32 size;
-        union vki_i2c_smbus_data __user *data;
+		__vki_u8 read_write;
+		__vki_u8 command;
+		__vki_u32 size;
+		union vki_i2c_smbus_data __user *data;
 };
 
 struct vki_i2c_msg {
@@ -2932,7 +2936,7 @@ union	vki_iwreq_data
 	struct vki_iw_point	data;	/* Other large parameters */
 };
 
-struct	vki_iwreq 
+struct	vki_iwreq
 {
 	union
 	{
@@ -3092,8 +3096,8 @@ struct vki_getcpu_cache {
 //----------------------------------------------------------------------
 
 #if defined(VGPV_arm_linux_android) || defined(VGPV_x86_linux_android) \
-    || defined(VGPV_mips32_linux_android) \
-    || defined(VGPV_arm64_linux_android)
+	|| defined(VGPV_mips32_linux_android) \
+	|| defined(VGPV_arm64_linux_android)
 
 #define VKI_ASHMEM_NAME_LEN 256
 
@@ -3221,9 +3225,9 @@ struct vki_hci_inquiry_req {
 //----------------------------------------------------------------------
 
 struct vki_sockaddr_rc {
-        vki_sa_family_t     rc_family;
-        vki_bdaddr_t        rc_bdaddr;
-        __vki_u8            rc_channel;
+		vki_sa_family_t     rc_family;
+		vki_bdaddr_t        rc_bdaddr;
+		__vki_u8            rc_channel;
 };
 
 //----------------------------------------------------------------------
@@ -3252,14 +3256,14 @@ struct vki_sockaddr_rc {
 #define VKI_KVM_KVMCLOCK_CTRL         _VKI_IO(KVMIO,   0xad)
 
 struct vki_kvm_s390_mem_op {
-        /* in */
-        __vki_u64 gaddr;            /* the guest address */
-        __vki_u64 flags;            /* flags */
-        __vki_u32 size;             /* amount of bytes */
-        __vki_u32 op;               /* type of operation */
-        __vki_u64 buf;              /* buffer in userspace */
-        __vki_u8 ar;                /* the access register number */
-        __vki_u8 reserved[31];      /* should be set to 0 */
+		/* in */
+		__vki_u64 gaddr;            /* the guest address */
+		__vki_u64 flags;            /* flags */
+		__vki_u32 size;             /* amount of bytes */
+		__vki_u32 op;               /* type of operation */
+		__vki_u64 buf;              /* buffer in userspace */
+		__vki_u8 ar;                /* the access register number */
+		__vki_u8 reserved[31];      /* should be set to 0 */
 };
 
 #define VKI_KVM_S390_MEMOP_LOGICAL_READ		0
@@ -3305,7 +3309,7 @@ struct vki_hwtstamp_config {
 #define VKI_IB_IOCTL_MAGIC          0x1b
 
 #define VKI_IB_USER_MAD_REGISTER_AGENT    _VKI_IOWR(VKI_IB_IOCTL_MAGIC, 1, \
-                                              struct ib_user_mad_reg_req)
+											  struct ib_user_mad_reg_req)
 
 #define VKI_IB_USER_MAD_UNREGISTER_AGENT  _VKI_IOW(VKI_IB_IOCTL_MAGIC, 2, __u32)
 
@@ -3315,10 +3319,10 @@ struct vki_hwtstamp_config {
 // From linux-3.8/include/uapi/linux/if_tun.h
 //----------------------------------------------------------------------
 
-#define VKI_TUNSETNOCSUM  _VKI_IOW('T', 200, int) 
-#define VKI_TUNSETDEBUG   _VKI_IOW('T', 201, int) 
-#define VKI_TUNSETIFF     _VKI_IOW('T', 202, int) 
-#define VKI_TUNSETPERSIST _VKI_IOW('T', 203, int) 
+#define VKI_TUNSETNOCSUM  _VKI_IOW('T', 200, int)
+#define VKI_TUNSETDEBUG   _VKI_IOW('T', 201, int)
+#define VKI_TUNSETIFF     _VKI_IOW('T', 202, int)
+#define VKI_TUNSETPERSIST _VKI_IOW('T', 203, int)
 #define VKI_TUNSETOWNER   _VKI_IOW('T', 204, int)
 #define VKI_TUNSETLINK    _VKI_IOW('T', 205, int)
 #define VKI_TUNSETGROUP   _VKI_IOW('T', 206, int)
@@ -3351,35 +3355,35 @@ struct vki_hwtstamp_config {
 typedef unsigned long __vki_xen_pfn_t;
 
 struct vki_xen_privcmd_hypercall {
-       __vki_u64 op;
-       __vki_u64 arg[5];
+	   __vki_u64 op;
+	   __vki_u64 arg[5];
 };
 
 struct vki_xen_privcmd_mmap_entry {
-        __vki_u64 va;
-        __vki_u64 mfn;
-        __vki_u64 npages;
+		__vki_u64 va;
+		__vki_u64 mfn;
+		__vki_u64 npages;
 };
 
 struct vki_xen_privcmd_mmap {
-        int num;
-        __vki_u16 dom; /* target domain */
-        struct vki_xen_privcmd_mmap_entry *entry;
+		int num;
+		__vki_u16 dom; /* target domain */
+		struct vki_xen_privcmd_mmap_entry *entry;
 };
 
 struct vki_xen_privcmd_mmapbatch {
-        int num;     /* number of pages to populate */
-        __vki_u16 dom; /* target domain */
-        __vki_u64 addr;  /* virtual address */
-        __vki_xen_pfn_t *arr; /* array of mfns - top nibble set on err */
+		int num;     /* number of pages to populate */
+		__vki_u16 dom; /* target domain */
+		__vki_u64 addr;  /* virtual address */
+		__vki_xen_pfn_t *arr; /* array of mfns - top nibble set on err */
 };
 
 struct vki_xen_privcmd_mmapbatch_v2 {
-        unsigned int num; /* number of pages to populate */
-        __vki_u16 dom;      /* target domain */
-        __vki_u64 addr;       /* virtual address */
-        const __vki_xen_pfn_t *arr; /* array of mfns */
-        int __user *err;  /* array of error codes */
+		unsigned int num; /* number of pages to populate */
+		__vki_u16 dom;      /* target domain */
+		__vki_u64 addr;       /* virtual address */
+		const __vki_xen_pfn_t *arr; /* array of mfns */
+		int __user *err;  /* array of error codes */
 };
 
 #define VKI_XEN_IOCTL_PRIVCMD_HYPERCALL    _VKI_IOC(_VKI_IOC_NONE, 'P', 0, sizeof(struct vki_xen_privcmd_hypercall))
@@ -3453,7 +3457,7 @@ struct vki_sock_fprog {
 	__vki_u16 len;  /* actually unsigned short */
 	struct vki_sock_filter *filter;
 };
-   
+
 //----------------------------------------------------------------------
 // From linux/include/uapi/linux/ethtool.h
 //----------------------------------------------------------------------
@@ -3613,9 +3617,9 @@ struct vki_ethtool_ts_info {
 #define VKI_ETHTOOL_GTXCSUM	0x00000016 /* Get TX hw csum enable (ethtool_value) */
 #define VKI_ETHTOOL_STXCSUM	0x00000017 /* Set TX hw csum enable (ethtool_value) */
 #define VKI_ETHTOOL_GSG		0x00000018 /* Get scatter-gather enable
-					    * (ethtool_value) */
+						* (ethtool_value) */
 #define VKI_ETHTOOL_SSG		0x00000019 /* Set scatter-gather enable
-					    * (ethtool_value). */
+						* (ethtool_value). */
 #define VKI_ETHTOOL_TEST	0x0000001a /* execute NIC self-test. */
 #define VKI_ETHTOOL_PHYS_ID	0x0000001c /* identify the NIC */
 #define VKI_ETHTOOL_GTSO	0x0000001e /* Get TSO enable (ethtool_value) */
@@ -3644,25 +3648,25 @@ struct vki_ethtool_ts_info {
 typedef int vki_ion_user_handle_t;
 
 struct vki_ion_allocation_data {
-        vki_size_t len;
-        vki_size_t align;
-        unsigned int heap_id_mask;
-        unsigned int flags;
-        vki_ion_user_handle_t handle;
+		vki_size_t len;
+		vki_size_t align;
+		unsigned int heap_id_mask;
+		unsigned int flags;
+		vki_ion_user_handle_t handle;
 };
 
 struct vki_ion_fd_data {
-        vki_ion_user_handle_t handle;
-        int fd;
+		vki_ion_user_handle_t handle;
+		int fd;
 };
 
 struct vki_ion_handle_data {
-        vki_ion_user_handle_t handle;
+		vki_ion_user_handle_t handle;
 };
 
 struct vki_ion_custom_data {
-        unsigned int cmd;
-        unsigned long arg;
+		unsigned int cmd;
+		unsigned long arg;
 };
 
 #define VKI_ION_IOC_MAGIC   'I'
@@ -3693,25 +3697,25 @@ struct vki_ion_custom_data {
 //----------------------------------------------------------------------
 
 struct vki_sync_merge_data {
-        __vki_s32 fd2;
-        char      name[32];
-        __vki_s32 fence;
+		__vki_s32 fd2;
+		char      name[32];
+		__vki_s32 fence;
 };
 
 struct vki_sync_pt_info {
-        __vki_u32 len;
-        char      obj_name[32];
-        char      driver_name[32];
-        __vki_s32 status;
-        __vki_u64 timestamp_ns;
-        __vki_u8  driver_data[0];
+		__vki_u32 len;
+		char      obj_name[32];
+		char      driver_name[32];
+		__vki_s32 status;
+		__vki_u64 timestamp_ns;
+		__vki_u8  driver_data[0];
 };
 
 struct vki_sync_fence_info_data {
-        __vki_u32 len;
-        char      name[32];
-        __vki_s32 status;
-        __vki_u8  pt_info[0];
+		__vki_u32 len;
+		char      name[32];
+		__vki_s32 status;
+		__vki_u8  pt_info[0];
 };
 
 #define VKI_SYNC_IOC_MAGIC   '>'
@@ -3758,30 +3762,30 @@ struct vki_getinfo_fid2path {
 //----------------------------------------------------------------------
 
 #define VKI_OBD_IOC_FID2PATH \
-           _VKI_IOWR ('f', 150, VKI_OBD_IOC_DATA_TYPE)
+		   _VKI_IOWR ('f', 150, VKI_OBD_IOC_DATA_TYPE)
 #define VKI_LL_IOC_PATH2FID \
-           _VKI_IOR ('f', 173, long)
+		   _VKI_IOR ('f', 173, long)
 
 //----------------------------------------------------------------------
 // From lustre/include/lustre/lustre_idl.h
 //----------------------------------------------------------------------
 
 struct vki_getparent {
-    struct vki_lu_fid   gp_fid;
-    __vki_u32       gp_linkno;
-    __vki_u32       gp_name_size;
-    char            gp_name[0];
+	struct vki_lu_fid   gp_fid;
+	__vki_u32       gp_linkno;
+	__vki_u32       gp_name_size;
+	char            gp_name[0];
 } __attribute__((packed));
 
 //----------------------------------------------------------------------
 // From Lustre's lustre/include/lustre/lustre_user.h
 //----------------------------------------------------------------------
 #define VKI_LL_IOC_GROUP_LOCK \
-           _VKI_IOW('f', 158, long)
+		   _VKI_IOW('f', 158, long)
 #define VKI_LL_IOC_GROUP_UNLOCK \
-           _VKI_IOW('f', 159, long)
+		   _VKI_IOW('f', 159, long)
 #define VKI_LL_IOC_GETPARENT \
-           _VKI_IOWR('f', 249, struct vki_getparent)
+		   _VKI_IOWR('f', 249, struct vki_getparent)
 
 
 struct vki_v4l2_rect {
@@ -4781,10 +4785,10 @@ struct vki_serial_struct {
 
 #if !defined(VKI_INIT_ARCH_ELF_STATE)
    /* This structure is used to preserve architecture specific data during
-      the loading of an ELF file, throughout the checking of architecture
-      specific ELF headers & through to the point where the ELF load is
-      known to be proceeding. This implementation is a dummy for
-      architectures which require no specific state. */
+	  the loading of an ELF file, throughout the checking of architecture
+	  specific ELF headers & through to the point where the ELF load is
+	  known to be proceeding. This implementation is a dummy for
+	  architectures which require no specific state. */
    struct vki_arch_elf_state {
    };
 
