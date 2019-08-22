@@ -8,7 +8,7 @@
    framework.
 
    Copyright (C) 2004-2017 OpenWorks LLP
-      info@open-works.net
+	  info@open-works.net
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -42,8 +42,8 @@
 typedef  unsigned char   UChar;
 typedef    signed char   Char;
 typedef           char   HChar; /* signfulness depends on host */
-                                /* Only to be used for printf etc 
-                                   format strings */
+								/* Only to be used for printf etc
+								   format strings */
 
 /* Always 16 bits. */
 typedef  unsigned short  UShort;
@@ -72,20 +72,20 @@ typedef  UInt  U256[8];
 /* A union for doing 128-bit vector primitives conveniently. */
 typedef
    union {
-      UChar  w8[16];
-      UShort w16[8];
-      UInt   w32[4];
-      ULong  w64[2];
+	  UChar  w8[16];
+	  UShort w16[8];
+	  UInt   w32[4];
+	  ULong  w64[2];
    }
    V128;
 
 /* A union for doing 256-bit vector primitives conveniently. */
 typedef
    union {
-      UChar  w8[32];
-      UShort w16[16];
-      UInt   w32[8];
-      ULong  w64[4];
+	  UChar  w8[32];
+	  UShort w16[16];
+	  UInt   w32[8];
+	  ULong  w64[4];
    }
    V256;
 
@@ -142,10 +142,10 @@ typedef  unsigned long HWord;
 
 /* Size of GPRs */
 #if defined(__mips__) && (__mips == 64) && (_MIPS_SIM == _ABIN32)
-    typedef ULong RegWord;
+	typedef ULong RegWord;
 #   define FMT_REGWORD "ll"
 #else
-    typedef HWord RegWord;
+	typedef HWord RegWord;
 #   define FMT_REGWORD "l"
 #endif
 
@@ -191,6 +191,10 @@ typedef  unsigned long HWord;
 #   define VEX_REGPARM(_n) /* */
 
 #elif defined(__mips__) && (__mips != 64)
+#   define VEX_HOST_WORDSIZE 4
+#   define VEX_REGPARM(_n) /* */
+
+#elif defined(__nanomips__) && (__nanomips != 64)
 #   define VEX_HOST_WORDSIZE 4
 #   define VEX_REGPARM(_n) /* */
 
