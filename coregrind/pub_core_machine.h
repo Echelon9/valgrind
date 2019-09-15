@@ -8,7 +8,7 @@
    framework.
 
    Copyright (C) 2000-2017 Julian Seward
-      jseward@acm.org
+	  jseward@acm.org
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -112,6 +112,20 @@
 #    error Unknown mips64 abi
 #  endif
 #  undef  VG_PLAT_USES_PPCTOC
+#elif defined(VGP_nanomips_linux)
+#  if defined (VG_LITTLEENDIAN)
+#    define VG_ELF_DATA2XXX     ELFDATA2LSB
+#  elif defined (VG_BIGENDIAN)
+#    define VG_ELF_DATA2XXX     ELFDATA2MSB
+#  else
+#    error "Unknown endianness"
+#  endif
+#  if !defined(EM_NANOMIPS)
+#    define EM_NANOMIPS 249   /* MIPS Tech nanoMIPS */
+#  endif
+#  define VG_ELF_MACHINE      EM_NANOMIPS
+#  define VG_ELF_CLASS        ELFCLASS32
+#  undef  VG_PLAT_USES_PPCTOC
 #else
 #  error Unknown platform
 #endif
@@ -145,11 +159,7 @@
 #  define VG_STACK_PTR        guest_SP
 #  define VG_FRAME_PTR        guest_FP
 #  define VG_FPC_REG          guest_fpc
-#elif defined(VGA_mips32)
-#  define VG_INSTR_PTR        guest_PC
-#  define VG_STACK_PTR        guest_r29
-#  define VG_FRAME_PTR        guest_r30
-#elif defined(VGA_mips64)
+#elif defined(VGA_mips32) || defined(VGA_mips64) || defined(VGA_nanomips)
 #  define VG_INSTR_PTR        guest_PC
 #  define VG_STACK_PTR        guest_r29
 #  define VG_FRAME_PTR        guest_r30
@@ -181,7 +191,7 @@ void VG_(set_SP) ( ThreadId tid, Addr sp );
 // Get hold of the values needed for a stack unwind, for the specified
 // (client) thread.
 void VG_(get_UnwindStartRegs) ( /*OUT*/UnwindStartRegs* regs,
-                                ThreadId tid );
+								ThreadId tid );
 
 
 //-------------------------------------------------------------
@@ -195,34 +205,34 @@ void VG_(get_UnwindStartRegs) ( /*OUT*/UnwindStartRegs* regs,
 
    x86:   initially:  call VG_(machine_get_hwcaps)
 
-          then safe to use VG_(machine_get_VexArchInfo) 
-                       and VG_(machine_x86_have_mxcsr)
+		  then safe to use VG_(machine_get_VexArchInfo)
+					   and VG_(machine_x86_have_mxcsr)
    -------------
    amd64: initially:  call VG_(machine_get_hwcaps)
 
-          then safe to use VG_(machine_get_VexArchInfo) 
+		  then safe to use VG_(machine_get_VexArchInfo)
    -------------
    ppc32: initially:  call VG_(machine_get_hwcaps)
-                      call VG_(machine_ppc32_set_clszB)
+					  call VG_(machine_ppc32_set_clszB)
 
-          then safe to use VG_(machine_get_VexArchInfo) 
-                       and VG_(machine_ppc32_has_FP)
-                       and VG_(machine_ppc32_has_VMX)
+		  then safe to use VG_(machine_get_VexArchInfo)
+					   and VG_(machine_ppc32_has_FP)
+					   and VG_(machine_ppc32_has_VMX)
    -------------
    ppc64: initially:  call VG_(machine_get_hwcaps)
-                      call VG_(machine_ppc64_set_clszB)
+					  call VG_(machine_ppc64_set_clszB)
 
-          then safe to use VG_(machine_get_VexArchInfo) 
-                       and VG_(machine_ppc64_has_VMX)
+		  then safe to use VG_(machine_get_VexArchInfo)
+					   and VG_(machine_ppc64_has_VMX)
    -------------
    arm:   initially:  call VG_(machine_get_hwcaps)
-                      call VG_(machine_arm_set_has_NEON)
+					  call VG_(machine_arm_set_has_NEON)
 
-          then safe to use VG_(machine_get_VexArchInfo) 
+		  then safe to use VG_(machine_get_VexArchInfo)
    -------------
    s390x: initially:  call VG_(machine_get_hwcaps)
 
-          then safe to use VG_(machine_get_VexArchInfo)
+		  then safe to use VG_(machine_get_VexArchInfo)
 
    VG_(machine_get_hwcaps) may use signals (although it attempts to
    leave signal state unchanged) and therefore should only be

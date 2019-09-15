@@ -8,7 +8,7 @@
    framework.
 
    Copyright (C) 2000-2017 Julian Seward
-      jseward@acm.org
+	  jseward@acm.org
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -35,7 +35,7 @@
 // PURPOSE: This module defines a few replacement functions for Linux
 // vsyscalls, which we can't implement directly.  It also contains
 // stubs for signal returns.  Note, all the code within runs on the
-// simulated CPU.  The vsyscall stubs are gotten to by use of the 
+// simulated CPU.  The vsyscall stubs are gotten to by use of the
 // redirect mechanism.
 //
 // Note: generally, putting replacement functions in here is a bad
@@ -117,7 +117,7 @@ extern SizeT VG_(x86_darwin_REDIR_FOR_strcmp)( void*, void* );
 extern void* VG_(x86_darwin_REDIR_FOR_strcat)( void*, void * );
 extern char* VG_(x86_darwin_REDIR_FOR_strcpy)( char *s1, char *s2 );
 extern SizeT VG_(x86_darwin_REDIR_FOR_strlcat)( char *s1, const char *s2,
-                                                SizeT size );
+												SizeT size );
 #endif
 
 #if defined(VGP_amd64_darwin)
@@ -127,7 +127,7 @@ extern SizeT VG_(amd64_darwin_REDIR_FOR_strcmp)( void*, void* );
 extern void* VG_(amd64_darwin_REDIR_FOR_strcat)( void*, void * );
 extern char* VG_(amd64_darwin_REDIR_FOR_strcpy)( char *s1, char *s2 );
 extern SizeT VG_(amd64_darwin_REDIR_FOR_strlcat)( char *s1, const char *s2,
-                                                  SizeT size );
+												  SizeT size );
 extern UInt VG_(amd64_darwin_REDIR_FOR_arc4random)( void );
 # if DARWIN_VERS == DARWIN_10_9
   extern char* VG_(amd64_darwin_REDIR_FOR_strchr)( const char*, int );
@@ -157,6 +157,12 @@ extern Char* VG_(mips64_linux_REDIR_FOR_index)( const Char*, Int );
 extern UInt  VG_(mips64_linux_REDIR_FOR_strlen)( void* );
 #endif
 
+#if defined(VGP_nanomips_linux)
+extern Addr  VG_(nanomips_linux_SUBST_FOR_rt_sigreturn);
+extern Char* VG_(nanomips_linux_REDIR_FOR_index)( const Char*, Int );
+extern UInt  VG_(nanomips_linux_REDIR_FOR_strlen)( void* );
+#endif
+
 #if defined(VGP_x86_solaris)
 extern SizeT VG_(x86_solaris_REDIR_FOR_strcmp)(const HChar *, const HChar *);
 extern SizeT VG_(x86_solaris_REDIR_FOR_strlen)(const HChar *);
@@ -165,7 +171,7 @@ extern SizeT VG_(x86_solaris_REDIR_FOR_strlen)(const HChar *);
 #if defined(VGP_amd64_solaris)
 extern HChar *VG_(amd64_solaris_REDIR_FOR_strcpy)(HChar *, const HChar *);
 extern HChar *VG_(amd64_solaris_REDIR_FOR_strncpy)(HChar *, const HChar *,
-                                                  SizeT);
+												  SizeT);
 extern Int VG_(amd64_solaris_REDIR_FOR_strcmp)(const HChar *, const HChar *);
 extern HChar *VG_(amd64_solaris_REDIR_FOR_strcat)(HChar *, const HChar *);
 extern SizeT VG_(amd64_solaris_REDIR_FOR_strlen)(const HChar *);

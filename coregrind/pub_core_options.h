@@ -8,7 +8,7 @@
    framework.
 
    Copyright (C) 2000-2017 Julian Seward
-      jseward@acm.org
+	  jseward@acm.org
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -62,14 +62,14 @@ extern Bool  VG_(clo_show_error_list);
    default: no markers. */
 extern HChar *VG_(clo_error_markers)[2];
 
-typedef 
-   enum { 
-      Vg_VgdbNo,   // Do not activate gdbserver.
-      Vg_VgdbYes,  // Activate gdbserver (default).
-      Vg_VgdbFull, // ACtivate gdbserver in full mode, allowing
-                   // a precise handling of watchpoints and single stepping
-                   // at any moment.
-   } 
+typedef
+   enum {
+	  Vg_VgdbNo,   // Do not activate gdbserver.
+	  Vg_VgdbYes,  // Activate gdbserver (default).
+	  Vg_VgdbFull, // ACtivate gdbserver in full mode, allowing
+				   // a precise handling of watchpoints and single stepping
+				   // at any moment.
+   }
    VgVgdb;
 /* if != Vg_VgdbNo, allows valgrind to serve vgdb/gdb. */
 extern VgVgdb VG_(clo_vgdb);
@@ -80,9 +80,9 @@ extern Int VG_(clo_vgdb_poll);
    for a GDB to connect. */
 typedef
    enum {                       // Stop :
-      VgdbStopAt_Startup,       // just before the client starts to execute.
-      VgdbStopAt_Exit,          // just before the client exits.
-      VgdbStopAt_ValgrindAbExit // on abnormal valgrind exit.
+	  VgdbStopAt_Startup,       // just before the client starts to execute.
+	  VgdbStopAt_Exit,          // just before the client exits.
+	  VgdbStopAt_ValgrindAbExit // on abnormal valgrind exit.
    }
    VgdbStopAt;
 // Build mask to check or set VgdbStop_At a membership
@@ -226,13 +226,13 @@ extern Int   VG_(clo_dump_error);
 /* Engage miscellaneous weird hacks needed for some progs. */
 typedef
    enum {
-      SimHint_lax_ioctls,
-      SimHint_lax_doors,
-      SimHint_fuse_compatible,
-      SimHint_enable_outer,
-      SimHint_no_inner_prefix,
-      SimHint_no_nptl_pthread_stackcache,
-      SimHint_fallback_llsc
+	  SimHint_lax_ioctls,
+	  SimHint_lax_doors,
+	  SimHint_fuse_compatible,
+	  SimHint_enable_outer,
+	  SimHint_no_inner_prefix,
+	  SimHint_no_nptl_pthread_stackcache,
+	  SimHint_fallback_llsc
    }
    SimHint;
 
@@ -251,7 +251,7 @@ extern Bool VG_(clo_read_var_info);
 /* Which prefix to strip from full source file paths, if any. */
 extern const HChar* VG_(clo_prefix_to_strip);
 
-/* An array of strings harvested from --require-text-symbol= 
+/* An array of strings harvested from --require-text-symbol=
    flags.
 
    Each string specifies a pair: a soname pattern and a text symbol
@@ -274,7 +274,7 @@ extern const HChar* VG_(clo_prefix_to_strip);
    in the marked-up library (eg), "annotated_for_helgrind_3_6", and
    then give the flag
 
-     --require-text-symbol=:*libgomp*so*:annotated_for_helgrind_3_6
+	 --require-text-symbol=:*libgomp*so*:annotated_for_helgrind_3_6
 
    so that when libgomp.so is loaded, we scan the symbol table, and if
    the symbol isn't present the run is aborted, rather than continuing
@@ -330,11 +330,11 @@ extern UInt VG_(clo_num_transtab_sectors);
    provided default. */
 extern UInt VG_(clo_avg_transtab_entry_size);
 
-/* Only client requested fixed mapping can be done below 
+/* Only client requested fixed mapping can be done below
    VG_(clo_aspacem_minAddr). */
 extern Addr VG_(clo_aspacem_minAddr);
 
-/* How large the Valgrind thread stacks should be. 
+/* How large the Valgrind thread stacks should be.
    Will be rounded up to a page.. */
 extern Word VG_(clo_valgrind_stacksize);
 
@@ -344,15 +344,15 @@ extern Bool VG_(clo_wait_for_gdb);
 /* To what extent should self-checking translations be made?  These
    are needed to deal with self-modifying code on uncooperative
    platforms. */
-typedef 
-   enum { 
-      Vg_SmcNone,  // never generate self-checking translations
-      Vg_SmcStack, // generate s-c-t's for code found in stacks
-                   // (this is the default)
-      Vg_SmcAll,   // make all translations self-checking.
-      Vg_SmcAllNonFile // make all translations derived from
-                   // non-file-backed memory self checking
-   } 
+typedef
+   enum {
+	  Vg_SmcNone,  // never generate self-checking translations
+	  Vg_SmcStack, // generate s-c-t's for code found in stacks
+				   // (this is the default)
+	  Vg_SmcAll,   // make all translations self-checking.
+	  Vg_SmcAllNonFile // make all translations derived from
+				   // non-file-backed memory self checking
+   }
    VgSmc;
 
 /* Describe extent to which self-modifying-code should be
@@ -363,10 +363,10 @@ extern VgSmc VG_(clo_smc_check);
    so they can be properly handled by m_syswrap. */
 typedef
    enum {
-      KernelVariant_bproc,
-      KernelVariant_android_no_hw_tls,
-      KernelVariant_android_gpu_sgx5xx,
-      KernelVariant_android_gpu_adreno3xx
+	  KernelVariant_bproc,
+	  KernelVariant_android_no_hw_tls,
+	  KernelVariant_android_gpu_sgx5xx,
+	  KernelVariant_android_gpu_adreno3xx
    }
    KernelVariant;
 // Build mask to check or set KernelVariant a membership
@@ -379,6 +379,9 @@ extern UInt VG_(clo_kernel_variant);
    .dSYM directories as necessary? */
 extern Bool VG_(clo_dsymutil);
 
+/* Outputs the list of dynamically changeable options. */
+extern void VG_(list_dynamic_options) (void);
+
 /* Should we trace into this child executable (across execve etc) ?
    This involves considering --trace-children=,
    --trace-children-skip=, --trace-children-skip-by-arg=, and the name
@@ -386,7 +389,7 @@ extern Bool VG_(clo_dsymutil);
    executable itself; iow child_argv[0] must be the first arg, if any,
    for the child. */
 extern Bool VG_(should_we_trace_this_child) ( const HChar* child_exe_name,
-                                              const HChar** child_argv );
+											  const HChar** child_argv );
 
 /* Whether illegal instructions should be reported/diagnosed.
    Can be explicitly set through --sigill-diagnostics otherwise

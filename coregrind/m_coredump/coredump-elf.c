@@ -2,13 +2,13 @@
 /*--------------------------------------------------------------------*/
 /*--- Dumping core.                                 coredump-elf.c ---*/
 /*--------------------------------------------------------------------*/
- 
+
 /*
    This file is part of Valgrind, a dynamic binary instrumentation
    framework.
 
-   Copyright (C) 2000-2017 Julian Seward 
-      jseward@acm.org
+   Copyright (C) 2000-2017 Julian Seward
+	  jseward@acm.org
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -47,7 +47,7 @@
 
 /*
   Dump core
-   
+
   Generate a standard ELF core file corresponding to the client state
   at the time of a crash.
  */
@@ -68,10 +68,10 @@
 static Bool may_dump(const NSegment *seg)
 {
    if (seg->kind == SkAnonC ||
-       seg->kind == SkShmC ||
-       (seg->kind == SkFileC &&
-        !VKI_S_ISCHR(seg->mode) && !VKI_S_ISBLK(seg->mode)))
-      return True;
+	   seg->kind == SkShmC ||
+	   (seg->kind == SkFileC &&
+		!VKI_S_ISCHR(seg->mode) && !VKI_S_ISBLK(seg->mode)))
+	  return True;
 
    return False;
 }
@@ -97,7 +97,11 @@ static void fill_ehdr(ESZ(Ehdr) *ehdr, Int num_phdrs)
    ehdr->e_entry = 0;
    ehdr->e_phoff = sizeof(ESZ(Ehdr));
    ehdr->e_shoff = 0;
+#if defined(VGP_nanomips_linux)
+   ehdr->e_flags = VKI_EF_NANOMIPS_ABI_P32;
+#else
    ehdr->e_flags = 0;
+#endif
    ehdr->e_ehsize = sizeof(ESZ(Ehdr));
    ehdr->e_phentsize = sizeof(ESZ(Phdr));
    ehdr->e_phnum = num_phdrs;
@@ -124,23 +128,23 @@ static void fill_phdr(ESZ(Phdr) *phdr, const NSegment *seg, UInt off, Bool write
    phdr->p_flags = 0;
 
    if (seg->hasR)
-      phdr->p_flags |= PF_R;
+	  phdr->p_flags |= PF_R;
    if (seg->hasW)
-      phdr->p_flags |= PF_W;
+	  phdr->p_flags |= PF_W;
    if (seg->hasX)
-      phdr->p_flags |= PF_X;
+	  phdr->p_flags |= PF_X;
 
    phdr->p_align = VKI_PAGE_SIZE;
 }
 
 #if defined(VGPV_arm_linux_android) || defined(VGPV_x86_linux_android) \
-    || defined(VGPV_mips32_linux_android)
+	|| defined(VGPV_mips32_linux_android)
 /* Android's libc doesn't provide a definition for this.  Hence: */
 typedef
    struct {
-      Elf32_Word n_namesz;
-      Elf32_Word n_descsz;
-      Elf32_Word n_type;
+	  Elf32_Word n_namesz;
+	  Elf32_Word n_descsz;
+	  Elf32_Word n_type;
    }
    Elf32_Nhdr;
 #endif
@@ -154,20 +158,20 @@ struct note {
 static UInt note_size(const struct note *n)
 {
    return sizeof(ESZ(Nhdr)) + VG_ROUNDUP(VG_(strlen)(n->name)+1, 4)
-                            + VG_ROUNDUP(n->note.n_descsz, 4);
+							+ VG_ROUNDUP(n->note.n_descsz, 4);
 }
 
 #if !defined(VGPV_arm_linux_android) \
-    && !defined(VGPV_x86_linux_android) \
-    && !defined(VGPV_mips32_linux_android) \
-    && !defined(VGPV_arm64_linux_android)
+	&& !defined(VGPV_x86_linux_android) \
+	&& !defined(VGPV_mips32_linux_android) \
+	&& !defined(VGPV_arm64_linux_android)
 static void add_note(struct note **list, const HChar *name, UInt type,
-                     const void *data, UInt datasz)
+					 const void *data, UInt datasz)
 {
    Int namelen = VG_(strlen)(name)+1;
-   Int notelen = sizeof(struct note) + 
-      VG_ROUNDUP(namelen, 4) + 
-      VG_ROUNDUP(datasz, 4);
+   Int notelen = sizeof(struct note) +
+	  VG_ROUNDUP(namelen, 4) +
+	  VG_ROUNDUP(datasz, 4);
    struct note *n = VG_(malloc)("coredump-elf.an.1", notelen);
 
    VG_(memset)(n, 0, notelen);
@@ -190,41 +194,42 @@ static void write_note(Int fd, const struct note *n)
 }
 
 static void fill_prpsinfo(const ThreadState *tst,
-                          struct vki_elf_prpsinfo *prpsinfo)
+						  struct vki_elf_prpsinfo *prpsinfo)
 {
    VG_(memset)(prpsinfo, 0, sizeof(*prpsinfo));
 
    switch(tst->status) {
    case VgTs_Runnable:
    case VgTs_Yielding:
-      prpsinfo->pr_sname = 'R';
-      break;
+	  prpsinfo->pr_sname = 'R';
+	  break;
 
    case VgTs_WaitSys:
-      prpsinfo->pr_sname = 'S';
-      break;
+	  prpsinfo->pr_sname = 'S';
+	  break;
 
    case VgTs_Zombie:
-      prpsinfo->pr_sname = 'Z';
-      break;
+	  prpsinfo->pr_sname = 'Z';
+	  break;
 
    case VgTs_Empty:
    case VgTs_Init:
-      prpsinfo->pr_sname = '?';
-      break;
+	  prpsinfo->pr_sname = '?';
+	  break;
    }
 
    prpsinfo->pr_uid = 0;
    prpsinfo->pr_gid = 0;
-   
+
    VG_(client_fname)(prpsinfo->pr_fname, sizeof(prpsinfo->pr_fname), False);
 }
 
-static void fill_prstatus(const ThreadState *tst, 
-			  /*OUT*/struct vki_elf_prstatus *prs, 
+static void fill_prstatus(const ThreadState *tst,
+			  /*OUT*/struct vki_elf_prstatus *prs,
 			  const vki_siginfo_t *si)
 {
-#if defined(VGP_mips32_linux) || defined(VGP_mips64_linux)
+#if defined(VGP_mips32_linux) || defined(VGP_mips64_linux) \
+	|| defined(VGP_nanomips_linux)
    vki_elf_greg_t *regs;
 #else
    struct vki_user_regs_struct *regs;
@@ -243,11 +248,12 @@ static void fill_prstatus(const ThreadState *tst,
    prs->pr_ppid = 0;
    prs->pr_pgrp = VG_(getpgrp)();
    prs->pr_sid = VG_(getpgrp)();
-   
+
 #if defined(VGP_s390x_linux)
    /* prs->pr_reg has struct type. Need to take address. */
    regs = (struct vki_user_regs_struct *)&(prs->pr_reg);
-#elif defined(VGP_mips32_linux) || defined(VGP_mips64_linux)
+#elif defined(VGP_mips32_linux) || defined(VGP_mips64_linux) \
+   || defined(VGP_nanomips_linux)
    regs = (vki_elf_greg_t *)prs->pr_reg;
 #else
    regs = (struct vki_user_regs_struct *)prs->pr_reg;
@@ -446,6 +452,15 @@ static void fill_prstatus(const ThreadState *tst,
    regs[VKI_MIPS64_EF_HI]         = arch->vex.guest_HI;
    regs[VKI_MIPS64_EF_CP0_STATUS] = arch->vex.guest_CP0_status;
    regs[VKI_MIPS64_EF_CP0_EPC]    = arch->vex.guest_PC;
+#elif defined(VGP_nanomips_linux)
+#  define DO(n)  regs[VKI_MIPS32_EF_R##n] = arch->vex.guest_r##n
+   DO(1);  DO(2);  DO(3);  DO(4);  DO(5);  DO(6);  DO(7);  DO(8);
+   DO(9);  DO(10); DO(11); DO(12); DO(13); DO(14); DO(15); DO(16);
+   DO(17); DO(18); DO(19); DO(20); DO(21); DO(22); DO(23); DO(24);
+   DO(25); DO(28); DO(29); DO(30); DO(31);
+   regs[VKI_MIPS32_EF_CP0_STATUS] = arch->vex.guest_CP0_status;
+   regs[VKI_MIPS32_EF_CP0_EPC]    = arch->vex.guest_PC;
+#  undef DO
 #else
 #  error Unknown ELF platform
 #endif
@@ -462,14 +477,14 @@ static void fill_fpu(const ThreadState *tst, vki_elf_fpregset_t *fpu)
 //::    if (VG_(have_ssestate)) {
 //::       UShort *to;
 //::       Int i;
-//:: 
+//::
 //::       /* This is what the kernel does */
 //::       VG_(memcpy)(fpu, from, 7*sizeof(long));
-//::    
+//::
 //::       to = (UShort *)&fpu->st_space[0];
 //::       from += 18 * sizeof(UShort);
-//:: 
-//::       for (i = 0; i < 8; i++, to += 5, from += 8) 
+//::
+//::       for (i = 0; i < 8; i++, to += 5, from += 8)
 //:: 	 VG_(memcpy)(to, from, 5*sizeof(UShort));
 //::    } else
 //::       VG_(memcpy)(fpu, from, sizeof(*fpu));
@@ -489,7 +504,7 @@ static void fill_fpu(const ThreadState *tst, vki_elf_fpregset_t *fpu)
 //::    fpu->st_space = ?;
 
 #  define DO(n)  VG_(memcpy)(fpu->xmm_space + n * 4, \
-                             &arch->vex.guest_YMM##n[0], 16)
+							 &arch->vex.guest_YMM##n[0], 16)
    DO(0);  DO(1);  DO(2);  DO(3);  DO(4);  DO(5);  DO(6);  DO(7);
    DO(8);  DO(9);  DO(10); DO(11); DO(12); DO(13); DO(14); DO(15);
 #  undef DO
@@ -498,8 +513,8 @@ static void fill_fpu(const ThreadState *tst, vki_elf_fpregset_t *fpu)
 
 #elif defined(VGP_ppc32_linux)
    /* The guest state has the FPR fields declared as ULongs, so need
-      to fish out the values without converting them.
-      NOTE: The 32 FP registers map to the first 32 VSX registers.*/
+	  to fish out the values without converting them.
+	  NOTE: The 32 FP registers map to the first 32 VSX registers.*/
 #  define DO(n)  (*fpu)[n] = *(double*)(&arch->vex.guest_VSR##n)
    DO(0);  DO(1);  DO(2);  DO(3);  DO(4);  DO(5);  DO(6);  DO(7);
    DO(8);  DO(9);  DO(10); DO(11); DO(12); DO(13); DO(14); DO(15);
@@ -509,8 +524,8 @@ static void fill_fpu(const ThreadState *tst, vki_elf_fpregset_t *fpu)
 
 #elif defined(VGP_ppc64be_linux) || defined(VGP_ppc64le_linux)
    /* The guest state has the FPR fields declared as ULongs, so need
-      to fish out the values without converting them.
-      NOTE: The 32 FP registers map to the first 32 VSX registers.*/
+	  to fish out the values without converting them.
+	  NOTE: The 32 FP registers map to the first 32 VSX registers.*/
 #  define DO(n)  (*fpu)[n] = *(double*)(&arch->vex.guest_VSR##n)
    DO(0);  DO(1);  DO(2);  DO(3);  DO(4);  DO(5);  DO(6);  DO(7);
    DO(8);  DO(9);  DO(10); DO(11); DO(12); DO(13); DO(14); DO(15);
@@ -522,40 +537,40 @@ static void fill_fpu(const ThreadState *tst, vki_elf_fpregset_t *fpu)
    // umm ...
 
 #elif defined(VGP_arm64_linux)
-    fpu->vregs[0]  = *(const __uint128_t*)arch->vex.guest_Q0;
-    fpu->vregs[1]  = *(const __uint128_t*)arch->vex.guest_Q1;
-    fpu->vregs[2]  = *(const __uint128_t*)arch->vex.guest_Q2;
-    fpu->vregs[3]  = *(const __uint128_t*)arch->vex.guest_Q3;
-    fpu->vregs[4]  = *(const __uint128_t*)arch->vex.guest_Q4;
-    fpu->vregs[5]  = *(const __uint128_t*)arch->vex.guest_Q5;
-    fpu->vregs[6]  = *(const __uint128_t*)arch->vex.guest_Q6;
-    fpu->vregs[7]  = *(const __uint128_t*)arch->vex.guest_Q7;
-    fpu->vregs[8]  = *(const __uint128_t*)arch->vex.guest_Q8;
-    fpu->vregs[9]  = *(const __uint128_t*)arch->vex.guest_Q9;
-    fpu->vregs[10] = *(const __uint128_t*)arch->vex.guest_Q10;
-    fpu->vregs[11] = *(const __uint128_t*)arch->vex.guest_Q11;
-    fpu->vregs[12] = *(const __uint128_t*)arch->vex.guest_Q12;
-    fpu->vregs[13] = *(const __uint128_t*)arch->vex.guest_Q13;
-    fpu->vregs[14] = *(const __uint128_t*)arch->vex.guest_Q14;
-    fpu->vregs[15] = *(const __uint128_t*)arch->vex.guest_Q15;
-    fpu->vregs[16] = *(const __uint128_t*)arch->vex.guest_Q16;
-    fpu->vregs[17] = *(const __uint128_t*)arch->vex.guest_Q17;
-    fpu->vregs[18] = *(const __uint128_t*)arch->vex.guest_Q18;
-    fpu->vregs[19] = *(const __uint128_t*)arch->vex.guest_Q19;
-    fpu->vregs[20] = *(const __uint128_t*)arch->vex.guest_Q20;
-    fpu->vregs[21] = *(const __uint128_t*)arch->vex.guest_Q21;
-    fpu->vregs[22] = *(const __uint128_t*)arch->vex.guest_Q22;
-    fpu->vregs[23] = *(const __uint128_t*)arch->vex.guest_Q23;
-    fpu->vregs[24] = *(const __uint128_t*)arch->vex.guest_Q24;
-    fpu->vregs[25] = *(const __uint128_t*)arch->vex.guest_Q25;
-    fpu->vregs[26] = *(const __uint128_t*)arch->vex.guest_Q26;
-    fpu->vregs[27] = *(const __uint128_t*)arch->vex.guest_Q27;
-    fpu->vregs[28] = *(const __uint128_t*)arch->vex.guest_Q28;
-    fpu->vregs[29] = *(const __uint128_t*)arch->vex.guest_Q29;
-    fpu->vregs[30] = *(const __uint128_t*)arch->vex.guest_Q30;
-    fpu->vregs[31] = *(const __uint128_t*)arch->vex.guest_Q31;
-    fpu->fpsr      = *(const __vki_u32*)arch->vex.guest_QCFLAG;
-    fpu->fpcr      = arch->vex.guest_FPCR;
+	fpu->vregs[0]  = *(const __uint128_t*)arch->vex.guest_Q0;
+	fpu->vregs[1]  = *(const __uint128_t*)arch->vex.guest_Q1;
+	fpu->vregs[2]  = *(const __uint128_t*)arch->vex.guest_Q2;
+	fpu->vregs[3]  = *(const __uint128_t*)arch->vex.guest_Q3;
+	fpu->vregs[4]  = *(const __uint128_t*)arch->vex.guest_Q4;
+	fpu->vregs[5]  = *(const __uint128_t*)arch->vex.guest_Q5;
+	fpu->vregs[6]  = *(const __uint128_t*)arch->vex.guest_Q6;
+	fpu->vregs[7]  = *(const __uint128_t*)arch->vex.guest_Q7;
+	fpu->vregs[8]  = *(const __uint128_t*)arch->vex.guest_Q8;
+	fpu->vregs[9]  = *(const __uint128_t*)arch->vex.guest_Q9;
+	fpu->vregs[10] = *(const __uint128_t*)arch->vex.guest_Q10;
+	fpu->vregs[11] = *(const __uint128_t*)arch->vex.guest_Q11;
+	fpu->vregs[12] = *(const __uint128_t*)arch->vex.guest_Q12;
+	fpu->vregs[13] = *(const __uint128_t*)arch->vex.guest_Q13;
+	fpu->vregs[14] = *(const __uint128_t*)arch->vex.guest_Q14;
+	fpu->vregs[15] = *(const __uint128_t*)arch->vex.guest_Q15;
+	fpu->vregs[16] = *(const __uint128_t*)arch->vex.guest_Q16;
+	fpu->vregs[17] = *(const __uint128_t*)arch->vex.guest_Q17;
+	fpu->vregs[18] = *(const __uint128_t*)arch->vex.guest_Q18;
+	fpu->vregs[19] = *(const __uint128_t*)arch->vex.guest_Q19;
+	fpu->vregs[20] = *(const __uint128_t*)arch->vex.guest_Q20;
+	fpu->vregs[21] = *(const __uint128_t*)arch->vex.guest_Q21;
+	fpu->vregs[22] = *(const __uint128_t*)arch->vex.guest_Q22;
+	fpu->vregs[23] = *(const __uint128_t*)arch->vex.guest_Q23;
+	fpu->vregs[24] = *(const __uint128_t*)arch->vex.guest_Q24;
+	fpu->vregs[25] = *(const __uint128_t*)arch->vex.guest_Q25;
+	fpu->vregs[26] = *(const __uint128_t*)arch->vex.guest_Q26;
+	fpu->vregs[27] = *(const __uint128_t*)arch->vex.guest_Q27;
+	fpu->vregs[28] = *(const __uint128_t*)arch->vex.guest_Q28;
+	fpu->vregs[29] = *(const __uint128_t*)arch->vex.guest_Q29;
+	fpu->vregs[30] = *(const __uint128_t*)arch->vex.guest_Q30;
+	fpu->vregs[31] = *(const __uint128_t*)arch->vex.guest_Q31;
+	fpu->fpsr      = *(const __vki_u32*)arch->vex.guest_QCFLAG;
+	fpu->fpcr      = arch->vex.guest_FPCR;
 
 #elif defined(VGP_s390x_linux)
    /* NOTE: The 16 FP registers map to the first 16 VSX registers. */
@@ -570,6 +585,8 @@ static void fill_fpu(const ThreadState *tst, vki_elf_fpregset_t *fpu)
    DO(16); DO(17); DO(18); DO(19); DO(20); DO(21); DO(22); DO(23);
    DO(24); DO(25); DO(26); DO(27); DO(28); DO(29); DO(30); DO(31);
 #  undef DO
+#elif defined(VGP_nanomips_linux)
+
 #else
 #  error Unknown ELF platform
 #endif
@@ -608,28 +625,29 @@ void dump_one_thread(struct note **notelist, const vki_siginfo_t *si, ThreadId t
    VG_(memset)(&fpu, 0, sizeof(fpu));
    VG_(memset)(&prstatus, 0, sizeof(prstatus));
 #     if defined(VGP_x86_linux) && !defined(VGPV_x86_linux_android)
-      {
-         vki_elf_fpxregset_t xfpu;
-         VG_(memset)(&xfpu, 0, sizeof(xfpu));
-         fill_xfpu(&VG_(threads)[tid], &xfpu);
-         add_note(notelist, "LINUX", NT_PRXFPREG, &xfpu, sizeof(xfpu));
-      }
+	  {
+		 vki_elf_fpxregset_t xfpu;
+		 VG_(memset)(&xfpu, 0, sizeof(xfpu));
+		 fill_xfpu(&VG_(threads)[tid], &xfpu);
+		 add_note(notelist, "LINUX", NT_PRXFPREG, &xfpu, sizeof(xfpu));
+	  }
 #     endif
 
-      fill_fpu(&VG_(threads)[tid], &fpu);
+	  fill_fpu(&VG_(threads)[tid], &fpu);
 #     if !defined(VGPV_arm_linux_android) \
-         && !defined(VGPV_x86_linux_android) \
-         && !defined(VGPV_mips32_linux_android) \
-         && !defined(VGPV_arm64_linux_android)
-      add_note(notelist, "CORE", NT_FPREGSET, &fpu, sizeof(fpu));
+		 && !defined(VGPV_x86_linux_android) \
+		 && !defined(VGPV_mips32_linux_android) \
+		 && !defined(VGPV_arm64_linux_android) \
+		 && !defined(VGP_nanomips_linux)
+	  add_note(notelist, "CORE", NT_FPREGSET, &fpu, sizeof(fpu));
 #     endif
 
-      fill_prstatus(&VG_(threads)[tid], &prstatus, si);
+	  fill_prstatus(&VG_(threads)[tid], &prstatus, si);
 #     if !defined(VGPV_arm_linux_android) \
-         && !defined(VGPV_x86_linux_android) \
-         && !defined(VGPV_mips32_linux_android) \
-         && !defined(VGPV_arm64_linux_android)
-      add_note(notelist, "CORE", NT_PRSTATUS, &prstatus, sizeof(prstatus));
+		 && !defined(VGPV_x86_linux_android) \
+		 && !defined(VGPV_mips32_linux_android) \
+		 && !defined(VGPV_arm64_linux_android)
+	  add_note(notelist, "CORE", NT_PRSTATUS, &prstatus, sizeof(prstatus));
 #     endif
 }
 
@@ -654,55 +672,55 @@ void make_elf_coredump(ThreadId tid, const vki_siginfo_t *si, ULong max_size)
    Int n_seg_starts;
 
    if (VG_(clo_log_fname_unexpanded) != NULL) {
-      coreext = ".core";
-      basename = VG_(expand_file_name)("--log-file",
-                                       VG_(clo_log_fname_unexpanded));
+	  coreext = ".core";
+	  basename = VG_(expand_file_name)("--log-file",
+									   VG_(clo_log_fname_unexpanded));
    } else
-      basename = VG_(strdup)("coredump-elf.mec.1", "vgcore");
+	  basename = VG_(strdup)("coredump-elf.mec.1", "vgcore");
 
    vg_assert(coreext);
    vg_assert(basename);
    buf = VG_(malloc)( "coredump-elf.mec.1",
-                      VG_(strlen)(coreext) + VG_(strlen)(basename)
-                         + 100/*for the two %ds. */ );
+					  VG_(strlen)(coreext) + VG_(strlen)(basename)
+						 + 100/*for the two %ds. */ );
 
    for(;;) {
-      Int oflags = VKI_O_CREAT|VKI_O_WRONLY|VKI_O_EXCL|VKI_O_TRUNC;
-      SysRes sres;
+	  Int oflags = VKI_O_CREAT|VKI_O_WRONLY|VKI_O_EXCL|VKI_O_TRUNC;
+	  SysRes sres;
 
-      if (seq == 0)
+	  if (seq == 0)
 	 VG_(sprintf)(buf, "%s%s.%d",
-		      basename, coreext, VG_(getpid)());
-      else
+			  basename, coreext, VG_(getpid)());
+	  else
 	 VG_(sprintf)(buf, "%s%s.%d.%d",
-		      basename, coreext, VG_(getpid)(), seq);
-      seq++;
+			  basename, coreext, VG_(getpid)(), seq);
+	  seq++;
 
 #     if defined(VKI_O_LARGEFILE)
-      oflags |= VKI_O_LARGEFILE;
+	  oflags |= VKI_O_LARGEFILE;
 #     endif
 
-      sres = VG_(open)(buf, oflags, VKI_S_IRUSR|VKI_S_IWUSR);
-      if (!sr_isError(sres)) {
-         core_fd = sr_Res(sres);
+	  sres = VG_(open)(buf, oflags, VKI_S_IRUSR|VKI_S_IWUSR);
+	  if (!sr_isError(sres)) {
+		 core_fd = sr_Res(sres);
 	 break;
-      }
+	  }
 
-      if (sr_isError(sres) && sr_Err(sres) != VKI_EEXIST)
+	  if (sr_isError(sres) && sr_Err(sres) != VKI_EEXIST)
 	 goto cleanup; /* can't create file */
    }
 
    /* Get the client segments */
    seg_starts = VG_(get_segment_starts)(SkFileC | SkAnonC | SkShmC,
-                                        &n_seg_starts);
+										&n_seg_starts);
 
    /* First, count how many memory segments to dump */
    num_phdrs = 1;		/* start with notes */
    for(i = 0; i < n_seg_starts; i++) {
-      if (!may_dump(VG_(am_find_nsegment)(seg_starts[i])))
+	  if (!may_dump(VG_(am_find_nsegment)(seg_starts[i])))
 	 continue;
 
-      num_phdrs++;
+	  num_phdrs++;
    }
 
    fill_ehdr(&ehdr, num_phdrs);
@@ -715,31 +733,31 @@ void make_elf_coredump(ThreadId tid, const vki_siginfo_t *si, ULong max_size)
    /* Add details for all threads except the one that faulted */
    for(i = 1; i < VG_N_THREADS; i++) {
 
-      if (VG_(threads)[i].status == VgTs_Empty)
+	  if (VG_(threads)[i].status == VgTs_Empty)
 	 continue;
 
-      if (i == tid)
+	  if (i == tid)
 	 continue;
 
-      dump_one_thread(&notelist, si, i);
+	  dump_one_thread(&notelist, si, i);
    }
 
    /* Add details for the faulting thread. Note that because we are
-      adding to the head of a linked list this thread will actually
-      come out first in the core file, which seems to be how
-      debuggers determine that it is the faulting thread. */
+	  adding to the head of a linked list this thread will actually
+	  come out first in the core file, which seems to be how
+	  debuggers determine that it is the faulting thread. */
    dump_one_thread(&notelist, si, tid);
 
    fill_prpsinfo(&VG_(threads)[tid], &prpsinfo);
 #  if !defined(VGPV_arm_linux_android) \
-      && !defined(VGPV_x86_linux_android) \
-      && !defined(VGPV_mips32_linux_android) \
-      && !defined(VGPV_arm64_linux_android)
+	  && !defined(VGPV_x86_linux_android) \
+	  && !defined(VGPV_mips32_linux_android) \
+	  && !defined(VGPV_arm64_linux_android)
    add_note(&notelist, "CORE", NT_PRPSINFO, &prpsinfo, sizeof(prpsinfo));
 #  endif
 
    for (note = notelist, notesz = 0; note != NULL; note = note->next)
-      notesz += note_size(note);
+	  notesz += note_size(note);
 
    off = sizeof(ehdr) + sizeof(*phdrs) * num_phdrs;
 
@@ -757,17 +775,17 @@ void make_elf_coredump(ThreadId tid, const vki_siginfo_t *si, ULong max_size)
    off = VG_PGROUNDUP(off);
 
    for(i = 0, idx = 1; i < n_seg_starts; i++) {
-      seg = VG_(am_find_nsegment)(seg_starts[i]);
+	  seg = VG_(am_find_nsegment)(seg_starts[i]);
 
-      if (!may_dump(seg))
+	  if (!may_dump(seg))
 	 continue;
 
-      fill_phdr(&phdrs[idx], seg, off,
-                (seg->end - seg->start + 1 + off) < max_size);
+	  fill_phdr(&phdrs[idx], seg, off,
+				(seg->end - seg->start + 1 + off) < max_size);
 
-      off += phdrs[idx].p_filesz;
+	  off += phdrs[idx].p_filesz;
 
-      idx++;
+	  idx++;
    }
 
    /* write everything out */
@@ -775,24 +793,24 @@ void make_elf_coredump(ThreadId tid, const vki_siginfo_t *si, ULong max_size)
    VG_(write)(core_fd, phdrs, sizeof(*phdrs) * num_phdrs);
 
    for(note = notelist; note != NULL; note = note->next)
-      write_note(core_fd, note);
+	  write_note(core_fd, note);
 
    VG_(lseek)(core_fd, phdrs[1].p_offset, VKI_SEEK_SET);
 
    for(i = 0, idx = 1; i < n_seg_starts; i++) {
-      seg = VG_(am_find_nsegment)(seg_starts[i]);
+	  seg = VG_(am_find_nsegment)(seg_starts[i]);
 
-      if (!should_dump(seg))
+	  if (!should_dump(seg))
 	 continue;
 
-      if (phdrs[idx].p_filesz > 0) {
+	  if (phdrs[idx].p_filesz > 0) {
 	 vg_assert(VG_(lseek)(core_fd, phdrs[idx].p_offset, VKI_SEEK_SET)
-                   == phdrs[idx].p_offset);
+				   == phdrs[idx].p_offset);
 	 vg_assert(seg->end - seg->start + 1 >= phdrs[idx].p_filesz);
 
 	 (void)VG_(write)(core_fd, (void *)seg->start, phdrs[idx].p_filesz);
-      }
-      idx++;
+	  }
+	  idx++;
    }
 
    VG_(close)(core_fd);

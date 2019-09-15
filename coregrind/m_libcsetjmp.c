@@ -82,7 +82,7 @@ __asm__(
 "        stw     29, 116(3)"  "\n"
 "        stw     30, 120(3)"  "\n"
 "        stw     31, 124(3)"  "\n"
-         // must use a caller-save register here as scratch, hence r4
+		 // must use a caller-save register here as scratch, hence r4
 "        mflr    4"  "\n"
 "        stw     4, 128(3)"  "\n"
 "        mfcr    4"  "\n"
@@ -94,13 +94,13 @@ __asm__(
 
 ".global VG_MINIMAL_LONGJMP"  "\n"
 "VG_MINIMAL_LONGJMP:"  "\n"    // r3 = jmp_buf
-         // do r4 = 1
-         // and park it in the restore slot for r3 (the ret reg)
+		 // do r4 = 1
+		 // and park it in the restore slot for r3 (the ret reg)
 "        li      4, 1"  "\n"
 "        stw     4, 12(3)"  "\n"
-         // restore everything except r3
-         // then r3 last of all
-         // then blr
+		 // restore everything except r3
+		 // then r3 last of all
+		 // then blr
 "        lwz     0, 128(3)"  "\n"
 "        mtlr    0"  "\n"
 "        lwz     0, 132(3)"  "\n"
@@ -108,7 +108,7 @@ __asm__(
 "        lwz     0, 0(3)"  "\n"
 "        lwz     1, 4(3)"  "\n"
 "        lwz     2, 8(3)"  "\n"
-         // r3 is done at the end
+		 // r3 is done at the end
 "        lwz     4, 16(3)"  "\n"
 "        lwz     5, 20(3)"  "\n"
 "        lwz     6, 24(3)"  "\n"
@@ -198,7 +198,7 @@ __asm__(
 "        std     29, 232(3)"  "\n"
 "        std     30, 240(3)"  "\n"
 "        std     31, 248(3)"  "\n"
-         // must use a caller-save register here as scratch, hence r4
+		 // must use a caller-save register here as scratch, hence r4
 "        mflr    4"  "\n"
 "        std     4, 256(3)"  "\n"
 "        mfcr    4"  "\n"
@@ -218,13 +218,13 @@ __asm__(
 
 ".type   VG_MINIMAL_LONGJMP, @function"    "\n"
 ".L.VG_MINIMAL_LONGJMP:"            "\n"
-         // do r4 = 1
-         // and park it in the restore slot for r3 (the ret reg)
+		 // do r4 = 1
+		 // and park it in the restore slot for r3 (the ret reg)
 "        li      4, 1"  "\n"
 "        std     4, 24(3)"  "\n"
-         // restore everything except r3
-         // then r3 last of all
-         // then blr
+		 // restore everything except r3
+		 // then r3 last of all
+		 // then blr
 "        ld      0, 256(3)"  "\n"
 "        mtlr    0"  "\n"
 "        ld      0, 264(3)"  "\n"
@@ -232,7 +232,7 @@ __asm__(
 "        ld      0, 0(3)"  "\n"
 "        ld      1, 8(3)"  "\n"
 "        ld      2, 16(3)"  "\n"
-         // r3 is done at the end
+		 // r3 is done at the end
 "        ld      4, 32(3)"  "\n"
 "        ld      5, 40(3)"  "\n"
 "        ld      6, 48(3)"  "\n"
@@ -325,13 +325,13 @@ __asm__(
 ".type   VG_MINIMAL_LONGJMP, @function"    "\n"
 "VG_MINIMAL_LONGJMP:"                      "\n"
 "        .localentry VG_MINIMAL_LONGJMP, .-VG_MINIMAL_LONGJMP" "\n"
-         // do r4 = 1
-         // and park it in the restore slot for r3 (the ret reg)
+		 // do r4 = 1
+		 // and park it in the restore slot for r3 (the ret reg)
 "        li      4, 1"  "\n"
 "        std     4, 24(3)"  "\n"
-         // restore everything except r3
-         // then r3 last of all
-         // then blr
+		 // restore everything except r3
+		 // then r3 last of all
+		 // then blr
 "        ld      0, 256(3)"  "\n"
 "        mtlr    0"  "\n"
 "        ld      0, 264(3)"  "\n"
@@ -339,7 +339,7 @@ __asm__(
 "        ld      0, 0(3)"  "\n"
 "        ld      1, 8(3)"  "\n"
 "        ld      2, 16(3)"  "\n"
-         // r3 is done at the end
+		 // r3 is done at the end
 "        ld      4, 32(3)"  "\n"
 "        ld      5, 40(3)"  "\n"
 "        ld      6, 48(3)"  "\n"
@@ -380,7 +380,7 @@ __asm__(
 /* -------- amd64-{linux,darwin,solaris} -------- */
 
 #if defined(VGP_amd64_linux) || defined(VGP_amd64_darwin) || \
-    defined(VGP_amd64_solaris)
+	defined(VGP_amd64_solaris)
 
 __asm__(
 ".text"  "\n"
@@ -414,10 +414,10 @@ __asm__(
 "        movq   %r13, 104(%rdi)"   "\n"
 "        movq   %r14, 112(%rdi)"   "\n"
 "        movq   %r15, 120(%rdi)"   "\n"
-         // store the return address
+		 // store the return address
 "        movq   0(%rsp), %rax"     "\n"
 "        movq   %rax, 128(%rdi)"   "\n"
-         // and return zero
+		 // and return zero
 "        movq   $0, %rax"          "\n"
 "        ret"                      "\n"
 ""       "\n"
@@ -434,11 +434,11 @@ __asm__(
 #else
 #   error "Huh?"
 #endif
-         // skip restoring rax; it's pointless
+		 // skip restoring rax; it's pointless
 "        movq     8(%rdi),  %rbx"    "\n"
 "        movq    16(%rdi),  %rcx"    "\n"
 "        movq    24(%rdi),  %rdx"    "\n"
-         // defer restoring rdi; we still need it
+		 // defer restoring rdi; we still need it
 "        movq    40(%rdi),  %rsi"    "\n"
 "        movq    48(%rdi),  %rbp"    "\n"
 "        movq    56(%rdi),  %rsp"    "\n"
@@ -450,19 +450,19 @@ __asm__(
 "        movq   104(%rdi),  %r13"    "\n"
 "        movq   112(%rdi),  %r14"    "\n"
 "        movq   120(%rdi),  %r15"    "\n"
-         // restore the return address
+		 // restore the return address
 "        movq   128(%rdi), %rax"     "\n"
-         // restore rdi; this is the last use
+		 // restore rdi; this is the last use
 "        movq   32(%rdi), %rdi"      "\n"
-         // make %rsp look like we really did a return
+		 // make %rsp look like we really did a return
 "        addq   $8, %rsp"            "\n"
-         // continue at RA of original call.  Note: this is a
-         // nasty trick.  We assume that %rax is nonzero, and so the
-         // caller can differentiate this case from the normal _SETJMP
-         // return case.  If the return address ever is zero, then
-         // we're hosed; but that seems pretty unlikely given that it
-         // would mean we'd be executing at the wraparound point of the
-         // address space.
+		 // continue at RA of original call.  Note: this is a
+		 // nasty trick.  We assume that %rax is nonzero, and so the
+		 // caller can differentiate this case from the normal _SETJMP
+		 // return case.  If the return address ever is zero, then
+		 // we're hosed; but that seems pretty unlikely given that it
+		 // would mean we'd be executing at the wraparound point of the
+		 // address space.
 "        jmp *%rax"                  "\n"
 ""       "\n"
 
@@ -477,7 +477,7 @@ __asm__(
 /* -------- x86-{linux,darwin,solaris} -------- */
 
 #if defined(VGP_x86_linux) || defined(VGP_x86_darwin) || \
-    defined(VGP_x86_solaris)
+	defined(VGP_x86_solaris)
 
 __asm__(
 ".text"  "\n"
@@ -503,12 +503,12 @@ __asm__(
 "        movl   %esi,  20(%eax)"   "\n"
 "        movl   %ebp,  24(%eax)"   "\n"
 "        movl   %esp,  28(%eax)"   "\n"
-         // store the return address
+		 // store the return address
 "        movl   0(%esp), %ebx"     "\n"
 "        movl   %ebx, 32(%eax)"    "\n"
-         // un-trash ebx (necessary?  i don't know)
+		 // un-trash ebx (necessary?  i don't know)
 "        movl   4(%eax), %ebx"     "\n"
-         // and return zero
+		 // and return zero
 "        movl   $0, %eax"          "\n"
 "        ret"                      "\n"
 ""       "\n"
@@ -526,7 +526,7 @@ __asm__(
 #   error "Huh?"
 #endif
 
-         // skip restoring eax; it's pointless
+		 // skip restoring eax; it's pointless
 "        movl     4(%eax),  %ebx"    "\n"
 "        movl     8(%eax),  %ecx"    "\n"
 "        movl    12(%eax),  %edx"    "\n"
@@ -534,12 +534,12 @@ __asm__(
 "        movl    20(%eax),  %esi"    "\n"
 "        movl    24(%eax),  %ebp"    "\n"
 "        movl    28(%eax),  %esp"    "\n"
-         // restore the return address
+		 // restore the return address
 "        movl    32(%eax), %eax"     "\n"
-         // make %esp look like we really did a return
+		 // make %esp look like we really did a return
 "        addl    $4, %esp"           "\n"
-         // continue at RA of original call.  Same zero-vs-nonzero
-         // trick/assumption as documented for the amd64-linux case.
+		 // continue at RA of original call.  Same zero-vs-nonzero
+		 // trick/assumption as documented for the amd64-linux case.
 "        jmp *%eax"                  "\n"
 ""       "\n"
 
@@ -689,6 +689,57 @@ __asm__(
 ".previous                      \n\t"
 );
 #endif  /* VGP_mips64_linux */
+
+#if defined(VGP_nanomips_linux)
+__asm__(
+".text                          \n\t"
+".globl VG_MINIMAL_SETJMP;      \n\t"
+".set push                      \n\t"
+".set noreorder                 \n\t"
+"VG_MINIMAL_SETJMP:             \n\t"
+"   sw     $s0,   0($a0)        \n\t"
+"   sw     $s1,   4($a0)        \n\t"
+"   sw     $s2,   8($a0)        \n\t"
+"   sw     $s3,  12($a0)        \n\t"
+"   sw     $s4,  16($a0)        \n\t"
+"   sw     $s5,  20($a0)        \n\t"
+"   sw     $s6,  24($a0)        \n\t"
+"   sw     $s7,  28($a0)        \n\t"
+"   sw     $gp,  32($a0)        \n\t"
+"   sw     $sp,  36($a0)        \n\t"
+"   sw     $fp,  40($a0)        \n\t"
+"   sw     $ra,  44($a0)        \n\t"
+"   move   $a0,  $zero          \n\t"
+"   jrc    $ra                  \n\t"
+".set pop                       \n\t"
+".previous                      \n\t"
+"                               \n\t"
+".text                          \n\t"
+".globl VG_MINIMAL_LONGJMP;     \n\t"
+".set push                      \n\t"
+".set noreorder                 \n\t"
+"VG_MINIMAL_LONGJMP:            \n\t"
+"   lw     $s0,   0($a0)        \n\t"
+"   lw     $s1,   4($a0)        \n\t"
+"   lw     $s2,   8($a0)        \n\t"
+"   lw     $s3,  12($a0)        \n\t"
+"   lw     $s4,  16($a0)        \n\t"
+"   lw     $s5,  20($a0)        \n\t"
+"   lw     $s6,  24($a0)        \n\t"
+"   lw     $s7,  28($a0)        \n\t"
+"   lw     $gp,  32($a0)        \n\t"
+"   lw     $sp,  36($a0)        \n\t"
+"   lw     $fp,  40($a0)        \n\t"
+"   lw     $ra,  44($a0)        \n\t"
+"   bnezc  $a1,   1f            \n\t"
+"   addiu  $a1, $a1, 1          \n\t"
+"1:                             \n\t"
+"   move   $a0, $a1             \n\t"
+"   jrc    $ra                  \n\t"
+".set pop                       \n\t"
+".previous                      \n\t"
+);
+#endif  /* VGP_nanomips_linux */
 /*--------------------------------------------------------------------*/
 /*--- end                                                          ---*/
 /*--------------------------------------------------------------------*/

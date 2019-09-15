@@ -8,7 +8,7 @@
    framework.
 
    Copyright (C) 2000-2017 Julian Seward
-      jseward@acm.org
+	  jseward@acm.org
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -38,8 +38,8 @@
 /* The formatting functions supports a subset (and 2 extensions) of
    the 'printf' format.
    The extensions are:
-     %pS : print a string (like %s) but escaping chars for XML safety.
-     %ps : with --xml=no, synonym for %s, with --xml=yes, synonym of %pS.
+	 %pS : print a string (like %s) but escaping chars for XML safety.
+	 %ps : with --xml=no, synonym for %s, with --xml=yes, synonym of %pS.
 
    Note: these extensions do not cause the compiler to barf with PRINTF_CHECK
    as for the classical printf, %p requires a pointer, which must also
@@ -48,18 +48,18 @@
 */
 
 extern UInt VG_(sprintf)  ( HChar* buf, const HChar* format, ... )
-                          PRINTF_CHECK(2, 3);
+						  PRINTF_CHECK(2, 3);
 
 extern UInt VG_(vsprintf) ( HChar* buf, const HChar* format, va_list vargs )
-                          PRINTF_CHECK(2, 0);
+						  PRINTF_CHECK(2, 0);
 
-extern UInt VG_(snprintf) ( HChar* buf, Int size, 
-                                       const HChar *format, ... )
-                          PRINTF_CHECK(3, 4);
+extern UInt VG_(snprintf) ( HChar* buf, Int size,
+									   const HChar *format, ... )
+						  PRINTF_CHECK(3, 4);
 
-extern UInt VG_(vsnprintf)( HChar* buf, Int size, 
-                                       const HChar *format, va_list vargs )
-                          PRINTF_CHECK(3, 0);
+extern UInt VG_(vsnprintf)( HChar* buf, Int size,
+									   const HChar *format, va_list vargs )
+						  PRINTF_CHECK(3, 0);
 
 /* ---------------------------------------------------------------------
    Output-printing functions
@@ -79,36 +79,36 @@ extern UInt VG_(vsnprintf)( HChar* buf, Int size,
 
 typedef
    enum {                 // Prefix
-      Vg_FailMsg,         // "valgrind:"
-      Vg_UserMsg,         // "==pid=="
-      Vg_DebugMsg,        // "--pid--"
-      Vg_ClientMsg        // "**pid**"
+	  Vg_FailMsg,         // "valgrind:"
+	  Vg_UserMsg,         // "==pid=="
+	  Vg_DebugMsg,        // "--pid--"
+	  Vg_ClientMsg        // "**pid**"
    }
    VgMsgKind;
 
 // These print output that isn't prefixed with anything, and should be
 // used in very few cases, such as printing usage messages.
 extern UInt VG_(printf)   ( const HChar *format, ... )
-                          PRINTF_CHECK(1, 2);
+						  PRINTF_CHECK(1, 2);
 extern UInt VG_(vprintf)  ( const HChar *format, va_list vargs )
-                          PRINTF_CHECK(1, 0);
+						  PRINTF_CHECK(1, 0);
 
 extern UInt VG_(printf_xml)  ( const HChar *format, ... )
-                             PRINTF_CHECK(1, 2);
+							 PRINTF_CHECK(1, 2);
 
 extern UInt VG_(vprintf_xml) ( const HChar *format, va_list vargs )
-                             PRINTF_CHECK(1, 0);
+							 PRINTF_CHECK(1, 0);
 
 typedef struct _VgFile VgFile;
 
 extern VgFile *VG_(fopen)    ( const HChar *name, Int flags, Int mode );
 extern void    VG_(fclose)   ( VgFile *fp );
 extern UInt    VG_(fprintf)  ( VgFile *fp, const HChar *format, ... )
-                               PRINTF_CHECK(2, 3);
+							   PRINTF_CHECK(2, 3);
 extern UInt    VG_(vfprintf) ( VgFile *fp, const HChar *format, va_list vargs )
-                               PRINTF_CHECK(2, 0);
+							   PRINTF_CHECK(2, 0);
 
-/* Do a printf-style operation on either the XML 
+/* Do a printf-style operation on either the XML
    or normal output channel
    or gdb output channel, depending on the setting of VG_(clo_xml)
    and the state of VG_(log_output_sink). */
@@ -117,8 +117,8 @@ extern UInt VG_(emit) ( const HChar* format, ... ) PRINTF_CHECK(1, 2);
 /* Yet another, totally general, version of vprintf, which hands all
    output bytes to CHAR_SINK, passing it OPAQUE as the second arg. */
 extern void VG_(vcbprintf)( void(*char_sink)(HChar, void* opaque),
-                            void* opaque,
-                            const HChar* format, va_list vargs );
+							void* opaque,
+							const HChar* format, va_list vargs );
 
 extern UInt VG_(message)( VgMsgKind kind, const HChar* format, ... )
    PRINTF_CHECK(2, 3);
@@ -136,8 +136,8 @@ extern UInt VG_(fmsg)( const HChar* format, ... ) PRINTF_CHECK(1, 2);
 // because an option was unrecognised -- return 'False' from
 // VG_(tdict).tool_process_cmd_line_option) to indicate that -- use it if eg.
 // an option was given an inappropriate argument.  This function prints an
-// error message, then shuts down the entire system.
-__attribute__((noreturn))
+// error message. It shuts down the entire system if the current parsing mode
+// is cloE or cloP.
 extern void VG_(fmsg_bad_option) ( const HChar* opt, const HChar* format, ... )
    PRINTF_CHECK(2, 3);
 
@@ -153,7 +153,7 @@ extern UInt VG_(dmsg)( const HChar* format, ... ) PRINTF_CHECK(1, 2);
 extern void VG_(message_flush) ( void );
 
 /* Return a textual representation of a SysRes value in a statically
-   allocated buffer. The buffer will be overwritten with the next 
+   allocated buffer. The buffer will be overwritten with the next
    invocation. */
 extern const HChar *VG_(sr_as_string) ( SysRes sr );
 
