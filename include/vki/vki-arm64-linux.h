@@ -8,7 +8,7 @@
    framework.
 
    Copyright (C) 2013-2017 OpenWorks
-      info@open-works.net
+	  info@open-works.net
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -156,13 +156,13 @@ typedef __vki_restorefn_t __user *__vki_sigrestore_t;
 #define VKI_SIG_IGN	((__vki_sighandler_t)1)	/* ignore signal */
 
 struct vki_sigaction_base {
-        // [[Nb: a 'k' prefix is added to "sa_handler" because
-        // bits/sigaction.h (which gets dragged in somehow via signal.h)
-        // #defines it as something else.  Since that is done for glibc's
-        // purposes, which we don't care about here, we use our own name.]]
+		// [[Nb: a 'k' prefix is added to "sa_handler" because
+		// bits/sigaction.h (which gets dragged in somehow via signal.h)
+		// #defines it as something else.  Since that is done for glibc's
+		// purposes, which we don't care about here, we use our own name.]]
 	__vki_sighandler_t ksa_handler;
 	unsigned long sa_flags;
-        __vki_sigrestore_t sa_restorer; // I don't think arm64 has this
+		__vki_sigrestore_t sa_restorer; // I don't think arm64 has this
 	vki_sigset_t sa_mask;		/* mask last for extensibility */
 };
 
@@ -183,15 +183,21 @@ typedef struct vki_sigaltstack {
 //----------------------------------------------------------------------
 
 struct vki_sigcontext {
-        __vki_u64 fault_address;
-        /* AArch64 registers */
-        __vki_u64 regs[31];
-        __vki_u64 sp;
-        __vki_u64 pc;
-        __vki_u64 pstate;
-        /* 4K reserved for FP/SIMD state and future expansion */
-        __vki_u8 __reserved[4096] __attribute__((__aligned__(16)));
+		__vki_u64 fault_address;
+		/* AArch64 registers */
+		__vki_u64 regs[31];
+		__vki_u64 sp;
+		__vki_u64 pc;
+		__vki_u64 pstate;
+		/* 4K reserved for FP/SIMD state and future expansion */
+		__vki_u8 __reserved[4096] __attribute__((__aligned__(16)));
 };
+
+//----------------------------------------------------------------------
+// From linux-5.0.0/arch/arm64/include/uapi/asm/siginfo.h
+//----------------------------------------------------------------------
+
+#define __VKI_ARCH_SI_PREAMBLE_SIZE (4 * sizeof(int))
 
 //----------------------------------------------------------------------
 // From linux-3.10.5/uapi/include/asm-generic/mman-common.h
@@ -295,26 +301,26 @@ struct vki_f_owner_ex {
 //----------------------------------------------------------------------
 
 struct vki_stat {
-        unsigned long   st_dev;
-        unsigned long   st_ino;
-        unsigned int    st_mode;
-        unsigned int    st_nlink;
-        unsigned int    st_uid;
-        unsigned int    st_gid;
-        unsigned long   st_rdev;
-        unsigned long   __pad1;
-        long            st_size;
-        int             st_blksize;
-        int             __pad2;
-        long            st_blocks;
-        long            st_atime;
-        unsigned long   st_atime_nsec;
-        long            st_mtime;
-        unsigned long   st_mtime_nsec;
-        long            st_ctime;
-        unsigned long   st_ctime_nsec;
-        unsigned int    __unused4;
-        unsigned int    __unused5;
+		unsigned long   st_dev;
+		unsigned long   st_ino;
+		unsigned int    st_mode;
+		unsigned int    st_nlink;
+		unsigned int    st_uid;
+		unsigned int    st_gid;
+		unsigned long   st_rdev;
+		unsigned long   __pad1;
+		long            st_size;
+		int             st_blksize;
+		int             __pad2;
+		long            st_blocks;
+		long            st_atime;
+		unsigned long   st_atime_nsec;
+		long            st_mtime;
+		unsigned long   st_mtime_nsec;
+		long            st_ctime;
+		unsigned long   st_ctime_nsec;
+		unsigned int    __unused4;
+		unsigned int    __unused5;
 };
 
 //----------------------------------------------------------------------
@@ -478,21 +484,21 @@ struct vki_pollfd {
 //ZZ 	__vki_u32	xmm_space[64];	/* 16*16 bytes for each XMM-reg = 256 bytes */
 //ZZ 	__vki_u32	padding[24];
 //ZZ };
-//ZZ 
+//ZZ
 //ZZ struct vki_user_regs_struct {
 //ZZ 	unsigned long r15,r14,r13,r12,rbp,rbx,r11,r10;
 //ZZ 	unsigned long r9,r8,rax,rcx,rdx,rsi,rdi,orig_rax;
 //ZZ 	unsigned long rip,cs,eflags;
 //ZZ 	unsigned long rsp,ss;
 //ZZ   	unsigned long fs_base, gs_base;
-//ZZ 	unsigned long ds,es,fs,gs; 
-//ZZ }; 
+//ZZ 	unsigned long ds,es,fs,gs;
+//ZZ };
 
 struct vki_user_pt_regs {
-        __vki_u64           regs[31];
-        __vki_u64           sp;
-        __vki_u64           pc;
-        __vki_u64           pstate;
+		__vki_u64           regs[31];
+		__vki_u64           sp;
+		__vki_u64           pc;
+		__vki_u64           pstate;
 };
 
 /* I think that the new name in the kernel for these is "user_pt_regs"
@@ -502,9 +508,9 @@ struct vki_user_pt_regs {
 #define vki_user_regs_struct vki_user_pt_regs
 
 struct vki_user_fpsimd_state {
-        __uint128_t     vregs[32];
-        __vki_u32           fpsr;
-        __vki_u32           fpcr;
+		__uint128_t     vregs[32];
+		__vki_u32           fpsr;
+		__vki_u32           fpcr;
 };
 
 //----------------------------------------------------------------------
@@ -523,38 +529,38 @@ typedef struct vki_user_fpsimd_state vki_elf_fpregset_t;
 //----------------------------------------------------------------------
 
 struct vki_ucontext {
-        unsigned long           uc_flags;
-        struct vki_ucontext    *uc_link;
-        vki_stack_t             uc_stack;
-        vki_sigset_t            uc_sigmask;
-        /* glibc uses a 1024-bit sigset_t */
-        __vki_u8                __unused0[1024 / 8 - sizeof(vki_sigset_t)];
-        /* last for future expansion */
-        struct vki_sigcontext   uc_mcontext;
+		unsigned long           uc_flags;
+		struct vki_ucontext    *uc_link;
+		vki_stack_t             uc_stack;
+		vki_sigset_t            uc_sigmask;
+		/* glibc uses a 1024-bit sigset_t */
+		__vki_u8                __unused0[1024 / 8 - sizeof(vki_sigset_t)];
+		/* last for future expansion */
+		struct vki_sigcontext   uc_mcontext;
 };
 
 //ZZ //----------------------------------------------------------------------
 //ZZ // From linux-2.6.9/include/asm-x86_64/segment.h
 //ZZ //----------------------------------------------------------------------
-//ZZ 
+//ZZ
 //ZZ #define VKI_GDT_ENTRY_TLS_ENTRIES 3
-//ZZ 
+//ZZ
 //ZZ #define VKI_GDT_ENTRY_TLS_MIN 11
 //ZZ #define VKI_GDT_ENTRY_TLS_MAX 13
-//ZZ 
+//ZZ
 //ZZ //----------------------------------------------------------------------
 //ZZ // From linux-2.6.11.9/include/asm-x86_64/prctl.h
 //ZZ //----------------------------------------------------------------------
-//ZZ 
+//ZZ
 //ZZ #define VKI_ARCH_SET_GS 0x1001
 //ZZ #define VKI_ARCH_SET_FS 0x1002
 //ZZ #define VKI_ARCH_GET_FS 0x1003
 //ZZ #define VKI_ARCH_GET_GS 0x1004
-//ZZ 
+//ZZ
 //ZZ //----------------------------------------------------------------------
 //ZZ // From linux-2.6.9/include/asm-x86_64/ldt.h
 //ZZ //----------------------------------------------------------------------
-//ZZ 
+//ZZ
 //ZZ // I think this LDT stuff will have to be reinstated for amd64, but I'm not
 //ZZ // certain.  (Nb: The sys_arch_prctl seems to have replaced
 //ZZ // [gs]et_thread_area syscalls.)
@@ -562,7 +568,7 @@ struct vki_ucontext {
 //ZZ // Note that the type here is very slightly different to the
 //ZZ // type for x86 (the final 'lm' field is added);  I'm not sure about the
 //ZZ // significance of that... --njn
-//ZZ 
+//ZZ
 //ZZ /* [[Nb: This is the structure passed to the modify_ldt syscall.  Just so as
 //ZZ    to confuse and annoy everyone, this is _not_ the same as an
 //ZZ    VgLdtEntry and has to be translated into such.  The logic for doing
@@ -582,7 +588,7 @@ struct vki_ucontext {
 //ZZ 	unsigned int  useable:1;
 //ZZ         unsigned int  lm:1;
 //ZZ };
-//ZZ 
+//ZZ
 //ZZ // [[Nb: for our convenience within Valgrind, use a more specific name]]
 
 typedef char vki_modify_ldt_t;
@@ -599,7 +605,7 @@ struct vki_ipc64_perm
 	__vki_kernel_uid32_t	cuid;
 	__vki_kernel_gid32_t	cgid;
 	__vki_kernel_mode_t	mode;
-        unsigned char           __pad1[4 - sizeof(__vki_kernel_mode_t)];
+		unsigned char           __pad1[4 - sizeof(__vki_kernel_mode_t)];
 	unsigned short		seq;
 	unsigned short		__pad2;
 	unsigned long		__unused1;
@@ -725,7 +731,7 @@ struct vki_shminfo64 {
 //----------------------------------------------------------------------
 // And that's it!
 //----------------------------------------------------------------------
- 
+
 #endif // __VKI_ARM64_LINUX_H
 
 /*--------------------------------------------------------------------*/

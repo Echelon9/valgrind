@@ -8,7 +8,7 @@
    framework.
 
    Copyright (C) 2005-2017 Julian Seward
-      jseward@acm.org
+	  jseward@acm.org
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -210,11 +210,11 @@ struct vki_pt_regs {
   VKI_PPC_REG result;         /* Result of a system call */
 
   /* Not in kernel's definition, but apparently needed to stop
-     assertion at coredump-elf.c:267 firing.  These padding words make
-     the struct have the same size as a 'vki_elf_greg_t'.  See message
-     from Ghassan Hammouri on valgrind-developers on 6 April 06, and
-     also the analogous kludge for ppc32-linux (svn r5852 and bug
-     #121617). */
+	 assertion at coredump-elf.c:267 firing.  These padding words make
+	 the struct have the same size as a 'vki_elf_greg_t'.  See message
+	 from Ghassan Hammouri on valgrind-developers on 6 April 06, and
+	 also the analogous kludge for ppc32-linux (svn r5852 and bug
+	 #121617). */
   unsigned long pad[4];
 };
 
@@ -336,6 +336,14 @@ struct vki_sigcontext {
 };
 
 //----------------------------------------------------------------------
+// From linux-5.0.0/arch/powerpc/include/uapi/asm/siginfo.h
+//----------------------------------------------------------------------
+
+#ifdef __powerpc64__
+# define __VKI_ARCH_SI_PREAMBLE_SIZE     (4 * sizeof(int))
+#endif
+
+//----------------------------------------------------------------------
 // From linux-2.6.13/include/asm-ppc64/mman.h
 //----------------------------------------------------------------------
 
@@ -344,11 +352,11 @@ struct vki_sigcontext {
 #define VKI_PROT_WRITE      0x2             /* page can be written */
 #define VKI_PROT_EXEC       0x4             /* page can be executed */
 #define VKI_PROT_GROWSDOWN  0x01000000      /* mprotect flag: extend
-					       change to start of
-					       growsdown vma */
+						   change to start of
+						   growsdown vma */
 #define VKI_PROT_GROWSUP    0x02000000      /* mprotect flag: extend
-					       change to end of
-					       growsup vma */
+						   change to end of
+						   growsup vma */
 
 #define VKI_MAP_SHARED      0x01            /* Share changes */
 #define VKI_MAP_PRIVATE     0x02            /* Changes are private */
@@ -579,25 +587,25 @@ struct vki_termios {
 #define _VKI_IOC_WRITE      4U
 
 #define _VKI_IOC(dir,type,nr,size) \
-        (((dir)  << _VKI_IOC_DIRSHIFT) | \
-         ((type) << _VKI_IOC_TYPESHIFT) | \
-         ((nr)   << _VKI_IOC_NRSHIFT) | \
-         ((size) << _VKI_IOC_SIZESHIFT))
+		(((dir)  << _VKI_IOC_DIRSHIFT) | \
+		 ((type) << _VKI_IOC_TYPESHIFT) | \
+		 ((nr)   << _VKI_IOC_NRSHIFT) | \
+		 ((size) << _VKI_IOC_SIZESHIFT))
 
 /* used to create numbers */
 #define _VKI_IO(type,nr)            _VKI_IOC(_VKI_IOC_NONE,(type),(nr),0)
 #define _VKI_IOR(type,nr,size)      _VKI_IOC(_VKI_IOC_READ,(type),(nr), \
-                                       (_VKI_IOC_TYPECHECK(size)))
+									   (_VKI_IOC_TYPECHECK(size)))
 #define _VKI_IOW(type,nr,size)      _VKI_IOC(_VKI_IOC_WRITE,(type),(nr), \
-                                       (_VKI_IOC_TYPECHECK(size)))
+									   (_VKI_IOC_TYPECHECK(size)))
 #define _VKI_IOWR(type,nr,size)     _VKI_IOC(_VKI_IOC_READ|_VKI_IOC_WRITE, \
-                                       (type),(nr),(_VKI_IOC_TYPECHECK(size)))
+									   (type),(nr),(_VKI_IOC_TYPECHECK(size)))
 #define _VKI_IOR_BAD(type,nr,size)  _VKI_IOC(_VKI_IOC_READ,(type),(nr), \
-                                       sizeof(size))
+									   sizeof(size))
 #define _VKI_IOW_BAD(type,nr,size)  _VKI_IOC(_VKI_IOC_WRITE,(type),(nr), \
-                                       sizeof(size))
+									   sizeof(size))
 #define _VKI_IOWR_BAD(type,nr,size) _VKI_IOC(_VKI_IOC_READ|_VKI_IOC_WRITE, \
-                                       (type),(nr),sizeof(size))
+									   (type),(nr),sizeof(size))
 
 /* used to decode them.. */
 #define _VKI_IOC_DIR(nr)        (((nr) >> _VKI_IOC_DIRSHIFT) & _VKI_IOC_DIRMASK)
@@ -638,8 +646,8 @@ struct vki_termios {
 #define VKI_FIONBIO         _VKI_IOW('f', 126, int)
 #define VKI_TIOCNOTTY       0x5422
 #define VKI_TCSBRKP         0x5425  /* Needed for POSIX tcsendbreak() */
-#define VKI_TIOCGPTN        _VKI_IOR('T',0x30, unsigned int) 
-                            /* Get Pty Number (of pty-mux device) */
+#define VKI_TIOCGPTN        _VKI_IOR('T',0x30, unsigned int)
+							/* Get Pty Number (of pty-mux device) */
 #define VKI_TIOCSPTLCK      _VKI_IOW('T',0x31, int)  /* Lock/unlock Pty */
 #define VKI_FIOASYNC        _VKI_IOW('f', 125, int)
 #define VKI_TIOCSERGETLSR   0x5459 /* Get line status register */

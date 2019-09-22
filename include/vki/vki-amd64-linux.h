@@ -7,8 +7,8 @@
    This file is part of Valgrind, a dynamic binary instrumentation
    framework.
 
-   Copyright (C) 2000-2017 Julian Seward 
-      jseward@acm.org
+   Copyright (C) 2000-2017 Julian Seward
+	  jseward@acm.org
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -148,10 +148,10 @@ typedef __vki_restorefn_t __user *__vki_sigrestore_t;
 #define VKI_SIG_IGN	((__vki_sighandler_t)1)	/* ignore signal */
 
 struct vki_sigaction_base {
-        // [[Nb: a 'k' prefix is added to "sa_handler" because
-        // bits/sigaction.h (which gets dragged in somehow via signal.h)
-        // #defines it as something else.  Since that is done for glibc's
-        // purposes, which we don't care about here, we use our own name.]]
+		// [[Nb: a 'k' prefix is added to "sa_handler" because
+		// bits/sigaction.h (which gets dragged in somehow via signal.h)
+		// #defines it as something else.  Since that is done for glibc's
+		// purposes, which we don't care about here, we use our own name.]]
 	__vki_sighandler_t ksa_handler;
 	unsigned long sa_flags;
 	__vki_sigrestore_t sa_restorer;
@@ -180,7 +180,7 @@ struct _vki_fpstate {
 	__vki_u16	twd;	/* Note this is not the same as the 32bit/x87/FSAVE twd */
 	__vki_u16	fop;
 	__vki_u64	rip;
-	__vki_u64	rdp; 
+	__vki_u64	rdp;
 	__vki_u32	mxcsr;
 	__vki_u32	mxcsr_mask;
 	__vki_u32	st_space[32];	/* 8*16 bytes for each FP-reg */
@@ -188,7 +188,7 @@ struct _vki_fpstate {
 	__vki_u32	reserved2[24];
 };
 
-struct vki_sigcontext { 
+struct vki_sigcontext {
 	unsigned long r8;
 	unsigned long r9;
 	unsigned long r10;
@@ -210,7 +210,7 @@ struct vki_sigcontext {
 	unsigned short cs;
 	unsigned short gs;
 	unsigned short fs;
-	unsigned short __pad0; 
+	unsigned short __pad0;
 	unsigned long err;
 	unsigned long trapno;
 	unsigned long oldmask;
@@ -298,6 +298,21 @@ struct vki_f_owner_ex {
 #define VKI_RLIMIT_NOFILE	7	/* max number of open files */
 
 //----------------------------------------------------------------------
+// From linux-5.0.0/arch/x86/include/uapi/asm/siginfo.h
+//----------------------------------------------------------------------
+
+/* We need that to ensure that sizeof(siginfo) == 128. */
+#ifdef __x86_64__
+# ifdef __ILP32__
+typedef long long __vki_kernel_si_clock_t __attribute__((aligned(4)));
+#  define __VKI_ARCH_SI_CLOCK_T             __vki_kernel_si_clock_t
+#  define __VKI_ARCH_SI_ATTRIBUTES          __attribute__((aligned(8)))
+# else
+#  define __VKI_ARCH_SI_PREAMBLE_SIZE (4 * sizeof(int))
+# endif
+#endif
+
+//----------------------------------------------------------------------
 // From linux-2.6.9/include/asm-x86_64/socket.h
 //----------------------------------------------------------------------
 
@@ -336,12 +351,12 @@ struct vki_stat {
 	long		st_blocks;	/* Number 512-byte blocks allocated. */
 
 	unsigned long	st_atime;
-	unsigned long 	st_atime_nsec; 
+	unsigned long 	st_atime_nsec;
 	unsigned long	st_mtime;
 	unsigned long	st_mtime_nsec;
 	unsigned long	st_ctime;
 	unsigned long   st_ctime_nsec;
-  	long		__unused0[3];
+	long		__unused0[3];
 };
 
 //----------------------------------------------------------------------
@@ -511,9 +526,9 @@ struct vki_user_regs_struct {
 	unsigned long r9,r8,rax,rcx,rdx,rsi,rdi,orig_rax;
 	unsigned long rip,cs,eflags;
 	unsigned long rsp,ss;
-  	unsigned long fs_base, gs_base;
-	unsigned long ds,es,fs,gs; 
-}; 
+	unsigned long fs_base, gs_base;
+	unsigned long ds,es,fs,gs;
+};
 
 //----------------------------------------------------------------------
 // From linux-2.6.9/include/asm-x86_64/elf.h
@@ -584,7 +599,7 @@ struct vki_user_desc {
 	unsigned int  limit_in_pages:1;
 	unsigned int  seg_not_present:1;
 	unsigned int  useable:1;
-        unsigned int  lm:1;
+		unsigned int  lm:1;
 };
 
 // [[Nb: for our convenience within Valgrind, use a more specific name]]
