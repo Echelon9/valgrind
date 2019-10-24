@@ -107,22 +107,22 @@ static void CLG_(init_statistics)(Statistics* s)
 VG_REGPARM(1)
 static void log_global_event(InstrInfo* ii)
 {
-    ULong* cost_Bus;
+	ULong* cost_Bus;
 
-    CLG_DEBUG(6, "log_global_event:  Ir  %#lx/%u\n",
-              CLG_(bb_base) + ii->instr_offset, ii->instr_size);
+	CLG_DEBUG(6, "log_global_event:  Ir  %#lx/%u\n",
+			  CLG_(bb_base) + ii->instr_offset, ii->instr_size);
 
-    if (!CLG_(current_state).collect) return;
+	if (!CLG_(current_state).collect) return;
 
-    CLG_ASSERT( (ii->eventset->mask & (1u<<EG_BUS))>0 );
+	CLG_ASSERT( (ii->eventset->mask & (1u<<EG_BUS))>0 );
 
-    CLG_(current_state).cost[ fullOffset(EG_BUS) ]++;
+	CLG_(current_state).cost[ fullOffset(EG_BUS) ]++;
 
-    if (CLG_(current_state).nonskipped)
-        cost_Bus = CLG_(current_state).nonskipped->skipped + fullOffset(EG_BUS);
-    else
-        cost_Bus = CLG_(cost_base) + ii->cost_offset + ii->eventset->offset[EG_BUS];
-    cost_Bus[0]++;
+	if (CLG_(current_state).nonskipped)
+		cost_Bus = CLG_(current_state).nonskipped->skipped + fullOffset(EG_BUS);
+	else
+		cost_Bus = CLG_(cost_base) + ii->cost_offset + ii->eventset->offset[EG_BUS];
+	cost_Bus[0]++;
 }
 
 
@@ -134,61 +134,61 @@ static void log_global_event(InstrInfo* ii)
 static VG_REGPARM(2)
 void log_cond_branch(InstrInfo* ii, Word taken)
 {
-    Bool miss;
-    Int fullOffset_Bc;
-    ULong* cost_Bc;
+	Bool miss;
+	Int fullOffset_Bc;
+	ULong* cost_Bc;
 
-    CLG_DEBUG(6, "log_cond_branch:  Ir %#lx, taken %ld\n",
-              CLG_(bb_base) + ii->instr_offset, taken);
+	CLG_DEBUG(6, "log_cond_branch:  Ir %#lx, taken %ld\n",
+			  CLG_(bb_base) + ii->instr_offset, taken);
 
-    miss = 1 & do_cond_branch_predict(CLG_(bb_base) + ii->instr_offset, taken);
+	miss = 1 & do_cond_branch_predict(CLG_(bb_base) + ii->instr_offset, taken);
 
-    if (!CLG_(current_state).collect) return;
+	if (!CLG_(current_state).collect) return;
 
-    CLG_ASSERT( (ii->eventset->mask & (1u<<EG_BC))>0 );
+	CLG_ASSERT( (ii->eventset->mask & (1u<<EG_BC))>0 );
 
-    if (CLG_(current_state).nonskipped)
-        cost_Bc = CLG_(current_state).nonskipped->skipped + fullOffset(EG_BC);
-    else
-        cost_Bc = CLG_(cost_base) + ii->cost_offset + ii->eventset->offset[EG_BC];
+	if (CLG_(current_state).nonskipped)
+		cost_Bc = CLG_(current_state).nonskipped->skipped + fullOffset(EG_BC);
+	else
+		cost_Bc = CLG_(cost_base) + ii->cost_offset + ii->eventset->offset[EG_BC];
 
-    fullOffset_Bc = fullOffset(EG_BC);
-    CLG_(current_state).cost[ fullOffset_Bc ]++;
-    cost_Bc[0]++;
-    if (miss) {
-        CLG_(current_state).cost[ fullOffset_Bc+1 ]++;
-        cost_Bc[1]++;
-    }
+	fullOffset_Bc = fullOffset(EG_BC);
+	CLG_(current_state).cost[ fullOffset_Bc ]++;
+	cost_Bc[0]++;
+	if (miss) {
+		CLG_(current_state).cost[ fullOffset_Bc+1 ]++;
+		cost_Bc[1]++;
+	}
 }
 
 static VG_REGPARM(2)
 void log_ind_branch(InstrInfo* ii, UWord actual_dst)
 {
-    Bool miss;
-    Int fullOffset_Bi;
-    ULong* cost_Bi;
+	Bool miss;
+	Int fullOffset_Bi;
+	ULong* cost_Bi;
 
-    CLG_DEBUG(6, "log_ind_branch:  Ir  %#lx, dst %#lx\n",
-              CLG_(bb_base) + ii->instr_offset, actual_dst);
+	CLG_DEBUG(6, "log_ind_branch:  Ir  %#lx, dst %#lx\n",
+			  CLG_(bb_base) + ii->instr_offset, actual_dst);
 
-    miss = 1 & do_ind_branch_predict(CLG_(bb_base) + ii->instr_offset, actual_dst);
+	miss = 1 & do_ind_branch_predict(CLG_(bb_base) + ii->instr_offset, actual_dst);
 
-    if (!CLG_(current_state).collect) return;
+	if (!CLG_(current_state).collect) return;
 
-    CLG_ASSERT( (ii->eventset->mask & (1u<<EG_BI))>0 );
+	CLG_ASSERT( (ii->eventset->mask & (1u<<EG_BI))>0 );
 
-    if (CLG_(current_state).nonskipped)
-        cost_Bi = CLG_(current_state).nonskipped->skipped + fullOffset(EG_BI);
-    else
-        cost_Bi = CLG_(cost_base) + ii->cost_offset + ii->eventset->offset[EG_BI];
+	if (CLG_(current_state).nonskipped)
+		cost_Bi = CLG_(current_state).nonskipped->skipped + fullOffset(EG_BI);
+	else
+		cost_Bi = CLG_(cost_base) + ii->cost_offset + ii->eventset->offset[EG_BI];
 
-    fullOffset_Bi = fullOffset(EG_BI);
-    CLG_(current_state).cost[ fullOffset_Bi ]++;
-    cost_Bi[0]++;
-    if (miss) {
-        CLG_(current_state).cost[ fullOffset_Bi+1 ]++;
-        cost_Bi[1]++;
-    }
+	fullOffset_Bi = fullOffset(EG_BI);
+	CLG_(current_state).cost[ fullOffset_Bi ]++;
+	cost_Bi[0]++;
+	if (miss) {
+		CLG_(current_state).cost[ fullOffset_Bi+1 ]++;
+		cost_Bi[1]++;
+	}
 }
 
 /*------------------------------------------------------------*/
@@ -230,44 +230,44 @@ typedef
 
 typedef
    enum {
-      Ev_Ir,  // Instruction read
-      Ev_Dr,  // Data read
-      Ev_Dw,  // Data write
-      Ev_Dm,  // Data modify (read then write)
-      Ev_Bc,  // branch conditional
-      Ev_Bi,  // branch indirect (to unknown destination)
-      Ev_G    // Global bus event
+	  Ev_Ir,  // Instruction read
+	  Ev_Dr,  // Data read
+	  Ev_Dw,  // Data write
+	  Ev_Dm,  // Data modify (read then write)
+	  Ev_Bc,  // branch conditional
+	  Ev_Bi,  // branch indirect (to unknown destination)
+	  Ev_G    // Global bus event
    }
    EventTag;
 
 typedef
    struct {
-      EventTag   tag;
-      InstrInfo* inode;
-      union {
+	  EventTag   tag;
+	  InstrInfo* inode;
+	  union {
 	 struct {
 	 } Ir;
 	 struct {
-	    IRAtom* ea;
-	    Int     szB;
+		IRAtom* ea;
+		Int     szB;
 	 } Dr;
 	 struct {
-	    IRAtom* ea;
-	    Int     szB;
+		IRAtom* ea;
+		Int     szB;
 	 } Dw;
 	 struct {
-	    IRAtom* ea;
-	    Int     szB;
+		IRAtom* ea;
+		Int     szB;
 	 } Dm;
-         struct {
-            IRAtom* taken; /* :: Ity_I1 */
-         } Bc;
-         struct {
-            IRAtom* dst;
-         } Bi;
+		 struct {
+			IRAtom* taken; /* :: Ity_I1 */
+		 } Bc;
+		 struct {
+			IRAtom* dst;
+		 } Bi;
 	 struct {
 	 } G;
-      } Ev;
+	  } Ev;
    }
    Event;
 
@@ -277,19 +277,19 @@ static void init_Event ( Event* ev ) {
 
 static IRAtom* get_Event_dea ( Event* ev ) {
    switch (ev->tag) {
-      case Ev_Dr: return ev->Ev.Dr.ea;
-      case Ev_Dw: return ev->Ev.Dw.ea;
-      case Ev_Dm: return ev->Ev.Dm.ea;
-      default:    tl_assert(0);
+	  case Ev_Dr: return ev->Ev.Dr.ea;
+	  case Ev_Dw: return ev->Ev.Dw.ea;
+	  case Ev_Dm: return ev->Ev.Dm.ea;
+	  default:    tl_assert(0);
    }
 }
 
 static Int get_Event_dszB ( Event* ev ) {
    switch (ev->tag) {
-      case Ev_Dr: return ev->Ev.Dr.szB;
-      case Ev_Dw: return ev->Ev.Dw.szB;
-      case Ev_Dm: return ev->Ev.Dm.szB;
-      default:    tl_assert(0);
+	  case Ev_Dr: return ev->Ev.Dr.szB;
+	  case Ev_Dw: return ev->Ev.Dw.szB;
+	  case Ev_Dm: return ev->Ev.Dm.szB;
+	  default:    tl_assert(0);
    }
 }
 
@@ -304,66 +304,66 @@ static Int get_Event_dszB ( Event* ev ) {
 /* A struct which holds all the running state during instrumentation.
    Mostly to avoid passing loads of parameters everywhere. */
 typedef struct {
-    /* The current outstanding-memory-event list. */
-    Event events[N_EVENTS];
-    Int   events_used;
+	/* The current outstanding-memory-event list. */
+	Event events[N_EVENTS];
+	Int   events_used;
 
-    /* The array of InstrInfo's is part of BB struct. */
-    BB* bb;
+	/* The array of InstrInfo's is part of BB struct. */
+	BB* bb;
 
-    /* BB seen before (ie. re-instrumentation) */
-    Bool seen_before;
+	/* BB seen before (ie. re-instrumentation) */
+	Bool seen_before;
 
-    /* Number InstrInfo bins 'used' so far. */
-    UInt ii_index;
+	/* Number InstrInfo bins 'used' so far. */
+	UInt ii_index;
 
-    // current offset of guest instructions from BB start
-    UInt instr_offset;
+	// current offset of guest instructions from BB start
+	UInt instr_offset;
 
-    /* The output SB being constructed. */
-    IRSB* sbOut;
+	/* The output SB being constructed. */
+	IRSB* sbOut;
 } ClgState;
 
 
 static void showEvent ( Event* ev )
 {
    switch (ev->tag) {
-      case Ev_Ir:
+	  case Ev_Ir:
 	 VG_(printf)("Ir (InstrInfo %p) at +%u\n",
-		     ev->inode, ev->inode->instr_offset);
+			 ev->inode, ev->inode->instr_offset);
 	 break;
-      case Ev_Dr:
+	  case Ev_Dr:
 	 VG_(printf)("Dr (InstrInfo %p) at +%u %d EA=",
-		     ev->inode, ev->inode->instr_offset, ev->Ev.Dr.szB);
+			 ev->inode, ev->inode->instr_offset, ev->Ev.Dr.szB);
 	 ppIRExpr(ev->Ev.Dr.ea);
 	 VG_(printf)("\n");
 	 break;
-      case Ev_Dw:
+	  case Ev_Dw:
 	 VG_(printf)("Dw (InstrInfo %p) at +%u %d EA=",
-		     ev->inode, ev->inode->instr_offset, ev->Ev.Dw.szB);
+			 ev->inode, ev->inode->instr_offset, ev->Ev.Dw.szB);
 	 ppIRExpr(ev->Ev.Dw.ea);
 	 VG_(printf)("\n");
 	 break;
-      case Ev_Dm:
+	  case Ev_Dm:
 	 VG_(printf)("Dm (InstrInfo %p) at +%u %d EA=",
-		     ev->inode, ev->inode->instr_offset, ev->Ev.Dm.szB);
+			 ev->inode, ev->inode->instr_offset, ev->Ev.Dm.szB);
 	 ppIRExpr(ev->Ev.Dm.ea);
 	 VG_(printf)("\n");
 	 break;
-      case Ev_Bc:
-         VG_(printf)("Bc %p   GA=", ev->inode);
-         ppIRExpr(ev->Ev.Bc.taken);
-         VG_(printf)("\n");
-         break;
-      case Ev_Bi:
-         VG_(printf)("Bi %p  DST=", ev->inode);
-         ppIRExpr(ev->Ev.Bi.dst);
-         VG_(printf)("\n");
-         break;
-      case Ev_G:
-         VG_(printf)("G  %p\n", ev->inode);
-         break;
-      default:
+	  case Ev_Bc:
+		 VG_(printf)("Bc %p   GA=", ev->inode);
+		 ppIRExpr(ev->Ev.Bc.taken);
+		 VG_(printf)("\n");
+		 break;
+	  case Ev_Bi:
+		 VG_(printf)("Bi %p  DST=", ev->inode);
+		 ppIRExpr(ev->Ev.Bi.dst);
+		 VG_(printf)("\n");
+		 break;
+	  case Ev_G:
+		 VG_(printf)("G  %p\n", ev->inode);
+		 break;
+	  default:
 	 tl_assert(0);
 	 break;
    }
@@ -386,78 +386,78 @@ static void flushEvents ( ClgState* clgs )
    Event*     ev3;
 
    if (!clgs->seen_before) {
-       // extend event sets as needed
-       // available sets: D0 Dr
-       for(i=0; i<clgs->events_used; i++) {
+	   // extend event sets as needed
+	   // available sets: D0 Dr
+	   for(i=0; i<clgs->events_used; i++) {
 	   ev  = &clgs->events[i];
 	   switch(ev->tag) {
 	   case Ev_Ir:
-	       // Ir event always is first for a guest instruction
-	       CLG_ASSERT(ev->inode->eventset == 0);
-	       ev->inode->eventset = CLG_(sets).base;
-	       break;
+		   // Ir event always is first for a guest instruction
+		   CLG_ASSERT(ev->inode->eventset == 0);
+		   ev->inode->eventset = CLG_(sets).base;
+		   break;
 	   case Ev_Dr:
-               // extend event set by Dr counters
-	       ev->inode->eventset = CLG_(add_event_group)(ev->inode->eventset,
+			   // extend event set by Dr counters
+		   ev->inode->eventset = CLG_(add_event_group)(ev->inode->eventset,
 							   EG_DR);
-	       break;
+		   break;
 	   case Ev_Dw:
 	   case Ev_Dm:
-               // extend event set by Dw counters
-	       ev->inode->eventset = CLG_(add_event_group)(ev->inode->eventset,
+			   // extend event set by Dw counters
+		   ev->inode->eventset = CLG_(add_event_group)(ev->inode->eventset,
 							   EG_DW);
-	       break;
-           case Ev_Bc:
-               // extend event set by Bc counters
-               ev->inode->eventset = CLG_(add_event_group)(ev->inode->eventset,
-                                                           EG_BC);
-               break;
-           case Ev_Bi:
-               // extend event set by Bi counters
-               ev->inode->eventset = CLG_(add_event_group)(ev->inode->eventset,
-                                                           EG_BI);
-               break;
+		   break;
+		   case Ev_Bc:
+			   // extend event set by Bc counters
+			   ev->inode->eventset = CLG_(add_event_group)(ev->inode->eventset,
+														   EG_BC);
+			   break;
+		   case Ev_Bi:
+			   // extend event set by Bi counters
+			   ev->inode->eventset = CLG_(add_event_group)(ev->inode->eventset,
+														   EG_BI);
+			   break;
 	   case Ev_G:
-               // extend event set by Bus counter
-	       ev->inode->eventset = CLG_(add_event_group)(ev->inode->eventset,
+			   // extend event set by Bus counter
+		   ev->inode->eventset = CLG_(add_event_group)(ev->inode->eventset,
 							   EG_BUS);
-	       break;
+		   break;
 	   default:
-	       tl_assert(0);
+		   tl_assert(0);
 	   }
-       }
+	   }
    }
 
    for(i = 0; i < clgs->events_used; i = inew) {
 
-      helperName = NULL;
-      helperAddr = NULL;
-      argv       = NULL;
-      regparms   = 0;
+	  helperName = NULL;
+	  helperAddr = NULL;
+	  argv       = NULL;
+	  regparms   = 0;
 
-      /* generate IR to notify event i and possibly the ones
+	  /* generate IR to notify event i and possibly the ones
 	 immediately following it. */
-      tl_assert(i >= 0 && i < clgs->events_used);
+	  tl_assert(i >= 0 && i < clgs->events_used);
 
-      ev  = &clgs->events[i];
-      ev2 = ( i < clgs->events_used-1 ? &clgs->events[i+1] : NULL );
-      ev3 = ( i < clgs->events_used-2 ? &clgs->events[i+2] : NULL );
+	  ev  = &clgs->events[i];
+	  ev2 = ( i < clgs->events_used-1 ? &clgs->events[i+1] : NULL );
+	  ev3 = ( i < clgs->events_used-2 ? &clgs->events[i+2] : NULL );
 
-      CLG_DEBUGIF(5) {
+	  CLG_DEBUGIF(5) {
 	 VG_(printf)("   flush ");
 	 showEvent( ev );
-      }
+	  }
 
-      i_node_expr = mkIRExpr_HWord( (HWord)ev->inode );
+	  i_node_expr = mkIRExpr_HWord( (HWord)ev->inode );
 
-      /* Decide on helper fn to call and args to pass it, and advance
+	  /* Decide on helper fn to call and args to pass it, and advance
 	 i appropriately.
 	 Dm events have same effect as Dw events */
-      switch (ev->tag) {
+	  switch (ev->tag) {
 	 case Ev_Ir:
-	    /* Merge an Ir with a following Dr. */
-	    if (ev2 && ev2->tag == Ev_Dr) {
-	       /* Why is this true?  It's because we're merging an Ir
+		/* Merge an Ir with a following Dr. */
+		if (ev2 && ev2->tag == Ev_Dr) {
+		   /* Why is this true?  It's because we're merging an Ir
 		  with a following Dr.  The Ir derives from the
 		  instruction's IMark and the Dr from data
 		  references which follow it.  In short it holds
@@ -465,131 +465,131 @@ static void flushEvents ( ClgState* clgs )
 		  Ev_Ir, and so these Dr must pertain to the
 		  immediately preceding Ir.  Same applies to analogous
 		  assertions in the subsequent cases. */
-	       tl_assert(ev2->inode == ev->inode);
-	       helperName = CLG_(cachesim).log_1I1Dr_name;
-	       helperAddr = CLG_(cachesim).log_1I1Dr;
-	       argv = mkIRExprVec_3( i_node_expr,
-				     get_Event_dea(ev2),
-				     mkIRExpr_HWord( get_Event_dszB(ev2) ) );
-	       regparms = 3;
-	       inew = i+2;
-	    }
-	    /* Merge an Ir with a following Dw/Dm. */
-	    else
-	    if (ev2 && (ev2->tag == Ev_Dw || ev2->tag == Ev_Dm)) {
-	       tl_assert(ev2->inode == ev->inode);
-	       helperName = CLG_(cachesim).log_1I1Dw_name;
-	       helperAddr = CLG_(cachesim).log_1I1Dw;
-	       argv = mkIRExprVec_3( i_node_expr,
-				     get_Event_dea(ev2),
-				     mkIRExpr_HWord( get_Event_dszB(ev2) ) );
-	       regparms = 3;
-	       inew = i+2;
-	    }
-	    /* Merge an Ir with two following Irs. */
-	    else
-	    if (ev2 && ev3 && ev2->tag == Ev_Ir && ev3->tag == Ev_Ir) {
-	       helperName = CLG_(cachesim).log_3I0D_name;
-	       helperAddr = CLG_(cachesim).log_3I0D;
-	       argv = mkIRExprVec_3( i_node_expr,
-				     mkIRExpr_HWord( (HWord)ev2->inode ),
-				     mkIRExpr_HWord( (HWord)ev3->inode ) );
-	       regparms = 3;
-	       inew = i+3;
-	    }
-	    /* Merge an Ir with one following Ir. */
-	    else
-	    if (ev2 && ev2->tag == Ev_Ir) {
-	       helperName = CLG_(cachesim).log_2I0D_name;
-	       helperAddr = CLG_(cachesim).log_2I0D;
-	       argv = mkIRExprVec_2( i_node_expr,
-				     mkIRExpr_HWord( (HWord)ev2->inode ) );
-	       regparms = 2;
-	       inew = i+2;
-	    }
-	    /* No merging possible; emit as-is. */
-	    else {
-	       helperName = CLG_(cachesim).log_1I0D_name;
-	       helperAddr = CLG_(cachesim).log_1I0D;
-	       argv = mkIRExprVec_1( i_node_expr );
-	       regparms = 1;
-	       inew = i+1;
-	    }
-	    break;
+		   tl_assert(ev2->inode == ev->inode);
+		   helperName = CLG_(cachesim).log_1I1Dr_name;
+		   helperAddr = CLG_(cachesim).log_1I1Dr;
+		   argv = mkIRExprVec_3( i_node_expr,
+					 get_Event_dea(ev2),
+					 mkIRExpr_HWord( get_Event_dszB(ev2) ) );
+		   regparms = 3;
+		   inew = i+2;
+		}
+		/* Merge an Ir with a following Dw/Dm. */
+		else
+		if (ev2 && (ev2->tag == Ev_Dw || ev2->tag == Ev_Dm)) {
+		   tl_assert(ev2->inode == ev->inode);
+		   helperName = CLG_(cachesim).log_1I1Dw_name;
+		   helperAddr = CLG_(cachesim).log_1I1Dw;
+		   argv = mkIRExprVec_3( i_node_expr,
+					 get_Event_dea(ev2),
+					 mkIRExpr_HWord( get_Event_dszB(ev2) ) );
+		   regparms = 3;
+		   inew = i+2;
+		}
+		/* Merge an Ir with two following Irs. */
+		else
+		if (ev2 && ev3 && ev2->tag == Ev_Ir && ev3->tag == Ev_Ir) {
+		   helperName = CLG_(cachesim).log_3I0D_name;
+		   helperAddr = CLG_(cachesim).log_3I0D;
+		   argv = mkIRExprVec_3( i_node_expr,
+					 mkIRExpr_HWord( (HWord)ev2->inode ),
+					 mkIRExpr_HWord( (HWord)ev3->inode ) );
+		   regparms = 3;
+		   inew = i+3;
+		}
+		/* Merge an Ir with one following Ir. */
+		else
+		if (ev2 && ev2->tag == Ev_Ir) {
+		   helperName = CLG_(cachesim).log_2I0D_name;
+		   helperAddr = CLG_(cachesim).log_2I0D;
+		   argv = mkIRExprVec_2( i_node_expr,
+					 mkIRExpr_HWord( (HWord)ev2->inode ) );
+		   regparms = 2;
+		   inew = i+2;
+		}
+		/* No merging possible; emit as-is. */
+		else {
+		   helperName = CLG_(cachesim).log_1I0D_name;
+		   helperAddr = CLG_(cachesim).log_1I0D;
+		   argv = mkIRExprVec_1( i_node_expr );
+		   regparms = 1;
+		   inew = i+1;
+		}
+		break;
 	 case Ev_Dr:
-	    /* Data read or modify */
-	    helperName = CLG_(cachesim).log_0I1Dr_name;
-	    helperAddr = CLG_(cachesim).log_0I1Dr;
-	    argv = mkIRExprVec_3( i_node_expr,
+		/* Data read or modify */
+		helperName = CLG_(cachesim).log_0I1Dr_name;
+		helperAddr = CLG_(cachesim).log_0I1Dr;
+		argv = mkIRExprVec_3( i_node_expr,
 				  get_Event_dea(ev),
 				  mkIRExpr_HWord( get_Event_dszB(ev) ) );
-	    regparms = 3;
-	    inew = i+1;
-	    break;
+		regparms = 3;
+		inew = i+1;
+		break;
 	 case Ev_Dw:
 	 case Ev_Dm:
-	    /* Data write */
-	    helperName = CLG_(cachesim).log_0I1Dw_name;
-	    helperAddr = CLG_(cachesim).log_0I1Dw;
-	    argv = mkIRExprVec_3( i_node_expr,
+		/* Data write */
+		helperName = CLG_(cachesim).log_0I1Dw_name;
+		helperAddr = CLG_(cachesim).log_0I1Dw;
+		argv = mkIRExprVec_3( i_node_expr,
 				  get_Event_dea(ev),
 				  mkIRExpr_HWord( get_Event_dszB(ev) ) );
-	    regparms = 3;
-	    inew = i+1;
-	    break;
-         case Ev_Bc:
-            /* Conditional branch */
-            helperName = "log_cond_branch";
-            helperAddr = &log_cond_branch;
-            argv = mkIRExprVec_2( i_node_expr, ev->Ev.Bc.taken );
-            regparms = 2;
-            inew = i+1;
-            break;
-         case Ev_Bi:
-            /* Branch to an unknown destination */
-            helperName = "log_ind_branch";
-            helperAddr = &log_ind_branch;
-            argv = mkIRExprVec_2( i_node_expr, ev->Ev.Bi.dst );
-            regparms = 2;
-            inew = i+1;
-            break;
-         case Ev_G:
-            /* Global bus event (CAS, LOCK-prefix, LL-SC, etc) */
-            helperName = "log_global_event";
-            helperAddr = &log_global_event;
-            argv = mkIRExprVec_1( i_node_expr );
-            regparms = 1;
-            inew = i+1;
-            break;
+		regparms = 3;
+		inew = i+1;
+		break;
+		 case Ev_Bc:
+			/* Conditional branch */
+			helperName = "log_cond_branch";
+			helperAddr = &log_cond_branch;
+			argv = mkIRExprVec_2( i_node_expr, ev->Ev.Bc.taken );
+			regparms = 2;
+			inew = i+1;
+			break;
+		 case Ev_Bi:
+			/* Branch to an unknown destination */
+			helperName = "log_ind_branch";
+			helperAddr = &log_ind_branch;
+			argv = mkIRExprVec_2( i_node_expr, ev->Ev.Bi.dst );
+			regparms = 2;
+			inew = i+1;
+			break;
+		 case Ev_G:
+			/* Global bus event (CAS, LOCK-prefix, LL-SC, etc) */
+			helperName = "log_global_event";
+			helperAddr = &log_global_event;
+			argv = mkIRExprVec_1( i_node_expr );
+			regparms = 1;
+			inew = i+1;
+			break;
 	 default:
-	    tl_assert(0);
-      }
+		tl_assert(0);
+	  }
 
-      CLG_DEBUGIF(5) {
+	  CLG_DEBUGIF(5) {
 	  if (inew > i+1) {
-	      VG_(printf)("   merge ");
-	      showEvent( ev2 );
+		  VG_(printf)("   merge ");
+		  showEvent( ev2 );
 	  }
 	  if (inew > i+2) {
-	      VG_(printf)("   merge ");
-	      showEvent( ev3 );
+		  VG_(printf)("   merge ");
+		  showEvent( ev3 );
 	  }
 	  if (helperAddr)
-	      VG_(printf)("   call  %s (%p)\n",
+		  VG_(printf)("   call  %s (%p)\n",
 			  helperName, helperAddr);
-      }
+	  }
 
-      /* helper could be unset depending on the simulator used */
-      if (helperAddr == 0) continue;
+	  /* helper could be unset depending on the simulator used */
+	  if (helperAddr == 0) continue;
 
-      /* Add the helper. */
-      tl_assert(helperName);
-      tl_assert(helperAddr);
-      tl_assert(argv);
-      di = unsafeIRDirty_0_N( regparms,
-			      helperName, VG_(fnptr_to_fnentry)( helperAddr ),
-			      argv );
-      addStmtToIRSB( clgs->sbOut, IRStmt_Dirty(di) );
+	  /* Add the helper. */
+	  tl_assert(helperName);
+	  tl_assert(helperAddr);
+	  tl_assert(argv);
+	  di = unsafeIRDirty_0_N( regparms,
+				  helperName, VG_(fnptr_to_fnentry)( helperAddr ),
+				  argv );
+	  addStmtToIRSB( clgs->sbOut, IRStmt_Dirty(di) );
    }
 
    clgs->events_used = 0;
@@ -602,7 +602,7 @@ static void addEvent_Ir ( ClgState* clgs, InstrInfo* inode )
    if (!CLG_(clo).simulate_cache) return;
 
    if (clgs->events_used == N_EVENTS)
-      flushEvents(clgs);
+	  flushEvents(clgs);
    tl_assert(clgs->events_used >= 0 && clgs->events_used < N_EVENTS);
    evt = &clgs->events[clgs->events_used];
    init_Event(evt);
@@ -621,7 +621,7 @@ void addEvent_Dr ( ClgState* clgs, InstrInfo* inode, Int datasize, IRAtom* ea )
    tl_assert(datasize <= CLG_(min_line_size));
 
    if (clgs->events_used == N_EVENTS)
-      flushEvents(clgs);
+	  flushEvents(clgs);
    tl_assert(clgs->events_used >= 0 && clgs->events_used < N_EVENTS);
    evt = &clgs->events[clgs->events_used];
    init_Event(evt);
@@ -643,20 +643,20 @@ void addEvent_Dw ( ClgState* clgs, InstrInfo* inode, Int datasize, IRAtom* ea )
 
    /* Is it possible to merge this write with the preceding read? */
    if (clgs->events_used > 0) {
-      Event* lastEvt = &clgs->events[clgs->events_used-1];
-      if (   lastEvt->tag       == Ev_Dr
-          && lastEvt->Ev.Dr.szB == datasize
-          && lastEvt->inode     == inode
-          && eqIRAtom(lastEvt->Ev.Dr.ea, ea))
-      {
-         lastEvt->tag   = Ev_Dm;
-         return;
-      }
+	  Event* lastEvt = &clgs->events[clgs->events_used-1];
+	  if (   lastEvt->tag       == Ev_Dr
+		  && lastEvt->Ev.Dr.szB == datasize
+		  && lastEvt->inode     == inode
+		  && eqIRAtom(lastEvt->Ev.Dr.ea, ea))
+	  {
+		 lastEvt->tag   = Ev_Dm;
+		 return;
+	  }
    }
 
    /* No.  Add as normal. */
    if (clgs->events_used == N_EVENTS)
-      flushEvents(clgs);
+	  flushEvents(clgs);
    tl_assert(clgs->events_used >= 0 && clgs->events_used < N_EVENTS);
    evt = &clgs->events[clgs->events_used];
    init_Event(evt);
@@ -669,8 +669,8 @@ void addEvent_Dw ( ClgState* clgs, InstrInfo* inode, Int datasize, IRAtom* ea )
 
 static
 void addEvent_D_guarded ( ClgState* clgs, InstrInfo* inode,
-                          Int datasize, IRAtom* ea, IRAtom* guard,
-                          Bool isWrite )
+						  Int datasize, IRAtom* ea, IRAtom* guard,
+						  Bool isWrite )
 {
    tl_assert(isIRAtom(ea));
    tl_assert(guard);
@@ -680,11 +680,11 @@ void addEvent_D_guarded ( ClgState* clgs, InstrInfo* inode,
    tl_assert(datasize <= CLG_(min_line_size));
 
    /* Adding guarded memory actions and merging them with the existing
-      queue is too complex.  Simply flush the queue and add this
-      action immediately.  Since guarded loads and stores are pretty
-      rare, this is not thought likely to cause any noticeable
-      performance loss as a result of the loss of event-merging
-      opportunities. */
+	  queue is too complex.  Simply flush the queue and add this
+	  action immediately.  Since guarded loads and stores are pretty
+	  rare, this is not thought likely to cause any noticeable
+	  performance loss as a result of the loss of event-merging
+	  opportunities. */
    tl_assert(clgs->events_used >= 0);
    flushEvents(clgs);
    tl_assert(clgs->events_used == 0);
@@ -697,16 +697,16 @@ void addEvent_D_guarded ( ClgState* clgs, InstrInfo* inode,
    IRDirty*     di;
    i_node_expr = mkIRExpr_HWord( (HWord)inode );
    helperName  = isWrite ? CLG_(cachesim).log_0I1Dw_name
-                         : CLG_(cachesim).log_0I1Dr_name;
+						 : CLG_(cachesim).log_0I1Dr_name;
    helperAddr  = isWrite ? CLG_(cachesim).log_0I1Dw
-                         : CLG_(cachesim).log_0I1Dr;
+						 : CLG_(cachesim).log_0I1Dr;
    argv        = mkIRExprVec_3( i_node_expr,
-                                ea, mkIRExpr_HWord( datasize ) );
+								ea, mkIRExpr_HWord( datasize ) );
    regparms    = 3;
    di          = unsafeIRDirty_0_N(
-                    regparms, 
-                    helperName, VG_(fnptr_to_fnentry)( helperAddr ), 
-                    argv );
+					regparms,
+					helperName, VG_(fnptr_to_fnentry)( helperAddr ),
+					argv );
    di->guard = guard;
    addStmtToIRSB( clgs->sbOut, IRStmt_Dirty(di) );
 }
@@ -717,11 +717,11 @@ void addEvent_Bc ( ClgState* clgs, InstrInfo* inode, IRAtom* guard )
    Event* evt;
    tl_assert(isIRAtom(guard));
    tl_assert(typeOfIRExpr(clgs->sbOut->tyenv, guard)
-             == (sizeof(RegWord)==4 ? Ity_I32 : Ity_I64));
+			 == (sizeof(RegWord)==4 ? Ity_I32 : Ity_I64));
    if (!CLG_(clo).simulate_branch) return;
 
    if (clgs->events_used == N_EVENTS)
-      flushEvents(clgs);
+	  flushEvents(clgs);
    tl_assert(clgs->events_used >= 0 && clgs->events_used < N_EVENTS);
    evt = &clgs->events[clgs->events_used];
    init_Event(evt);
@@ -737,11 +737,11 @@ void addEvent_Bi ( ClgState* clgs, InstrInfo* inode, IRAtom* whereTo )
    Event* evt;
    tl_assert(isIRAtom(whereTo));
    tl_assert(typeOfIRExpr(clgs->sbOut->tyenv, whereTo)
-             == (sizeof(RegWord)==4 ? Ity_I32 : Ity_I64));
+			 == (sizeof(RegWord)==4 ? Ity_I32 : Ity_I64));
    if (!CLG_(clo).simulate_branch) return;
 
    if (clgs->events_used == N_EVENTS)
-      flushEvents(clgs);
+	  flushEvents(clgs);
    tl_assert(clgs->events_used >= 0 && clgs->events_used < N_EVENTS);
    evt = &clgs->events[clgs->events_used];
    init_Event(evt);
@@ -758,7 +758,7 @@ void addEvent_G ( ClgState* clgs, InstrInfo* inode )
    if (!CLG_(clo).collect_bus) return;
 
    if (clgs->events_used == N_EVENTS)
-      flushEvents(clgs);
+	  flushEvents(clgs);
    tl_assert(clgs->events_used >= 0 && clgs->events_used < N_EVENTS);
    evt = &clgs->events[clgs->events_used];
    init_Event(evt);
@@ -782,14 +782,14 @@ InstrInfo* next_InstrInfo ( ClgState* clgs, UInt instr_size )
    ii = &clgs->bb->instr[ clgs->ii_index ];
 
    if (clgs->seen_before) {
-       CLG_ASSERT(ii->instr_offset == clgs->instr_offset);
-       CLG_ASSERT(ii->instr_size == instr_size);
+	   CLG_ASSERT(ii->instr_offset == clgs->instr_offset);
+	   CLG_ASSERT(ii->instr_size == instr_size);
    }
    else {
-       ii->instr_offset = clgs->instr_offset;
-       ii->instr_size = instr_size;
-       ii->cost_offset = 0;
-       ii->eventset = 0;
+	   ii->instr_offset = clgs->instr_offset;
+	   ii->instr_size = instr_size;
+	   ii->cost_offset = 0;
+	   ii->eventset = 0;
    }
 
    clgs->ii_index++;
@@ -803,21 +803,21 @@ InstrInfo* next_InstrInfo ( ClgState* clgs, UInt instr_size )
 static
 UInt update_cost_offsets( ClgState* clgs )
 {
-    Int i;
-    InstrInfo* ii;
-    UInt cost_offset = 0;
+	Int i;
+	InstrInfo* ii;
+	UInt cost_offset = 0;
 
-    CLG_ASSERT(clgs->bb->instr_count == clgs->ii_index);
-    for(i=0; i<clgs->ii_index; i++) {
+	CLG_ASSERT(clgs->bb->instr_count == clgs->ii_index);
+	for(i=0; i<clgs->ii_index; i++) {
 	ii = &clgs->bb->instr[i];
 	if (clgs->seen_before) {
-	    CLG_ASSERT(ii->cost_offset == cost_offset);
+		CLG_ASSERT(ii->cost_offset == cost_offset);
 	} else
-	    ii->cost_offset = cost_offset;
+		ii->cost_offset = cost_offset;
 	cost_offset += ii->eventset ? ii->eventset->size : 0;
-    }
+	}
 
-    return cost_offset;
+	return cost_offset;
 }
 
 /*------------------------------------------------------------*/
@@ -835,20 +835,20 @@ UInt update_cost_offsets( ClgState* clgs )
 static
 Addr IRConst2Addr(IRConst* con)
 {
-    Addr addr;
+	Addr addr;
 
-    if (sizeof(RegWord) == 4) {
+	if (sizeof(RegWord) == 4) {
 	CLG_ASSERT( con->tag == Ico_U32 );
 	addr = con->Ico.U32;
-    }
-    else if (sizeof(RegWord) == 8) {
+	}
+	else if (sizeof(RegWord) == 8) {
 	CLG_ASSERT( con->tag == Ico_U64 );
 	addr = con->Ico.U64;
-    }
-    else
+	}
+	else
 	VG_(tool_panic)("Callgrind: invalid Addr type");
 
-    return addr;
+	return addr;
 }
 
 /* First pass over a BB to instrument, counting instructions and jumps
@@ -857,59 +857,59 @@ Addr IRConst2Addr(IRConst* con)
  * Called from CLG_(get_bb)
  */
 void CLG_(collectBlockInfo)(IRSB* sbIn,
-			    /*INOUT*/ UInt* instrs,
-			    /*INOUT*/ UInt* cjmps,
-			    /*INOUT*/ Bool* cjmp_inverted)
+				/*INOUT*/ UInt* instrs,
+				/*INOUT*/ UInt* cjmps,
+				/*INOUT*/ Bool* cjmp_inverted)
 {
-    Int i;
-    IRStmt* st;
-    Addr instrAddr =0, jumpDst;
-    UInt instrLen = 0;
-    Bool toNextInstr = False;
+	Int i;
+	IRStmt* st;
+	Addr instrAddr =0, jumpDst;
+	UInt instrLen = 0;
+	Bool toNextInstr = False;
 
-    // Ist_Exit has to be ignored in preamble code, before first IMark:
-    // preamble code is added by VEX for self modifying code, and has
-    // nothing to do with client code
-    Bool inPreamble = True;
+	// Ist_Exit has to be ignored in preamble code, before first IMark:
+	// preamble code is added by VEX for self modifying code, and has
+	// nothing to do with client code
+	Bool inPreamble = True;
 
-    if (!sbIn) return;
+	if (!sbIn) return;
 
-    for (i = 0; i < sbIn->stmts_used; i++) {
+	for (i = 0; i < sbIn->stmts_used; i++) {
 	  st = sbIn->stmts[i];
 	  if (Ist_IMark == st->tag) {
-	      inPreamble = False;
+		  inPreamble = False;
 
-	      instrAddr = st->Ist.IMark.addr;
-	      instrLen  = st->Ist.IMark.len;
+		  instrAddr = st->Ist.IMark.addr;
+		  instrLen  = st->Ist.IMark.len;
 
-	      (*instrs)++;
-	      toNextInstr = False;
+		  (*instrs)++;
+		  toNextInstr = False;
 	  }
 	  if (inPreamble) continue;
 	  if (Ist_Exit == st->tag) {
-	      jumpDst = IRConst2Addr(st->Ist.Exit.dst);
-	      toNextInstr =  (jumpDst == instrAddr + instrLen);
+		  jumpDst = IRConst2Addr(st->Ist.Exit.dst);
+		  toNextInstr =  (jumpDst == instrAddr + instrLen);
 
-	      (*cjmps)++;
+		  (*cjmps)++;
 	  }
-    }
+	}
 
-    /* if the last instructions of BB conditionally jumps to next instruction
-     * (= first instruction of next BB in memory), this is a inverted by VEX.
-     */
-    *cjmp_inverted = toNextInstr;
+	/* if the last instructions of BB conditionally jumps to next instruction
+	 * (= first instruction of next BB in memory), this is a inverted by VEX.
+	 */
+	*cjmp_inverted = toNextInstr;
 }
 
 static
 void addConstMemStoreStmt( IRSB* bbOut, UWord addr, UInt val, IRType hWordTy)
 {
-    addStmtToIRSB( bbOut,
+	addStmtToIRSB( bbOut,
 		   IRStmt_Store(CLGEndness,
 				IRExpr_Const(hWordTy == Ity_I32 ?
-					     IRConst_U32( addr ) :
-					     IRConst_U64( addr )),
+						 IRConst_U32( addr ) :
+						 IRConst_U64( addr )),
 				IRExpr_Const(IRConst_U32(val)) ));
-}   
+}
 
 
 /* add helper call to setup_bbcc, with pointer to BB struct as argument
@@ -941,18 +941,18 @@ void addBBSetupCall(ClgState* clgs)
    arg1 = mkIRExpr_HWord( (HWord)clgs->bb );
    argv = mkIRExprVec_1(arg1);
    di = unsafeIRDirty_0_N( 1, "setup_bbcc",
-			      VG_(fnptr_to_fnentry)( & CLG_(setup_bbcc) ),
-			      argv);
+				  VG_(fnptr_to_fnentry)( & CLG_(setup_bbcc) ),
+				  argv);
    addStmtToIRSB( clgs->sbOut, IRStmt_Dirty(di) );
 }
 
 
 static
 IRSB* CLG_(instrument)( VgCallbackClosure* closure,
-                        IRSB* sbIn,
+						IRSB* sbIn,
 			const VexGuestLayout* layout,
 			const VexGuestExtents* vge,
-                        const VexArchInfo* archinfo_host,
+						const VexArchInfo* archinfo_host,
 			IRType gWordTy, IRType hWordTy )
 {
    Int        i;
@@ -964,15 +964,15 @@ IRSB* CLG_(instrument)( VgCallbackClosure* closure,
    IRTypeEnv* tyenv = sbIn->tyenv;
 
    if (gWordTy != hWordTy) {
-      /* We don't currently support this case. */
-      VG_(tool_panic)("host/guest word size mismatch");
+	  /* We don't currently support this case. */
+	  VG_(tool_panic)("host/guest word size mismatch");
    }
 
    // No instrumentation if it is switched off
    if (! CLG_(instrument_state)) {
-       CLG_DEBUG(5, "instrument(BB %#lx) [Instrumentation OFF]\n",
+	   CLG_DEBUG(5, "instrument(BB %#lx) [Instrumentation OFF]\n",
 		 (Addr)closure->readdr);
-       return sbIn;
+	   return sbIn;
    }
 
    CLG_DEBUG(3, "+ instrument(BB %#lx)\n", (Addr)closure->readdr);
@@ -983,8 +983,8 @@ IRSB* CLG_(instrument)( VgCallbackClosure* closure,
    // Copy verbatim any IR preamble preceding the first IMark
    i = 0;
    while (i < sbIn->stmts_used && sbIn->stmts[i]->tag != Ist_IMark) {
-      addStmtToIRSB( clgs.sbOut, sbIn->stmts[i] );
-      i++;
+	  addStmtToIRSB( clgs.sbOut, sbIn->stmts[i] );
+	  i++;
    }
 
    // Get the first statement, and origAddr from it
@@ -994,14 +994,14 @@ IRSB* CLG_(instrument)( VgCallbackClosure* closure,
    CLG_ASSERT(Ist_IMark == st->tag);
 
    origAddr = st->Ist.IMark.addr + st->Ist.IMark.delta;
-   CLG_ASSERT(origAddr == st->Ist.IMark.addr 
-                          + st->Ist.IMark.delta);  // XXX: check no overflow
+   CLG_ASSERT(origAddr == st->Ist.IMark.addr
+						  + st->Ist.IMark.delta);  // XXX: check no overflow
 
    /* Get BB struct (creating if necessary).
-    * JS: The hash table is keyed with orig_addr_noredir -- important!
-    * JW: Why? If it is because of different chasing of the redirection,
-    *     this is not needed, as chasing is switched off in callgrind
-    */
+	* JS: The hash table is keyed with orig_addr_noredir -- important!
+	* JW: Why? If it is because of different chasing of the redirection,
+	*     this is not needed, as chasing is switched off in callgrind
+	*/
    clgs.bb = CLG_(get_bb)(origAddr, sbIn, &(clgs.seen_before));
 
    addBBSetupCall(&clgs);
@@ -1013,346 +1013,346 @@ IRSB* CLG_(instrument)( VgCallbackClosure* closure,
 
    for (/*use current i*/; i < sbIn->stmts_used; i++) {
 
-      st = sbIn->stmts[i];
-      CLG_ASSERT(isFlatIRStmt(st));
+	  st = sbIn->stmts[i];
+	  CLG_ASSERT(isFlatIRStmt(st));
 
-      switch (st->tag) {
+	  switch (st->tag) {
 	 case Ist_NoOp:
 	 case Ist_AbiHint:
 	 case Ist_Put:
 	 case Ist_PutI:
 	 case Ist_MBE:
-	    break;
+		break;
 
 	 case Ist_IMark: {
-            Addr   cia   = st->Ist.IMark.addr + st->Ist.IMark.delta;
-            UInt   isize = st->Ist.IMark.len;
-            CLG_ASSERT(clgs.instr_offset == cia - origAddr);
-	    // If Vex fails to decode an instruction, the size will be zero.
-	    // Pretend otherwise.
-	    if (isize == 0) isize = VG_MIN_INSTR_SZB;
+			Addr   cia   = st->Ist.IMark.addr + st->Ist.IMark.delta;
+			UInt   isize = st->Ist.IMark.len;
+			CLG_ASSERT(clgs.instr_offset == cia - origAddr);
+		// If Vex fails to decode an instruction, the size will be zero.
+		// Pretend otherwise.
+		if (isize == 0) isize = VG_MIN_INSTR_SZB;
 
-	    // Sanity-check size.
-	    tl_assert( (VG_MIN_INSTR_SZB <= isize && isize <= VG_MAX_INSTR_SZB)
-		     || VG_CLREQ_SZB == isize );
+		// Sanity-check size.
+		tl_assert( (VG_MIN_INSTR_SZB <= isize && isize <= VG_MAX_INSTR_SZB)
+			 || VG_CLREQ_SZB == isize );
 
-	    // Init the inode, record it as the current one.
-	    // Subsequent Dr/Dw/Dm events from the same instruction will
-	    // also use it.
-	    curr_inode = next_InstrInfo (&clgs, isize);
+		// Init the inode, record it as the current one.
+		// Subsequent Dr/Dw/Dm events from the same instruction will
+		// also use it.
+		curr_inode = next_InstrInfo (&clgs, isize);
 
-	    addEvent_Ir( &clgs, curr_inode );
-	    break;
+		addEvent_Ir( &clgs, curr_inode );
+		break;
 	 }
 
 	 case Ist_WrTmp: {
-	    IRExpr* data = st->Ist.WrTmp.data;
-	    if (data->tag == Iex_Load) {
-	       IRExpr* aexpr = data->Iex.Load.addr;
-	       // Note also, endianness info is ignored.  I guess
-	       // that's not interesting.
-	       addEvent_Dr( &clgs, curr_inode,
-			    sizeofIRType(data->Iex.Load.ty), aexpr );
-	    }
-	    break;
+		IRExpr* data = st->Ist.WrTmp.data;
+		if (data->tag == Iex_Load) {
+		   IRExpr* aexpr = data->Iex.Load.addr;
+		   // Note also, endianness info is ignored.  I guess
+		   // that's not interesting.
+		   addEvent_Dr( &clgs, curr_inode,
+				sizeofIRType(data->Iex.Load.ty), aexpr );
+		}
+		break;
 	 }
 
 	 case Ist_Store: {
-	    IRExpr* data  = st->Ist.Store.data;
-	    IRExpr* aexpr = st->Ist.Store.addr;
-	    addEvent_Dw( &clgs, curr_inode,
+		IRExpr* data  = st->Ist.Store.data;
+		IRExpr* aexpr = st->Ist.Store.addr;
+		addEvent_Dw( &clgs, curr_inode,
 			 sizeofIRType(typeOfIRExpr(sbIn->tyenv, data)), aexpr );
-	    break;
+		break;
 	 }
 
-         case Ist_StoreG: {
-            IRStoreG* sg   = st->Ist.StoreG.details;
-            IRExpr*   data = sg->data;
-            IRExpr*   addr = sg->addr;
-            IRType    type = typeOfIRExpr(tyenv, data);
-            tl_assert(type != Ity_INVALID);
-            addEvent_D_guarded( &clgs, curr_inode,
-                                sizeofIRType(type), addr, sg->guard,
-                                True/*isWrite*/ );
-            break;
-         }
+		 case Ist_StoreG: {
+			IRStoreG* sg   = st->Ist.StoreG.details;
+			IRExpr*   data = sg->data;
+			IRExpr*   addr = sg->addr;
+			IRType    type = typeOfIRExpr(tyenv, data);
+			tl_assert(type != Ity_INVALID);
+			addEvent_D_guarded( &clgs, curr_inode,
+								sizeofIRType(type), addr, sg->guard,
+								True/*isWrite*/ );
+			break;
+		 }
 
-         case Ist_LoadG: {
-            IRLoadG* lg       = st->Ist.LoadG.details;
-            IRType   type     = Ity_INVALID; /* loaded type */
-            IRType   typeWide = Ity_INVALID; /* after implicit widening */
-            IRExpr*  addr     = lg->addr;
-            typeOfIRLoadGOp(lg->cvt, &typeWide, &type);
-            tl_assert(type != Ity_INVALID);
-            addEvent_D_guarded( &clgs, curr_inode,
-                                sizeofIRType(type), addr, lg->guard,
-                                False/*!isWrite*/ );
-            break;
-         }
+		 case Ist_LoadG: {
+			IRLoadG* lg       = st->Ist.LoadG.details;
+			IRType   type     = Ity_INVALID; /* loaded type */
+			IRType   typeWide = Ity_INVALID; /* after implicit widening */
+			IRExpr*  addr     = lg->addr;
+			typeOfIRLoadGOp(lg->cvt, &typeWide, &type);
+			tl_assert(type != Ity_INVALID);
+			addEvent_D_guarded( &clgs, curr_inode,
+								sizeofIRType(type), addr, lg->guard,
+								False/*!isWrite*/ );
+			break;
+		 }
 
 	 case Ist_Dirty: {
-	    Int      dataSize;
-	    IRDirty* d = st->Ist.Dirty.details;
-	    if (d->mFx != Ifx_None) {
-	       /* This dirty helper accesses memory.  Collect the details. */
-	       tl_assert(d->mAddr != NULL);
-	       tl_assert(d->mSize != 0);
-	       dataSize = d->mSize;
-	       // Large (eg. 28B, 108B, 512B on x86) data-sized
-	       // instructions will be done inaccurately, but they're
-	       // very rare and this avoids errors from hitting more
-	       // than two cache lines in the simulation.
-	       if (CLG_(clo).simulate_cache && dataSize > CLG_(min_line_size))
+		Int      dataSize;
+		IRDirty* d = st->Ist.Dirty.details;
+		if (d->mFx != Ifx_None) {
+		   /* This dirty helper accesses memory.  Collect the details. */
+		   tl_assert(d->mAddr != NULL);
+		   tl_assert(d->mSize != 0);
+		   dataSize = d->mSize;
+		   // Large (eg. 28B, 108B, 512B on x86) data-sized
+		   // instructions will be done inaccurately, but they're
+		   // very rare and this avoids errors from hitting more
+		   // than two cache lines in the simulation.
+		   if (CLG_(clo).simulate_cache && dataSize > CLG_(min_line_size))
 		  dataSize = CLG_(min_line_size);
-	       if (d->mFx == Ifx_Read || d->mFx == Ifx_Modify)
+		   if (d->mFx == Ifx_Read || d->mFx == Ifx_Modify)
 		  addEvent_Dr( &clgs, curr_inode, dataSize, d->mAddr );
-	       if (d->mFx == Ifx_Write || d->mFx == Ifx_Modify)
+		   if (d->mFx == Ifx_Write || d->mFx == Ifx_Modify)
 		  addEvent_Dw( &clgs, curr_inode, dataSize, d->mAddr );
-	    } else {
-	       tl_assert(d->mAddr == NULL);
-	       tl_assert(d->mSize == 0);
-	    }
-	    break;
+		} else {
+		   tl_assert(d->mAddr == NULL);
+		   tl_assert(d->mSize == 0);
+		}
+		break;
 	 }
 
-         case Ist_CAS: {
-            /* We treat it as a read and a write of the location.  I
-               think that is the same behaviour as it was before IRCAS
-               was introduced, since prior to that point, the Vex
-               front ends would translate a lock-prefixed instruction
-               into a (normal) read followed by a (normal) write. */
-            Int    dataSize;
-            IRCAS* cas = st->Ist.CAS.details;
-            CLG_ASSERT(cas->addr && isIRAtom(cas->addr));
-            CLG_ASSERT(cas->dataLo);
-            dataSize = sizeofIRType(typeOfIRExpr(sbIn->tyenv, cas->dataLo));
-            if (cas->dataHi != NULL)
-               dataSize *= 2; /* since this is a doubleword-cas */
-            addEvent_Dr( &clgs, curr_inode, dataSize, cas->addr );
-            addEvent_Dw( &clgs, curr_inode, dataSize, cas->addr );
-            addEvent_G(  &clgs, curr_inode );
-            break;
-         }
+		 case Ist_CAS: {
+			/* We treat it as a read and a write of the location.  I
+			   think that is the same behaviour as it was before IRCAS
+			   was introduced, since prior to that point, the Vex
+			   front ends would translate a lock-prefixed instruction
+			   into a (normal) read followed by a (normal) write. */
+			Int    dataSize;
+			IRCAS* cas = st->Ist.CAS.details;
+			CLG_ASSERT(cas->addr && isIRAtom(cas->addr));
+			CLG_ASSERT(cas->dataLo);
+			dataSize = sizeofIRType(typeOfIRExpr(sbIn->tyenv, cas->dataLo));
+			if (cas->dataHi != NULL)
+			   dataSize *= 2; /* since this is a doubleword-cas */
+			addEvent_Dr( &clgs, curr_inode, dataSize, cas->addr );
+			addEvent_Dw( &clgs, curr_inode, dataSize, cas->addr );
+			addEvent_G(  &clgs, curr_inode );
+			break;
+		 }
 
-         case Ist_LLSC: {
-            IRType dataTy;
-            if (st->Ist.LLSC.storedata == NULL) {
-               /* LL */
-               dataTy = typeOfIRTemp(sbIn->tyenv, st->Ist.LLSC.result);
-               addEvent_Dr( &clgs, curr_inode,
-                            sizeofIRType(dataTy), st->Ist.LLSC.addr );
-               /* flush events before LL, should help SC to succeed */
-               flushEvents( &clgs );
-            } else {
-               /* SC */
-               dataTy = typeOfIRExpr(sbIn->tyenv, st->Ist.LLSC.storedata);
-               addEvent_Dw( &clgs, curr_inode,
-                            sizeofIRType(dataTy), st->Ist.LLSC.addr );
-               /* I don't know whether the global-bus-lock cost should
-                  be attributed to the LL or the SC, but it doesn't
-                  really matter since they always have to be used in
-                  pairs anyway.  Hence put it (quite arbitrarily) on
-                  the SC. */
-               addEvent_G(  &clgs, curr_inode );
-            }
-            break;
-         }
+		 case Ist_LLSC: {
+			IRType dataTy;
+			if (st->Ist.LLSC.storedata == NULL) {
+			   /* LL */
+			   dataTy = typeOfIRTemp(sbIn->tyenv, st->Ist.LLSC.result);
+			   addEvent_Dr( &clgs, curr_inode,
+							sizeofIRType(dataTy), st->Ist.LLSC.addr );
+			   /* flush events before LL, should help SC to succeed */
+			   flushEvents( &clgs );
+			} else {
+			   /* SC */
+			   dataTy = typeOfIRExpr(sbIn->tyenv, st->Ist.LLSC.storedata);
+			   addEvent_Dw( &clgs, curr_inode,
+							sizeofIRType(dataTy), st->Ist.LLSC.addr );
+			   /* I don't know whether the global-bus-lock cost should
+				  be attributed to the LL or the SC, but it doesn't
+				  really matter since they always have to be used in
+				  pairs anyway.  Hence put it (quite arbitrarily) on
+				  the SC. */
+			   addEvent_G(  &clgs, curr_inode );
+			}
+			break;
+		 }
 
- 	 case Ist_Exit: {
-            Bool guest_exit, inverted;
+	 case Ist_Exit: {
+			Bool guest_exit, inverted;
 
-            /* VEX code generation sometimes inverts conditional branches.
-             * As Callgrind counts (conditional) jumps, it has to correct
-             * inversions. The heuristic is the following:
-             * (1) Callgrind switches off SB chasing and unrolling, and
-             *     therefore it assumes that a candidate for inversion only is
-             *     the last conditional branch in an SB.
-             * (2) inversion is assumed if the branch jumps to the address of
-             *     the next guest instruction in memory.
-             * This heuristic is precalculated in CLG_(collectBlockInfo)().
-             *
-             * Branching behavior is also used for branch prediction. Note that
-             * above heuristic is different from what Cachegrind does.
-             * Cachegrind uses (2) for all branches.
-             */
-            if (cJumps+1 == clgs.bb->cjmp_count)
-                inverted = clgs.bb->cjmp_inverted;
-            else
-                inverted = False;
+			/* VEX code generation sometimes inverts conditional branches.
+			 * As Callgrind counts (conditional) jumps, it has to correct
+			 * inversions. The heuristic is the following:
+			 * (1) Callgrind switches off SB chasing and unrolling, and
+			 *     therefore it assumes that a candidate for inversion only is
+			 *     the last conditional branch in an SB.
+			 * (2) inversion is assumed if the branch jumps to the address of
+			 *     the next guest instruction in memory.
+			 * This heuristic is precalculated in CLG_(collectBlockInfo)().
+			 *
+			 * Branching behavior is also used for branch prediction. Note that
+			 * above heuristic is different from what Cachegrind does.
+			 * Cachegrind uses (2) for all branches.
+			 */
+			if (cJumps+1 == clgs.bb->cjmp_count)
+				inverted = clgs.bb->cjmp_inverted;
+			else
+				inverted = False;
 
-            // call branch predictor only if this is a branch in guest code
-            guest_exit = (st->Ist.Exit.jk == Ijk_Boring) ||
-                         (st->Ist.Exit.jk == Ijk_Call) ||
-                         (st->Ist.Exit.jk == Ijk_Ret);
+			// call branch predictor only if this is a branch in guest code
+			guest_exit = (st->Ist.Exit.jk == Ijk_Boring) ||
+						 (st->Ist.Exit.jk == Ijk_Call) ||
+						 (st->Ist.Exit.jk == Ijk_Ret);
 
-            if (guest_exit) {
-                /* Stuff to widen the guard expression to a host word, so
-                   we can pass it to the branch predictor simulation
-                   functions easily. */
-                IRType   tyW    = hWordTy;
-                IROp     widen  = tyW==Ity_I32  ? Iop_1Uto32  : Iop_1Uto64;
-                IROp     opXOR  = tyW==Ity_I32  ? Iop_Xor32   : Iop_Xor64;
-                IRTemp   guard1 = newIRTemp(clgs.sbOut->tyenv, Ity_I1);
-                IRTemp   guardW = newIRTemp(clgs.sbOut->tyenv, tyW);
-                IRTemp   guard  = newIRTemp(clgs.sbOut->tyenv, tyW);
-                IRExpr*  one    = tyW==Ity_I32 ? IRExpr_Const(IRConst_U32(1))
-                                               : IRExpr_Const(IRConst_U64(1));
+			if (guest_exit) {
+				/* Stuff to widen the guard expression to a host word, so
+				   we can pass it to the branch predictor simulation
+				   functions easily. */
+				IRType   tyW    = hWordTy;
+				IROp     widen  = tyW==Ity_I32  ? Iop_1Uto32  : Iop_1Uto64;
+				IROp     opXOR  = tyW==Ity_I32  ? Iop_Xor32   : Iop_Xor64;
+				IRTemp   guard1 = newIRTemp(clgs.sbOut->tyenv, Ity_I1);
+				IRTemp   guardW = newIRTemp(clgs.sbOut->tyenv, tyW);
+				IRTemp   guard  = newIRTemp(clgs.sbOut->tyenv, tyW);
+				IRExpr*  one    = tyW==Ity_I32 ? IRExpr_Const(IRConst_U32(1))
+											   : IRExpr_Const(IRConst_U64(1));
 
-                /* Widen the guard expression. */
-                addStmtToIRSB( clgs.sbOut,
-                               IRStmt_WrTmp( guard1, st->Ist.Exit.guard ));
-                addStmtToIRSB( clgs.sbOut,
-                               IRStmt_WrTmp( guardW,
-                                             IRExpr_Unop(widen,
-                                                         IRExpr_RdTmp(guard1))) );
-                /* If the exit is inverted, invert the sense of the guard. */
-                addStmtToIRSB(
-                        clgs.sbOut,
-                        IRStmt_WrTmp(
-                                guard,
-                                inverted ? IRExpr_Binop(opXOR, IRExpr_RdTmp(guardW), one)
-                                    : IRExpr_RdTmp(guardW)
-                                    ));
-                /* And post the event. */
-                addEvent_Bc( &clgs, curr_inode, IRExpr_RdTmp(guard) );
-            }
+				/* Widen the guard expression. */
+				addStmtToIRSB( clgs.sbOut,
+							   IRStmt_WrTmp( guard1, st->Ist.Exit.guard ));
+				addStmtToIRSB( clgs.sbOut,
+							   IRStmt_WrTmp( guardW,
+											 IRExpr_Unop(widen,
+														 IRExpr_RdTmp(guard1))) );
+				/* If the exit is inverted, invert the sense of the guard. */
+				addStmtToIRSB(
+						clgs.sbOut,
+						IRStmt_WrTmp(
+								guard,
+								inverted ? IRExpr_Binop(opXOR, IRExpr_RdTmp(guardW), one)
+									: IRExpr_RdTmp(guardW)
+									));
+				/* And post the event. */
+				addEvent_Bc( &clgs, curr_inode, IRExpr_RdTmp(guard) );
+			}
 
-	    /* We may never reach the next statement, so need to flush
-	       all outstanding transactions now. */
-	    flushEvents( &clgs );
+		/* We may never reach the next statement, so need to flush
+		   all outstanding transactions now. */
+		flushEvents( &clgs );
 
-	    CLG_ASSERT(clgs.ii_index>0);
-	    if (!clgs.seen_before) {
-	      ClgJumpKind jk;
+		CLG_ASSERT(clgs.ii_index>0);
+		if (!clgs.seen_before) {
+		  ClgJumpKind jk;
 
-	      if      (st->Ist.Exit.jk == Ijk_Call) jk = jk_Call;
-	      else if (st->Ist.Exit.jk == Ijk_Ret)  jk = jk_Return;
-	      else {
+		  if      (st->Ist.Exit.jk == Ijk_Call) jk = jk_Call;
+		  else if (st->Ist.Exit.jk == Ijk_Ret)  jk = jk_Return;
+		  else {
 		if (IRConst2Addr(st->Ist.Exit.dst) ==
-		    origAddr + curr_inode->instr_offset + curr_inode->instr_size)
+			origAddr + curr_inode->instr_offset + curr_inode->instr_size)
 		  jk = jk_None;
 		else
 		  jk = jk_Jump;
-	      }
+		  }
 
-	      clgs.bb->jmp[cJumps].instr = clgs.ii_index-1;
-	      clgs.bb->jmp[cJumps].jmpkind = jk;
-	    }
+		  clgs.bb->jmp[cJumps].instr = clgs.ii_index-1;
+		  clgs.bb->jmp[cJumps].jmpkind = jk;
+		}
 
-	    /* Update global variable jmps_passed before the jump
-	     * A correction is needed if VEX inverted the last jump condition
-	    */
-	    UInt val = inverted ? cJumps+1 : cJumps;
-	    addConstMemStoreStmt( clgs.sbOut,
+		/* Update global variable jmps_passed before the jump
+		 * A correction is needed if VEX inverted the last jump condition
+		*/
+		UInt val = inverted ? cJumps+1 : cJumps;
+		addConstMemStoreStmt( clgs.sbOut,
 				  (UWord) &CLG_(current_state).jmps_passed,
 				  val, hWordTy);
-	    cJumps++;
+		cJumps++;
 
-	    break;
+		break;
 	 }
 
 	 default:
-	    tl_assert(0);
-	    break;
-      }
+		tl_assert(0);
+		break;
+	  }
 
-      /* Copy the original statement */
-      addStmtToIRSB( clgs.sbOut, st );
+	  /* Copy the original statement */
+	  addStmtToIRSB( clgs.sbOut, st );
 
-      CLG_DEBUGIF(5) {
+	  CLG_DEBUGIF(5) {
 	 VG_(printf)("   pass  ");
 	 ppIRStmt(st);
 	 VG_(printf)("\n");
-      }
+	  }
    }
 
    /* Deal with branches to unknown destinations.  Except ignore ones
-      which are function returns as we assume the return stack
-      predictor never mispredicts. */
+	  which are function returns as we assume the return stack
+	  predictor never mispredicts. */
    if ((sbIn->jumpkind == Ijk_Boring) || (sbIn->jumpkind == Ijk_Call)) {
-      if (0) { ppIRExpr( sbIn->next ); VG_(printf)("\n"); }
-      switch (sbIn->next->tag) {
-         case Iex_Const:
-            break; /* boring - branch to known address */
-         case Iex_RdTmp:
-            /* looks like an indirect branch (branch to unknown) */
-            addEvent_Bi( &clgs, curr_inode, sbIn->next );
-            break;
-         default:
-            /* shouldn't happen - if the incoming IR is properly
-               flattened, should only have tmp and const cases to
-               consider. */
-            tl_assert(0);
-      }
+	  if (0) { ppIRExpr( sbIn->next ); VG_(printf)("\n"); }
+	  switch (sbIn->next->tag) {
+		 case Iex_Const:
+			break; /* boring - branch to known address */
+		 case Iex_RdTmp:
+			/* looks like an indirect branch (branch to unknown) */
+			addEvent_Bi( &clgs, curr_inode, sbIn->next );
+			break;
+		 default:
+			/* shouldn't happen - if the incoming IR is properly
+			   flattened, should only have tmp and const cases to
+			   consider. */
+			tl_assert(0);
+	  }
    }
 
    /* At the end of the bb.  Flush outstandings. */
    flushEvents( &clgs );
 
    /* Update global variable jmps_passed at end of SB.
-    * As CLG_(current_state).jmps_passed is reset to 0 in setup_bbcc,
-    * this can be omitted if there is no conditional jump in this SB.
-    * A correction is needed if VEX inverted the last jump condition
-    */
+	* As CLG_(current_state).jmps_passed is reset to 0 in setup_bbcc,
+	* this can be omitted if there is no conditional jump in this SB.
+	* A correction is needed if VEX inverted the last jump condition
+	*/
    if (cJumps>0) {
-      UInt jmps_passed = cJumps;
-      if (clgs.bb->cjmp_inverted) jmps_passed--;
-      addConstMemStoreStmt( clgs.sbOut,
-			    (UWord) &CLG_(current_state).jmps_passed,
-			    jmps_passed, hWordTy);
+	  UInt jmps_passed = cJumps;
+	  if (clgs.bb->cjmp_inverted) jmps_passed--;
+	  addConstMemStoreStmt( clgs.sbOut,
+				(UWord) &CLG_(current_state).jmps_passed,
+				jmps_passed, hWordTy);
    }
    CLG_ASSERT(clgs.bb->cjmp_count == cJumps);
    CLG_ASSERT(clgs.bb->instr_count == clgs.ii_index);
 
    /* Info for final exit from BB */
    {
-     ClgJumpKind jk;
+	 ClgJumpKind jk;
 
-     if      (sbIn->jumpkind == Ijk_Call) jk = jk_Call;
-     else if (sbIn->jumpkind == Ijk_Ret)  jk = jk_Return;
-     else {
-       jk = jk_Jump;
-       if ((sbIn->next->tag == Iex_Const) &&
+	 if      (sbIn->jumpkind == Ijk_Call) jk = jk_Call;
+	 else if (sbIn->jumpkind == Ijk_Ret)  jk = jk_Return;
+	 else {
+	   jk = jk_Jump;
+	   if ((sbIn->next->tag == Iex_Const) &&
 	   (IRConst2Addr(sbIn->next->Iex.Const.con) ==
-	    origAddr + clgs.instr_offset))
+		origAddr + clgs.instr_offset))
 	 jk = jk_None;
-     }
-     clgs.bb->jmp[cJumps].jmpkind = jk;
-     /* Instruction index of the call/ret at BB end
-      * (it is wrong for fall-through, but does not matter) */
-     clgs.bb->jmp[cJumps].instr = clgs.ii_index-1;
+	 }
+	 clgs.bb->jmp[cJumps].jmpkind = jk;
+	 /* Instruction index of the call/ret at BB end
+	  * (it is wrong for fall-through, but does not matter) */
+	 clgs.bb->jmp[cJumps].instr = clgs.ii_index-1;
    }
 
    /* swap information of last exit with final exit if inverted */
    if (clgs.bb->cjmp_inverted) {
-     ClgJumpKind jk;
-     UInt instr;
+	 ClgJumpKind jk;
+	 UInt instr;
 
-     jk = clgs.bb->jmp[cJumps].jmpkind;
-     clgs.bb->jmp[cJumps].jmpkind = clgs.bb->jmp[cJumps-1].jmpkind;
-     clgs.bb->jmp[cJumps-1].jmpkind = jk;
-     instr = clgs.bb->jmp[cJumps].instr;
-     clgs.bb->jmp[cJumps].instr = clgs.bb->jmp[cJumps-1].instr;
-     clgs.bb->jmp[cJumps-1].instr = instr;
+	 jk = clgs.bb->jmp[cJumps].jmpkind;
+	 clgs.bb->jmp[cJumps].jmpkind = clgs.bb->jmp[cJumps-1].jmpkind;
+	 clgs.bb->jmp[cJumps-1].jmpkind = jk;
+	 instr = clgs.bb->jmp[cJumps].instr;
+	 clgs.bb->jmp[cJumps].instr = clgs.bb->jmp[cJumps-1].instr;
+	 clgs.bb->jmp[cJumps-1].instr = instr;
    }
 
    if (clgs.seen_before) {
-       CLG_ASSERT(clgs.bb->cost_count == update_cost_offsets(&clgs));
-       CLG_ASSERT(clgs.bb->instr_len == clgs.instr_offset);
+	   CLG_ASSERT(clgs.bb->cost_count == update_cost_offsets(&clgs));
+	   CLG_ASSERT(clgs.bb->instr_len == clgs.instr_offset);
    }
    else {
-       clgs.bb->cost_count = update_cost_offsets(&clgs);
-       clgs.bb->instr_len = clgs.instr_offset;
+	   clgs.bb->cost_count = update_cost_offsets(&clgs);
+	   clgs.bb->instr_len = clgs.instr_offset;
    }
 
    CLG_DEBUG(3, "- instrument(BB %#lx): byteLen %u, CJumps %u, CostLen %u\n",
-	     origAddr, clgs.bb->instr_len,
-	     clgs.bb->cjmp_count, clgs.bb->cost_count);
+		 origAddr, clgs.bb->instr_len,
+		 clgs.bb->cjmp_count, clgs.bb->cost_count);
    if (cJumps>0) {
-       CLG_DEBUG(3, "                     [ ");
-       for (i=0;i<cJumps;i++)
+	   CLG_DEBUG(3, "                     [ ");
+	   for (i=0;i<cJumps;i++)
 	   CLG_DEBUG(3, "%u ", clgs.bb->jmp[i].instr);
-       CLG_DEBUG(3, "], last inverted: %s \n",
+	   CLG_DEBUG(3, "], last inverted: %s \n",
 		 clgs.bb->cjmp_inverted ? "yes":"no");
    }
 
@@ -1369,12 +1369,12 @@ IRSB* CLG_(instrument)( VgCallbackClosure* closure,
 static
 void clg_discard_superblock_info ( Addr orig_addr, VexGuestExtents vge )
 {
-    tl_assert(vge.n_used > 0);
+	tl_assert(vge.n_used > 0);
 
    if (0)
-      VG_(printf)( "discard_superblock_info: %p, %p, %llu\n",
-                   (void*)orig_addr,
-                   (void*)vge.base[0], (ULong)vge.len[0]);
+	  VG_(printf)( "discard_superblock_info: %p, %p, %llu\n",
+				   (void*)orig_addr,
+				   (void*)vge.base[0], (ULong)vge.len[0]);
 
    // Get BB info, remove from table, free BB info.  Simple!
    // When created, the BB is keyed by the first instruction address,
@@ -1395,34 +1395,34 @@ static void zero_thread_cost(thread_info* t)
   Int i;
 
   for(i = 0; i < CLG_(current_call_stack).sp; i++) {
-    if (!CLG_(current_call_stack).entry[i].jcc) continue;
+	if (!CLG_(current_call_stack).entry[i].jcc) continue;
 
-    /* reset call counters to current for active calls */
-    CLG_(copy_cost)( CLG_(sets).full, 
-		    CLG_(current_call_stack).entry[i].enter_cost,
-		    CLG_(current_state).cost );
-    CLG_(current_call_stack).entry[i].jcc->call_counter = 0;
+	/* reset call counters to current for active calls */
+	CLG_(copy_cost)( CLG_(sets).full,
+			CLG_(current_call_stack).entry[i].enter_cost,
+			CLG_(current_state).cost );
+	CLG_(current_call_stack).entry[i].jcc->call_counter = 0;
   }
 
   CLG_(forall_bbccs)(CLG_(zero_bbcc));
 
   /* set counter for last dump */
-  CLG_(copy_cost)( CLG_(sets).full, 
+  CLG_(copy_cost)( CLG_(sets).full,
 		  t->lastdump_cost, CLG_(current_state).cost );
 }
 
 void CLG_(zero_all_cost)(Bool only_current_thread)
 {
   if (VG_(clo_verbosity) > 1)
-    VG_(message)(Vg_DebugMsg, "  Zeroing costs...\n");
+	VG_(message)(Vg_DebugMsg, "  Zeroing costs...\n");
 
   if (only_current_thread)
-    zero_thread_cost(CLG_(get_current_thread)());
+	zero_thread_cost(CLG_(get_current_thread)());
   else
-    CLG_(forall_threads)(zero_thread_cost);
+	CLG_(forall_threads)(zero_thread_cost);
 
   if (VG_(clo_verbosity) > 1)
-    VG_(message)(Vg_DebugMsg, "  ...done\n");
+	VG_(message)(Vg_DebugMsg, "  ...done\n");
 }
 
 static
@@ -1430,11 +1430,11 @@ void unwind_thread(thread_info* t)
 {
   /* unwind signal handlers */
   while(CLG_(current_state).sig !=0)
-    CLG_(post_signal)(CLG_(current_tid),CLG_(current_state).sig);
+	CLG_(post_signal)(CLG_(current_tid),CLG_(current_state).sig);
 
   /* unwind regular call stack */
   while(CLG_(current_call_stack).sp>0)
-    CLG_(pop_call_stack)();
+	CLG_(pop_call_stack)();
 
   /* reset context and function stack for context generation */
   CLG_(init_exec_state)( &CLG_(current_state) );
@@ -1444,15 +1444,15 @@ void unwind_thread(thread_info* t)
 static
 void zero_state_cost(thread_info* t)
 {
-    CLG_(zero_cost)( CLG_(sets).full, CLG_(current_state).cost );
+	CLG_(zero_cost)( CLG_(sets).full, CLG_(current_state).cost );
 }
 
 void CLG_(set_instrument_state)(const HChar* reason, Bool state)
 {
   if (CLG_(instrument_state) == state) {
-    CLG_DEBUG(2, "%s: instrumentation already %s\n",
-	     reason, state ? "ON" : "OFF");
-    return;
+	CLG_DEBUG(2, "%s: instrumentation already %s\n",
+		 reason, state ? "ON" : "OFF");
+	return;
   }
   CLG_(instrument_state) = state;
   CLG_DEBUG(2, "%s: Switching instrumentation %s ...\n",
@@ -1466,95 +1466,95 @@ void CLG_(set_instrument_state)(const HChar* reason, Bool state)
   (*CLG_(cachesim).clear)();
 
   if (VG_(clo_verbosity) > 1)
-    VG_(message)(Vg_DebugMsg, "%s: instrumentation switched %s\n",
+	VG_(message)(Vg_DebugMsg, "%s: instrumentation switched %s\n",
 		 reason, state ? "ON" : "OFF");
 }
 
 /* helper for dump_state_togdb */
 static void dump_state_of_thread_togdb(thread_info* ti)
 {
-    static FullCost sum = 0, tmp = 0;
-    Int t, i;
-    BBCC *from, *to;
-    call_entry* ce;
-    HChar *mcost;
+	static FullCost sum = 0, tmp = 0;
+	Int t, i;
+	BBCC *from, *to;
+	call_entry* ce;
+	HChar *mcost;
 
-    t = CLG_(current_tid);
-    CLG_(init_cost_lz)( CLG_(sets).full, &sum );
-    CLG_(copy_cost_lz)( CLG_(sets).full, &tmp, ti->lastdump_cost );
-    CLG_(add_diff_cost)( CLG_(sets).full, sum, ti->lastdump_cost,
+	t = CLG_(current_tid);
+	CLG_(init_cost_lz)( CLG_(sets).full, &sum );
+	CLG_(copy_cost_lz)( CLG_(sets).full, &tmp, ti->lastdump_cost );
+	CLG_(add_diff_cost)( CLG_(sets).full, sum, ti->lastdump_cost,
 			 ti->states.entry[0]->cost);
-    CLG_(copy_cost)( CLG_(sets).full, ti->lastdump_cost, tmp );
-    mcost = CLG_(mappingcost_as_string)(CLG_(dumpmap), sum);
-    VG_(gdb_printf)("events-%d: %s\n", t, mcost);
-    VG_(free)(mcost);
-    VG_(gdb_printf)("frames-%d: %d\n", t, CLG_(current_call_stack).sp);
+	CLG_(copy_cost)( CLG_(sets).full, ti->lastdump_cost, tmp );
+	mcost = CLG_(mappingcost_as_string)(CLG_(dumpmap), sum);
+	VG_(gdb_printf)("events-%d: %s\n", t, mcost);
+	VG_(free)(mcost);
+	VG_(gdb_printf)("frames-%d: %d\n", t, CLG_(current_call_stack).sp);
 
-    ce = 0;
-    for(i = 0; i < CLG_(current_call_stack).sp; i++) {
-      ce = CLG_(get_call_entry)(i);
-      /* if this frame is skipped, we don't have counters */
-      if (!ce->jcc) continue;
-      
-      from = ce->jcc->from;
-      VG_(gdb_printf)("function-%d-%d: %s\n",t, i, from->cxt->fn[0]->name);
-      VG_(gdb_printf)("calls-%d-%d: %llu\n",t, i, ce->jcc->call_counter);
-      
-      /* FIXME: EventSets! */
-      CLG_(copy_cost)( CLG_(sets).full, sum, ce->jcc->cost );
-      CLG_(copy_cost)( CLG_(sets).full, tmp, ce->enter_cost );
-      CLG_(add_diff_cost)( CLG_(sets).full, sum,
+	ce = 0;
+	for(i = 0; i < CLG_(current_call_stack).sp; i++) {
+	  ce = CLG_(get_call_entry)(i);
+	  /* if this frame is skipped, we don't have counters */
+	  if (!ce->jcc) continue;
+
+	  from = ce->jcc->from;
+	  VG_(gdb_printf)("function-%d-%d: %s\n",t, i, from->cxt->fn[0]->name);
+	  VG_(gdb_printf)("calls-%d-%d: %llu\n",t, i, ce->jcc->call_counter);
+
+	  /* FIXME: EventSets! */
+	  CLG_(copy_cost)( CLG_(sets).full, sum, ce->jcc->cost );
+	  CLG_(copy_cost)( CLG_(sets).full, tmp, ce->enter_cost );
+	  CLG_(add_diff_cost)( CLG_(sets).full, sum,
 			  ce->enter_cost, CLG_(current_state).cost );
-      CLG_(copy_cost)( CLG_(sets).full, ce->enter_cost, tmp );
-      
-      mcost = CLG_(mappingcost_as_string)(CLG_(dumpmap), sum);
-      VG_(gdb_printf)("events-%d-%d: %s\n",t, i, mcost);
-      VG_(free)(mcost);
-    }
-    if (ce && ce->jcc) {
-      to = ce->jcc->to;
-      VG_(gdb_printf)("function-%d-%d: %s\n",t, i, to->cxt->fn[0]->name );
-    }
+	  CLG_(copy_cost)( CLG_(sets).full, ce->enter_cost, tmp );
+
+	  mcost = CLG_(mappingcost_as_string)(CLG_(dumpmap), sum);
+	  VG_(gdb_printf)("events-%d-%d: %s\n",t, i, mcost);
+	  VG_(free)(mcost);
+	}
+	if (ce && ce->jcc) {
+	  to = ce->jcc->to;
+	  VG_(gdb_printf)("function-%d-%d: %s\n",t, i, to->cxt->fn[0]->name );
+	}
 }
 
 /* Dump current state */
 static void dump_state_togdb(void)
 {
-    thread_info** th;
-    int t;
-    Int orig_tid = CLG_(current_tid);
+	thread_info** th;
+	int t;
+	Int orig_tid = CLG_(current_tid);
 
-    VG_(gdb_printf)("instrumentation: %s\n",
-		    CLG_(instrument_state) ? "on":"off");
-    if (!CLG_(instrument_state)) return;
+	VG_(gdb_printf)("instrumentation: %s\n",
+			CLG_(instrument_state) ? "on":"off");
+	if (!CLG_(instrument_state)) return;
 
-    VG_(gdb_printf)("executed-bbs: %llu\n", CLG_(stat).bb_executions);
-    VG_(gdb_printf)("executed-calls: %llu\n", CLG_(stat).call_counter);
-    VG_(gdb_printf)("distinct-bbs: %d\n", CLG_(stat).distinct_bbs);
-    VG_(gdb_printf)("distinct-calls: %d\n", CLG_(stat).distinct_jccs);
-    VG_(gdb_printf)("distinct-functions: %d\n", CLG_(stat).distinct_fns);
-    VG_(gdb_printf)("distinct-contexts: %d\n", CLG_(stat).distinct_contexts);
+	VG_(gdb_printf)("executed-bbs: %llu\n", CLG_(stat).bb_executions);
+	VG_(gdb_printf)("executed-calls: %llu\n", CLG_(stat).call_counter);
+	VG_(gdb_printf)("distinct-bbs: %d\n", CLG_(stat).distinct_bbs);
+	VG_(gdb_printf)("distinct-calls: %d\n", CLG_(stat).distinct_jccs);
+	VG_(gdb_printf)("distinct-functions: %d\n", CLG_(stat).distinct_fns);
+	VG_(gdb_printf)("distinct-contexts: %d\n", CLG_(stat).distinct_contexts);
 
-    /* "events:" line. Given here because it will be dynamic in the future */
-    HChar *evmap = CLG_(eventmapping_as_string)(CLG_(dumpmap));
-    VG_(gdb_printf)("events: %s\n", evmap);
-    VG_(free)(evmap);
-    /* "part:" line (number of last part. Is 0 at start */
-    VG_(gdb_printf)("part: %d\n", CLG_(get_dump_counter)());
-		
-    /* threads */
-    th = CLG_(get_threads)();
-    VG_(gdb_printf)("threads:");
-    for(t=1;t<VG_N_THREADS;t++) {
+	/* "events:" line. Given here because it will be dynamic in the future */
+	HChar *evmap = CLG_(eventmapping_as_string)(CLG_(dumpmap));
+	VG_(gdb_printf)("events: %s\n", evmap);
+	VG_(free)(evmap);
+	/* "part:" line (number of last part. Is 0 at start */
+	VG_(gdb_printf)("part: %d\n", CLG_(get_dump_counter)());
+
+	/* threads */
+	th = CLG_(get_threads)();
+	VG_(gdb_printf)("threads:");
+	for(t=1;t<VG_N_THREADS;t++) {
 	if (!th[t]) continue;
 	VG_(gdb_printf)(" %d", t);
-    }
-    VG_(gdb_printf)("\n");
-    VG_(gdb_printf)("current-tid: %d\n", orig_tid);
-    CLG_(forall_threads)(dump_state_of_thread_togdb);
+	}
+	VG_(gdb_printf)("\n");
+	VG_(gdb_printf)("current-tid: %d\n", orig_tid);
+	CLG_(forall_threads)(dump_state_of_thread_togdb);
 }
 
-  
+
 static void print_monitor_help ( void )
 {
    VG_(gdb_printf) ("\n");
@@ -1580,59 +1580,59 @@ static Bool handle_gdb_monitor_command (ThreadId tid, const HChar *req)
    VG_(strcpy) (s, req);
 
    wcmd = VG_(strtok_r) (s, " ", &ssaveptr);
-   switch (VG_(keyword_id) ("help dump zero status instrumentation", 
-                            wcmd, kwd_report_duplicated_matches)) {
+   switch (VG_(keyword_id) ("help dump zero status instrumentation",
+							wcmd, kwd_report_duplicated_matches)) {
    case -2: /* multiple matches */
-      return True;
+	  return True;
    case -1: /* not found */
-      return False;
+	  return False;
    case  0: /* help */
-      print_monitor_help();
-      return True;
+	  print_monitor_help();
+	  return True;
    case  1: { /* dump */
-      CLG_(dump_profile)(req, False);
-      return True;
+	  CLG_(dump_profile)(req, False);
+	  return True;
    }
    case  2: { /* zero */
-      CLG_(zero_all_cost)(False);
-      return True;
+	  CLG_(zero_all_cost)(False);
+	  return True;
    }
 
    case 3: { /* status */
-     HChar* arg = VG_(strtok_r) (0, " ", &ssaveptr);
-     if (arg && (VG_(strcmp)(arg, "internal") == 0)) {
-       /* internal interface to callgrind_control */
-       dump_state_togdb();
-       return True;
-     }
+	 HChar* arg = VG_(strtok_r) (0, " ", &ssaveptr);
+	 if (arg && (VG_(strcmp)(arg, "internal") == 0)) {
+	   /* internal interface to callgrind_control */
+	   dump_state_togdb();
+	   return True;
+	 }
 
-     if (!CLG_(instrument_state)) {
-       VG_(gdb_printf)("No status available as instrumentation is switched off\n");
-     } else {
-       // Status information to be improved ...
-       thread_info** th = CLG_(get_threads)();
-       Int t, tcount = 0;
-       for(t=1;t<VG_N_THREADS;t++)
+	 if (!CLG_(instrument_state)) {
+	   VG_(gdb_printf)("No status available as instrumentation is switched off\n");
+	 } else {
+	   // Status information to be improved ...
+	   thread_info** th = CLG_(get_threads)();
+	   Int t, tcount = 0;
+	   for(t=1;t<VG_N_THREADS;t++)
 	 if (th[t]) tcount++;
-       VG_(gdb_printf)("%d thread(s) running.\n", tcount);
-     }
-     return True;
+	   VG_(gdb_printf)("%d thread(s) running.\n", tcount);
+	 }
+	 return True;
    }
 
    case 4: { /* instrumentation */
-     HChar* arg = VG_(strtok_r) (0, " ", &ssaveptr);
-     if (!arg) {
-       VG_(gdb_printf)("instrumentation: %s\n",
-		       CLG_(instrument_state) ? "on":"off");
-     }
-     else
-       CLG_(set_instrument_state)("Command", VG_(strcmp)(arg,"off")!=0);
-     return True;
+	 HChar* arg = VG_(strtok_r) (0, " ", &ssaveptr);
+	 if (!arg) {
+	   VG_(gdb_printf)("instrumentation: %s\n",
+			   CLG_(instrument_state) ? "on":"off");
+	 }
+	 else
+	   CLG_(set_instrument_state)("Command", VG_(strcmp)(arg,"off")!=0);
+	 return True;
    }
 
-   default: 
-      tl_assert(0);
-      return False;
+   default:
+	  tl_assert(0);
+	  return False;
    }
 }
 
@@ -1640,117 +1640,172 @@ static
 Bool CLG_(handle_client_request)(ThreadId tid, UWord *args, UWord *ret)
 {
    if (!VG_IS_TOOL_USERREQ('C','T',args[0])
-       && VG_USERREQ__GDB_MONITOR_COMMAND   != args[0])
-      return False;
+	   && VG_USERREQ__GDB_MONITOR_COMMAND   != args[0])
+	  return False;
 
    switch(args[0]) {
-   case VG_USERREQ__DUMP_STATS:     
-      CLG_(dump_profile)("Client Request", True);
-      *ret = 0;                 /* meaningless */
-      break;
+   case VG_USERREQ__DUMP_STATS:
+	  CLG_(dump_profile)("Client Request", True);
+	  *ret = 0;                 /* meaningless */
+	  break;
 
    case VG_USERREQ__DUMP_STATS_AT:
-     {
-       const HChar *arg = (HChar*)args[1];
-       HChar buf[30 + VG_(strlen)(arg)];    // large enough
-       VG_(sprintf)(buf,"Client Request: %s", arg);
-       CLG_(dump_profile)(buf, True);
-       *ret = 0;                 /* meaningless */
-     }
-     break;
+	 {
+	   const HChar *arg = (HChar*)args[1];
+	   HChar buf[30 + VG_(strlen)(arg)];    // large enough
+	   VG_(sprintf)(buf,"Client Request: %s", arg);
+	   CLG_(dump_profile)(buf, True);
+	   *ret = 0;                 /* meaningless */
+	 }
+	 break;
 
    case VG_USERREQ__ZERO_STATS:
-     CLG_(zero_all_cost)(True);
-      *ret = 0;                 /* meaningless */
-      break;
+	 CLG_(zero_all_cost)(True);
+	  *ret = 0;                 /* meaningless */
+	  break;
 
    case VG_USERREQ__TOGGLE_COLLECT:
-     CLG_(current_state).collect = !CLG_(current_state).collect;
-     CLG_DEBUG(2, "Client Request: toggled collection state to %s\n",
-	      CLG_(current_state).collect ? "ON" : "OFF");
-     *ret = 0;                 /* meaningless */
-     break;
+	 CLG_(current_state).collect = !CLG_(current_state).collect;
+	 CLG_DEBUG(2, "Client Request: toggled collection state to %s\n",
+		  CLG_(current_state).collect ? "ON" : "OFF");
+	 *ret = 0;                 /* meaningless */
+	 break;
 
    case VG_USERREQ__START_INSTRUMENTATION:
-     CLG_(set_instrument_state)("Client Request", True);
-     *ret = 0;                 /* meaningless */
-     break;
+	 CLG_(set_instrument_state)("Client Request", True);
+	 *ret = 0;                 /* meaningless */
+	 break;
 
    case VG_USERREQ__STOP_INSTRUMENTATION:
-     CLG_(set_instrument_state)("Client Request", False);
-     *ret = 0;                 /* meaningless */
-     break;
+	 CLG_(set_instrument_state)("Client Request", False);
+	 *ret = 0;                 /* meaningless */
+	 break;
 
    case VG_USERREQ__GDB_MONITOR_COMMAND: {
-      Bool handled = handle_gdb_monitor_command (tid, (HChar*)args[1]);
-      if (handled)
-         *ret = 1;
-      else
-         *ret = 0;
-      return handled;
+	  Bool handled = handle_gdb_monitor_command (tid, (HChar*)args[1]);
+	  if (handled)
+		 *ret = 1;
+	  else
+		 *ret = 0;
+	  return handled;
    }
    default:
-      return False;
+	  return False;
    }
 
    return True;
 }
 
 
-/* Syscall Timing */
+/* Syscall Timing.  syscalltime[tid] is the time at which thread tid last
+   started a syscall.  */
 
-/* struct timeval syscalltime[VG_N_THREADS]; */
-#if CLG_MICROSYSTIME
-ULong *syscalltime;
-#else
-UInt *syscalltime;
-#endif
+/* struct vki_timespec syscalltime[VG_N_THREADS];
+   Whatever the syscall we use to measure the syscall time, we convert to
+   seconds and nanoseconds.  */
+struct vki_timespec *syscalltime;
+struct vki_timespec *syscallcputime;
+
 
 static
-void CLG_(pre_syscalltime)(ThreadId tid, UInt syscallno,
-                           UWord* args, UInt nArgs)
+void collect_time (struct vki_timespec *systime, struct vki_timespec *syscputime)
 {
-  if (CLG_(clo).collect_systime) {
-#if CLG_MICROSYSTIME
-    struct vki_timeval tv_now;
-    VG_(gettimeofday)(&tv_now, NULL);
-    syscalltime[tid] = tv_now.tv_sec * 1000000ULL + tv_now.tv_usec;
-#else
-    syscalltime[tid] = VG_(read_millisecond_timer)();
-#endif
+  switch (CLG_(clo).collect_systime) {
+	case systime_no: tl_assert (0);
+	case systime_msec: {
+	  UInt ms_timer = VG_(read_millisecond_timer)();
+	  systime->tv_sec = ms_timer / 1000;
+	  systime->tv_nsec = (ms_timer % 1000) * 1000000L;
+	  break;
+	}
+	case systime_usec: {
+	  struct vki_timeval tv_now;
+	  VG_(gettimeofday)(&tv_now, NULL);
+	  systime->tv_sec = tv_now.tv_sec;
+	  systime->tv_nsec = tv_now.tv_usec * 1000;
+	  break;
+	}
+   case systime_nsec:
+#  if defined(VGO_linux) || defined(VGO_solaris)
+	  VG_(clock_gettime)(systime, VKI_CLOCK_MONOTONIC);
+	  VG_(clock_gettime)(syscputime, VKI_CLOCK_THREAD_CPUTIME_ID);
+
+#  elif defined(VGO_darwin)
+	  tl_assert(0);
+#  else
+#     error "Unknown OS"
+#  endif
+	  break;
   }
 }
 
 static
-void CLG_(post_syscalltime)(ThreadId tid, UInt syscallno,
-                            UWord* args, UInt nArgs, SysRes res)
+void CLG_(pre_syscalltime)(ThreadId tid, UInt syscallno,
+						   UWord* args, UInt nArgs)
 {
-  if (CLG_(clo).collect_systime &&
-      CLG_(current_state).bbcc) {
-      Int o;
-#if CLG_MICROSYSTIME
-    struct vki_timeval tv_now;
-    ULong diff;
-    
-    VG_(gettimeofday)(&tv_now, NULL);
-    diff = (tv_now.tv_sec * 1000000ULL + tv_now.tv_usec) - syscalltime[tid];
-#else
-    UInt diff = VG_(read_millisecond_timer)() - syscalltime[tid];
-#endif  
+  collect_time(&syscalltime[tid],
+			   CLG_(clo).collect_systime == systime_nsec ? &syscallcputime[tid] : NULL);
+}
 
-    /* offset o is for "SysCount", o+1 for "SysTime" */
-    o = fullOffset(EG_SYS);
-    CLG_ASSERT(o>=0);
-    CLG_DEBUG(0,"   Time (Off %d) for Syscall %u: %llu\n", o, syscallno,
-              (ULong)diff);
-    
-    CLG_(current_state).cost[o] ++;
-    CLG_(current_state).cost[o+1] += diff;
-    if (!CLG_(current_state).bbcc->skipped)
-      CLG_(init_cost_lz)(CLG_(sets).full,
+/* Returns "after - before" in the unit as specified by --collect-systime.
+   after is supposed to be >= before, and tv_nsec must be >= 0 and < One_Second_In_Nsec.  */
+static
+ULong vki_timespec_diff (struct vki_timespec after, struct vki_timespec before)
+{
+   vki_time_t diff_sec = after.tv_sec - before.tv_sec;
+   long diff_nsec = after.tv_nsec - before.tv_nsec;
+   ULong nsec_factor; // factor to convert the desired unit into nsec.
+
+   if (diff_nsec < 0) {
+	  diff_sec--;
+	  diff_nsec += 1000000000ULL;
+   }
+  switch (CLG_(clo).collect_systime) {
+	case systime_no: tl_assert (0);
+	case systime_msec: nsec_factor = 1000000ULL; break;
+	case systime_usec: nsec_factor = 1000ULL; break;
+	case systime_nsec: nsec_factor = 1ULL; break;
+	default: tl_assert(0);
+  }
+  return ((ULong) diff_sec * 1000000000ULL + diff_nsec) / nsec_factor;
+}
+
+static
+void CLG_(post_syscalltime)(ThreadId tid, UInt syscallno,
+							UWord* args, UInt nArgs, SysRes res)
+{
+  if (CLG_(current_state).bbcc) {
+	Int o;
+	struct vki_timespec ts_now;
+	struct vki_timespec ts_cpunow;
+	ULong diff;
+
+	collect_time(&ts_now,
+				 CLG_(clo).collect_systime == systime_nsec ? &ts_cpunow : NULL);
+
+	diff = vki_timespec_diff (ts_now, syscalltime[tid]);
+
+	/* offset o is for "SysCount", o+1 for "SysTime",
+	   o+2 is (optionally) "SysCpuTime".  */
+	o = fullOffset(EG_SYS);
+	CLG_ASSERT(o>=0);
+	CLG_DEBUG(0,"   Time (Off %d) for Syscall %u: %llu\n", o, syscallno,
+			  diff);
+
+	if (!CLG_(current_state).bbcc->skipped)
+	  CLG_(init_cost_lz)(CLG_(sets).full,
 			&(CLG_(current_state).bbcc->skipped));
-    CLG_(current_state).bbcc->skipped[o] ++;
-    CLG_(current_state).bbcc->skipped[o+1] += diff;
+	CLG_(current_state).cost[o] ++;
+	CLG_(current_state).cost[o+1] += diff;
+	CLG_(current_state).bbcc->skipped[o] ++;
+	CLG_(current_state).bbcc->skipped[o+1] += diff;
+	if (CLG_(clo).collect_systime == systime_nsec) {
+	  diff = vki_timespec_diff (ts_cpunow, syscallcputime[tid]);
+	  CLG_DEBUG(0,"   SysCpuTime (Off %d) for Syscall %u: %llu\n", o+2, syscallno,
+				diff);
+	  CLG_(current_state).cost[o+2] += diff;
+	  CLG_(current_state).bbcc->skipped[o+2] += diff;
+	}
   }
 }
 
@@ -1758,8 +1813,8 @@ static UInt ULong_width(ULong n)
 {
    UInt w = 0;
    while (n > 0) {
-      n = n / 10;
-      w++;
+	  n = n / 10;
+	  w++;
    }
    if (w == 0) w = 1;
    return w + (w-1)/3;   // add space for commas
@@ -1768,47 +1823,47 @@ static UInt ULong_width(ULong n)
 static
 void branchsim_printstat(int l1, int l2, int l3)
 {
-    static HChar fmt[128];    // large enough
-    FullCost total;
-    ULong Bc_total_b, Bc_total_mp, Bi_total_b, Bi_total_mp;
-    ULong B_total_b, B_total_mp;
+	static HChar fmt[128];    // large enough
+	FullCost total;
+	ULong Bc_total_b, Bc_total_mp, Bi_total_b, Bi_total_mp;
+	ULong B_total_b, B_total_mp;
 
-    total = CLG_(total_cost);
-    Bc_total_b  = total[ fullOffset(EG_BC)   ];
-    Bc_total_mp = total[ fullOffset(EG_BC)+1 ];
-    Bi_total_b  = total[ fullOffset(EG_BI)   ];
-    Bi_total_mp = total[ fullOffset(EG_BI)+1 ];
+	total = CLG_(total_cost);
+	Bc_total_b  = total[ fullOffset(EG_BC)   ];
+	Bc_total_mp = total[ fullOffset(EG_BC)+1 ];
+	Bi_total_b  = total[ fullOffset(EG_BI)   ];
+	Bi_total_mp = total[ fullOffset(EG_BI)+1 ];
 
-    /* Make format string, getting width right for numbers */
-    VG_(sprintf)(fmt, "%%s %%,%dllu  (%%,%dllu cond + %%,%dllu ind)\n",
-                 l1, l2, l3);
+	/* Make format string, getting width right for numbers */
+	VG_(sprintf)(fmt, "%%s %%,%dllu  (%%,%dllu cond + %%,%dllu ind)\n",
+				 l1, l2, l3);
 
-    if (0 == Bc_total_b)  Bc_total_b = 1;
-    if (0 == Bi_total_b)  Bi_total_b = 1;
-    B_total_b  = Bc_total_b  + Bi_total_b;
-    B_total_mp = Bc_total_mp + Bi_total_mp;
+	if (0 == Bc_total_b)  Bc_total_b = 1;
+	if (0 == Bi_total_b)  Bi_total_b = 1;
+	B_total_b  = Bc_total_b  + Bi_total_b;
+	B_total_mp = Bc_total_mp + Bi_total_mp;
 
-    VG_(umsg)("\n");
-    VG_(umsg)(fmt, "Branches:     ",
-              B_total_b, Bc_total_b, Bi_total_b);
+	VG_(umsg)("\n");
+	VG_(umsg)(fmt, "Branches:     ",
+			  B_total_b, Bc_total_b, Bi_total_b);
 
-    VG_(umsg)(fmt, "Mispredicts:  ",
-              B_total_mp, Bc_total_mp, Bi_total_mp);
+	VG_(umsg)(fmt, "Mispredicts:  ",
+			  B_total_mp, Bc_total_mp, Bi_total_mp);
 
-    VG_(umsg)("Mispred rate:  %*.1f%% (%*.1f%%     + %*.1f%%   )\n",
-              l1, B_total_mp  * 100.0 / B_total_b,
-              l2, Bc_total_mp * 100.0 / Bc_total_b,
-              l3, Bi_total_mp * 100.0 / Bi_total_b);
+	VG_(umsg)("Mispred rate:  %*.1f%% (%*.1f%%     + %*.1f%%   )\n",
+			  l1, B_total_mp  * 100.0 / B_total_b,
+			  l2, Bc_total_mp * 100.0 / Bc_total_b,
+			  l3, Bi_total_mp * 100.0 / Bi_total_b);
 }
 
 static
 void clg_print_stats(void)
 {
    int BB_lookups =
-     CLG_(stat).full_debug_BBs +
-     CLG_(stat).fn_name_debug_BBs +
-     CLG_(stat).file_line_debug_BBs +
-     CLG_(stat).no_debug_BBs;
+	 CLG_(stat).full_debug_BBs +
+	 CLG_(stat).fn_name_debug_BBs +
+	 CLG_(stat).file_line_debug_BBs +
+	 CLG_(stat).no_debug_BBs;
 
    /* Hash table stats */
    VG_(message)(Vg_DebugMsg, "Distinct objects: %d\n",
@@ -1832,16 +1887,16 @@ void clg_print_stats(void)
    VG_(message)(Vg_DebugMsg, "BB lookups:       %d\n",
 		BB_lookups);
    if (BB_lookups>0) {
-      VG_(message)(Vg_DebugMsg, "With full      debug info:%3d%% (%d)\n",
+	  VG_(message)(Vg_DebugMsg, "With full      debug info:%3d%% (%d)\n",
 		   CLG_(stat).full_debug_BBs    * 100 / BB_lookups,
 		   CLG_(stat).full_debug_BBs);
-      VG_(message)(Vg_DebugMsg, "With file/line debug info:%3d%% (%d)\n",
+	  VG_(message)(Vg_DebugMsg, "With file/line debug info:%3d%% (%d)\n",
 		   CLG_(stat).file_line_debug_BBs * 100 / BB_lookups,
 		   CLG_(stat).file_line_debug_BBs);
-      VG_(message)(Vg_DebugMsg, "With fn name   debug info:%3d%% (%d)\n",
+	  VG_(message)(Vg_DebugMsg, "With fn name   debug info:%3d%% (%d)\n",
 		   CLG_(stat).fn_name_debug_BBs * 100 / BB_lookups,
 		   CLG_(stat).fn_name_debug_BBs);
-      VG_(message)(Vg_DebugMsg, "With no        debug info:%3d%% (%d)\n",
+	  VG_(message)(Vg_DebugMsg, "With no        debug info:%3d%% (%d)\n",
 		   CLG_(stat).no_debug_BBs      * 100 / BB_lookups,
 		   CLG_(stat).no_debug_BBs);
    }
@@ -1891,11 +1946,11 @@ void finish(void)
   CLG_(dump_profile)(0, False);
 
   if (VG_(clo_verbosity) == 0) return;
-  
+
   if (VG_(clo_stats)) {
-    VG_(message)(Vg_DebugMsg, "\n");
-    clg_print_stats();
-    VG_(message)(Vg_DebugMsg, "\n");
+	VG_(message)(Vg_DebugMsg, "\n");
+	clg_print_stats();
+	VG_(message)(Vg_DebugMsg, "\n");
   }
 
   HChar *evmap = CLG_(eventmapping_as_string)(CLG_(dumpmap));
@@ -1911,14 +1966,14 @@ void finish(void)
   l1 = ULong_width( total[fullOffset(EG_IR)] );
   l2 = l3 = 0;
   if (CLG_(clo).simulate_cache) {
-      l2 = ULong_width( total[fullOffset(EG_DR)] );
-      l3 = ULong_width( total[fullOffset(EG_DW)] );
+	  l2 = ULong_width( total[fullOffset(EG_DR)] );
+	  l3 = ULong_width( total[fullOffset(EG_DW)] );
   }
   if (CLG_(clo).simulate_branch) {
-      int l2b = ULong_width( total[fullOffset(EG_BC)] );
-      int l3b = ULong_width( total[fullOffset(EG_BI)] );
-      if (l2b > l2) l2 = l2b;
-      if (l3b > l3) l3 = l3b;
+	  int l2b = ULong_width( total[fullOffset(EG_BC)] );
+	  int l3b = ULong_width( total[fullOffset(EG_BI)] );
+	  if (l2b > l2) l2 = l2b;
+	  if (l3b > l3) l3 = l3b;
   }
 
   /* Make format string, getting width right for numbers */
@@ -1928,10 +1983,10 @@ void finish(void)
   VG_(umsg)(fmt, "I   refs:     ", total[fullOffset(EG_IR)] );
 
   if (CLG_(clo).simulate_cache)
-      (*CLG_(cachesim).printstat)(l1, l2, l3);
+	  (*CLG_(cachesim).printstat)(l1, l2, l3);
 
   if (CLG_(clo).simulate_branch)
-      branchsim_printstat(l1, l2, l3);
+	  branchsim_printstat(l1, l2, l3);
 
 }
 
@@ -1951,7 +2006,7 @@ static void clg_start_client_code_callback ( ThreadId tid, ULong blocks_done )
    static ULong last_blocks_done = 0;
 
    if (0)
-      VG_(printf)("%d R %llu\n", (Int)tid, blocks_done);
+	  VG_(printf)("%d R %llu\n", (Int)tid, blocks_done);
 
    /* throttle calls to CLG_(run_thread) by number of BBs executed */
    if (blocks_done - last_blocks_done < 5000) return;
@@ -1964,54 +2019,63 @@ static
 void CLG_(post_clo_init)(void)
 {
    if (VG_(clo_vex_control).iropt_register_updates_default
-       != VexRegUpdSpAtMemAccess) {
-      CLG_DEBUG(1, " Using user specified value for "
-                "--vex-iropt-register-updates\n");
+	   != VexRegUpdSpAtMemAccess) {
+	  CLG_DEBUG(1, " Using user specified value for "
+				"--vex-iropt-register-updates\n");
    } else {
-      CLG_DEBUG(1, 
-                " Using default --vex-iropt-register-updates="
-                "sp-at-mem-access\n");
+	  CLG_DEBUG(1,
+				" Using default --vex-iropt-register-updates="
+				"sp-at-mem-access\n");
    }
 
-   if (CLG_(clo).collect_systime) {
-      VG_(needs_syscall_wrapper)(CLG_(pre_syscalltime),
-                                 CLG_(post_syscalltime));
-      syscalltime = CLG_MALLOC("cl.main.pci.1",
-                               VG_N_THREADS * sizeof syscalltime[0]);
-      for (UInt i = 0; i < VG_N_THREADS; ++i) {
-         syscalltime[i] = 0;
-      }
+   if (CLG_(clo).collect_systime != systime_no) {
+	  VG_(needs_syscall_wrapper)(CLG_(pre_syscalltime),
+								 CLG_(post_syscalltime));
+	  syscalltime = CLG_MALLOC("cl.main.pci.1",
+							   VG_N_THREADS * sizeof syscalltime[0]);
+	  for (UInt i = 0; i < VG_N_THREADS; ++i) {
+		 syscalltime[i].tv_sec = 0;
+		 syscalltime[i].tv_nsec = 0;
+	  }
+	  if (CLG_(clo).collect_systime == systime_nsec) {
+		 syscallcputime = CLG_MALLOC("cl.main.pci.2",
+									 VG_N_THREADS * sizeof syscallcputime[0]);
+		 for (UInt i = 0; i < VG_N_THREADS; ++i) {
+			syscallcputime[i].tv_sec = 0;
+			syscallcputime[i].tv_nsec = 0;
+		 }
+	  }
    }
 
    if (VG_(clo_px_file_backed) != VexRegUpdSpAtMemAccess) {
-      CLG_DEBUG(1, " Using user specified value for "
-                "--px-file-backed\n");
+	  CLG_DEBUG(1, " Using user specified value for "
+				"--px-file-backed\n");
    } else {
-      CLG_DEBUG(1, 
-                " Using default --px-file-backed="
-                "sp-at-mem-access\n");
+	  CLG_DEBUG(1,
+				" Using default --px-file-backed="
+				"sp-at-mem-access\n");
    }
 
    if (VG_(clo_vex_control).iropt_unroll_thresh != 0) {
-      VG_(message)(Vg_UserMsg, 
-                   "callgrind only works with --vex-iropt-unroll-thresh=0\n"
-                   "=> resetting it back to 0\n");
-      VG_(clo_vex_control).iropt_unroll_thresh = 0;   // cannot be overridden.
+	  VG_(message)(Vg_UserMsg,
+				   "callgrind only works with --vex-iropt-unroll-thresh=0\n"
+				   "=> resetting it back to 0\n");
+	  VG_(clo_vex_control).iropt_unroll_thresh = 0;   // cannot be overridden.
    }
    if (VG_(clo_vex_control).guest_chase_thresh != 0) {
-      VG_(message)(Vg_UserMsg,
-                   "callgrind only works with --vex-guest-chase-thresh=0\n"
-                   "=> resetting it back to 0\n");
-      VG_(clo_vex_control).guest_chase_thresh = 0; // cannot be overridden.
+	  VG_(message)(Vg_UserMsg,
+				   "callgrind only works with --vex-guest-chase-thresh=0\n"
+				   "=> resetting it back to 0\n");
+	  VG_(clo_vex_control).guest_chase_thresh = 0; // cannot be overridden.
    }
-   
+
    CLG_DEBUG(1, "  dump threads: %s\n", CLG_(clo).separate_threads ? "Yes":"No");
    CLG_DEBUG(1, "  call sep. : %d\n", CLG_(clo).separate_callers);
    CLG_DEBUG(1, "  rec. sep. : %d\n", CLG_(clo).separate_recursions);
 
    if (!CLG_(clo).dump_line && !CLG_(clo).dump_instr && !CLG_(clo).dump_bb) {
-       VG_(message)(Vg_UserMsg, "Using source line as position.\n");
-       CLG_(clo).dump_line = True;
+	   VG_(message)(Vg_UserMsg, "Using source line as position.\n");
+	   CLG_(clo).dump_line = True;
    }
 
    CLG_(init_dumps)();
@@ -2033,50 +2097,50 @@ void CLG_(post_clo_init)(void)
    CLG_(instrument_state) = CLG_(clo).instrument_atstart;
 
    if (VG_(clo_verbosity) > 0) {
-      VG_(message)(Vg_UserMsg,
-                   "For interactive control, run 'callgrind_control%s%s -h'.\n",
-                   (VG_(arg_vgdb_prefix) ? " " : ""),
-                   (VG_(arg_vgdb_prefix) ? VG_(arg_vgdb_prefix) : ""));
+	  VG_(message)(Vg_UserMsg,
+				   "For interactive control, run 'callgrind_control%s%s -h'.\n",
+				   (VG_(arg_vgdb_prefix) ? " " : ""),
+				   (VG_(arg_vgdb_prefix) ? VG_(arg_vgdb_prefix) : ""));
    }
 }
 
 static
 void CLG_(pre_clo_init)(void)
 {
-    VG_(details_name)            ("Callgrind");
-    VG_(details_version)         (NULL);
-    VG_(details_description)     ("a call-graph generating cache profiler");
-    VG_(details_copyright_author)("Copyright (C) 2002-2017, and GNU GPL'd, "
+	VG_(details_name)            ("Callgrind");
+	VG_(details_version)         (NULL);
+	VG_(details_description)     ("a call-graph generating cache profiler");
+	VG_(details_copyright_author)("Copyright (C) 2002-2017, and GNU GPL'd, "
 				  "by Josef Weidendorfer et al.");
-    VG_(details_bug_reports_to)  (VG_BUGS_TO);
-    VG_(details_avg_translation_sizeB) ( 500 );
+	VG_(details_bug_reports_to)  (VG_BUGS_TO);
+	VG_(details_avg_translation_sizeB) ( 500 );
 
-    VG_(clo_vex_control).iropt_register_updates_default
-       = VG_(clo_px_file_backed)
-       = VexRegUpdSpAtMemAccess; // overridable by the user.
+	VG_(clo_vex_control).iropt_register_updates_default
+	   = VG_(clo_px_file_backed)
+	   = VexRegUpdSpAtMemAccess; // overridable by the user.
 
-    VG_(clo_vex_control).iropt_unroll_thresh = 0;   // cannot be overridden.
-    VG_(clo_vex_control).guest_chase_thresh = 0;    // cannot be overridden.
+	VG_(clo_vex_control).iropt_unroll_thresh = 0;   // cannot be overridden.
+	VG_(clo_vex_control).guest_chase_thresh = 0;    // cannot be overridden.
 
-    VG_(basic_tool_funcs)        (CLG_(post_clo_init),
-                                  CLG_(instrument),
-                                  CLG_(fini));
+	VG_(basic_tool_funcs)        (CLG_(post_clo_init),
+								  CLG_(instrument),
+								  CLG_(fini));
 
-    VG_(needs_superblock_discards)(clg_discard_superblock_info);
+	VG_(needs_superblock_discards)(clg_discard_superblock_info);
 
 
-    VG_(needs_command_line_options)(CLG_(process_cmd_line_option),
-				    CLG_(print_usage),
-				    CLG_(print_debug_usage));
+	VG_(needs_command_line_options)(CLG_(process_cmd_line_option),
+					CLG_(print_usage),
+					CLG_(print_debug_usage));
 
-    VG_(needs_client_requests)(CLG_(handle_client_request));
-    VG_(needs_print_stats)    (clg_print_stats);
+	VG_(needs_client_requests)(CLG_(handle_client_request));
+	VG_(needs_print_stats)    (clg_print_stats);
 
-    VG_(track_start_client_code)  ( & clg_start_client_code_callback );
-    VG_(track_pre_deliver_signal) ( & CLG_(pre_signal) );
-    VG_(track_post_deliver_signal)( & CLG_(post_signal) );
+	VG_(track_start_client_code)  ( & clg_start_client_code_callback );
+	VG_(track_pre_deliver_signal) ( & CLG_(pre_signal) );
+	VG_(track_post_deliver_signal)( & CLG_(post_signal) );
 
-    CLG_(set_clo_defaults)();
+	CLG_(set_clo_defaults)();
 
 }
 

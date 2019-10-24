@@ -42,20 +42,20 @@
 
 /* Logging configuration for a function */
 struct _fn_config {
-    Int dump_before;
-    Int dump_after;
-    Int zero_before;
-    Int toggle_collect;
+	Int dump_before;
+	Int dump_after;
+	Int zero_before;
+	Int toggle_collect;
 
-    Int skip;    /* Handle CALL to this function as JMP (= Skip)? */
-    Int group;   /* don't change caller dependency inside group !=0 */
-    Int pop_on_jump; 
+	Int skip;    /* Handle CALL to this function as JMP (= Skip)? */
+	Int group;   /* don't change caller dependency inside group !=0 */
+	Int pop_on_jump;
 
-    Int separate_callers;    /* separate logging dependent on caller  */
-    Int separate_recursions; /* separate logging of rec. levels       */
+	Int separate_callers;    /* separate logging dependent on caller  */
+	Int separate_recursions; /* separate logging of rec. levels       */
 
 #if CLG_ENABLE_DEBUG
-    Int verbosity; /* Change debug verbosity level while in function */
+	Int verbosity; /* Change debug verbosity level while in function */
 #endif
 };
 
@@ -80,7 +80,7 @@ struct _fn_config {
 typedef struct _config_node config_node;
 struct _config_node {
   Int length;
-    
+
   fn_config* config;
   config_node* sub_node[NODE_DEGREE];
   config_node* next;
@@ -93,11 +93,11 @@ struct _config_node {
 /* root of trie */
 static config_node* fn_configs = 0;
 
-static __inline__ 
+static __inline__
 fn_config* new_fnc(void)
 {
    fn_config* fnc = (fn_config*) CLG_MALLOC("cl.clo.nf.1",
-                                            sizeof(fn_config));
+											sizeof(fn_config));
 
    fnc->dump_before  = CONFIG_DEFAULT;
    fnc->dump_after   = CONFIG_DEFAULT;
@@ -119,27 +119,27 @@ fn_config* new_fnc(void)
 
 static config_node* new_config(const HChar* name, int length)
 {
-    int i;
-    config_node* node = (config_node*) CLG_MALLOC("cl.clo.nc.1",
-                                                  sizeof(config_node) + length);
+	int i;
+	config_node* node = (config_node*) CLG_MALLOC("cl.clo.nc.1",
+												  sizeof(config_node) + length);
 
-    for(i=0;i<length;i++) {
-      if (name[i] == 0) break;
-      node->name[i] = name[i];
-    }
-    node->name[i] = 0;
+	for(i=0;i<length;i++) {
+	  if (name[i] == 0) break;
+	  node->name[i] = name[i];
+	}
+	node->name[i] = 0;
 
-    node->length = length;
-    node->config = 0;
-    for(i=0;i<NODE_DEGREE;i++)
+	node->length = length;
+	node->config = 0;
+	for(i=0;i<NODE_DEGREE;i++)
 	node->sub_node[i] = 0;
-    node->next = 0;
-    node->wild_char = 0;
-    node->wild_star = 0;
+	node->next = 0;
+	node->wild_char = 0;
+	node->wild_star = 0;
 
-    CLG_DEBUG(3, "   new_config('%s', len %d)\n", node->name, length);
+	CLG_DEBUG(3, "   new_config('%s', len %d)\n", node->name, length);
 
-    return node;
+	return node;
 }
 
 static __inline__
@@ -164,98 +164,98 @@ static fn_config* get_fnc2(config_node* node, const HChar* name)
   CLG_DEBUG(3, "  get_fnc2(%p, '%s')\n", node, name);
 
   if (name[0] == 0) {
-    if (!node->config) node->config = new_fnc();
-    return node->config;
+	if (!node->config) node->config = new_fnc();
+	return node->config;
   }
 
   if (is_wild(*name)) {
-    if (*name == '*') {
-      while(name[1] == '*') name++;
-      new_sub = node->wild_star;
-    }
-    else
-      new_sub = node->wild_char;
+	if (*name == '*') {
+	  while(name[1] == '*') name++;
+	  new_sub = node->wild_star;
+	}
+	else
+	  new_sub = node->wild_char;
 
-    if (!new_sub) {
-      new_sub = new_config(name, 1);
-      if (*name == '*')
+	if (!new_sub) {
+	  new_sub = new_config(name, 1);
+	  if (*name == '*')
 	node->wild_star = new_sub;
-      else
+	  else
 	node->wild_char = new_sub;
-    }
+	}
 
-    return get_fnc2( new_sub, name+1);
+	return get_fnc2( new_sub, name+1);
   }
 
   n = node->sub_node[ name[0]%NODE_DEGREE ];
   nprev = 0;
   len = 0;
   while(n) {
-    for(len=0; name[len] == n->name[len]; len++);
-    if (len>0) break;
-    nprev = n;
-    n = n->next;
+	for(len=0; name[len] == n->name[len]; len++);
+	if (len>0) break;
+	nprev = n;
+	n = n->next;
   }
 
   if (!n) {
-    len = 1;
-    while(name[len] && (!is_wild(name[len]))) len++;
-    new_sub = new_config(name, len);
-    new_sub->next = node->sub_node[ name[0]%NODE_DEGREE ];
-    node->sub_node[ name[0]%NODE_DEGREE ] = new_sub;	
+	len = 1;
+	while(name[len] && (!is_wild(name[len]))) len++;
+	new_sub = new_config(name, len);
+	new_sub->next = node->sub_node[ name[0]%NODE_DEGREE ];
+	node->sub_node[ name[0]%NODE_DEGREE ] = new_sub;
 
-    if (name[len] == 0) {
-      new_sub->config = new_fnc();
-      return new_sub->config;
-    }
-    
-    /* recurse on wildcard */
-    return get_fnc2( new_sub, name+len);
+	if (name[len] == 0) {
+	  new_sub->config = new_fnc();
+	  return new_sub->config;
+	}
+
+	/* recurse on wildcard */
+	return get_fnc2( new_sub, name+len);
   }
 
   if (len < n->length) {
 
-    /* split up the subnode <n> */
-    config_node *new_node;
-    int i;
+	/* split up the subnode <n> */
+	config_node *new_node;
+	int i;
 
-    new_node = new_config(n->name, len);
-    if (nprev)
-      nprev->next = new_node;
-    else
-      node->sub_node[ n->name[0]%NODE_DEGREE ] = new_node;
-    new_node->next = n->next;
+	new_node = new_config(n->name, len);
+	if (nprev)
+	  nprev->next = new_node;
+	else
+	  node->sub_node[ n->name[0]%NODE_DEGREE ] = new_node;
+	new_node->next = n->next;
 
-    new_node->sub_node[ n->name[len]%NODE_DEGREE ] = n;
+	new_node->sub_node[ n->name[len]%NODE_DEGREE ] = n;
 
-    for(i=0, offset=len; offset < n->length; i++, offset++)
-      n->name[i] = n->name[offset];
-    n->name[i] = 0;
-    n->length = i;
+	for(i=0, offset=len; offset < n->length; i++, offset++)
+	  n->name[i] = n->name[offset];
+	n->name[i] = 0;
+	n->length = i;
 
-    name += len;
-    offset = 0;
-    while(name[offset] && (!is_wild(name[offset]))) offset++;
-    new_sub  = new_config(name, offset);
-    /* this sub_node of new_node could already be set: chain! */
-    new_sub->next = new_node->sub_node[ name[0]%NODE_DEGREE ];
-    new_node->sub_node[ name[0]%NODE_DEGREE ] = new_sub;
+	name += len;
+	offset = 0;
+	while(name[offset] && (!is_wild(name[offset]))) offset++;
+	new_sub  = new_config(name, offset);
+	/* this sub_node of new_node could already be set: chain! */
+	new_sub->next = new_node->sub_node[ name[0]%NODE_DEGREE ];
+	new_node->sub_node[ name[0]%NODE_DEGREE ] = new_sub;
 
-    if (name[offset]==0) {
-      new_sub->config = new_fnc();
-      return new_sub->config;
-    }
+	if (name[offset]==0) {
+	  new_sub->config = new_fnc();
+	  return new_sub->config;
+	}
 
-    /* recurse on wildcard */
-    return get_fnc2( new_sub, name+offset);
+	/* recurse on wildcard */
+	return get_fnc2( new_sub, name+offset);
   }
 
   name += n->length;
 
   if (name[0] == 0) {
-    /* name and node name are the same */
-    if (!n->config) n->config = new_fnc();
-    return n->config;
+	/* name and node name are the same */
+	if (!n->config) n->config = new_fnc();
+	return n->config;
   }
 
   offset = 1;
@@ -274,21 +274,21 @@ static void print_config_node(int depth, int hash, config_node* node)
   int i;
 
   if (node != fn_configs) {
-    const HChar sp[] = "                                        ";
+	const HChar sp[] = "                                        ";
 
-    if (depth>40) depth=40;
-    VG_(printf)("%s", sp+40-depth);
-    if (hash >=0) VG_(printf)(" [hash %2d]", hash);
-    else if (hash == -2) VG_(printf)(" [wildc ?]");
-    else if (hash == -3) VG_(printf)(" [wildc *]");
-    VG_(printf)(" '%s' (len %d)\n", node->name, node->length);
+	if (depth>40) depth=40;
+	VG_(printf)("%s", sp+40-depth);
+	if (hash >=0) VG_(printf)(" [hash %2d]", hash);
+	else if (hash == -2) VG_(printf)(" [wildc ?]");
+	else if (hash == -3) VG_(printf)(" [wildc *]");
+	VG_(printf)(" '%s' (len %d)\n", node->name, node->length);
   }
   for(i=0;i<NODE_DEGREE;i++) {
-    n = node->sub_node[i];
-    while(n) {
-      print_config_node(depth+1, i, n);
-      n = n->next;
-    }
+	n = node->sub_node[i];
+	while(n) {
+	  print_config_node(depth+1, i, n);
+	  n = n->next;
+	}
   }
   if (node->wild_char) print_config_node(depth+1, -2, node->wild_char);
   if (node->wild_star) print_config_node(depth+1, -3, node->wild_star);
@@ -301,49 +301,49 @@ static fn_config* get_fnc(const HChar* name)
 
   CLG_DEBUG(3, " +get_fnc(%s)\n", name);
   if (fn_configs == 0)
-    fn_configs = new_config(name, 0);
+	fn_configs = new_config(name, 0);
   fnc =  get_fnc2(fn_configs, name);
 
   CLG_DEBUGIF(3) {
-    CLG_DEBUG(3, " -get_fnc(%s):\n", name);
-    print_config_node(3, -1, fn_configs);
+	CLG_DEBUG(3, " -get_fnc(%s):\n", name);
+	print_config_node(3, -1, fn_configs);
   }
   return fnc;
 }
 
-  
+
 
 static void update_fn_config1(fn_node* fn, fn_config* fnc)
 {
-    if (fnc->dump_before != CONFIG_DEFAULT)
+	if (fnc->dump_before != CONFIG_DEFAULT)
 	fn->dump_before = (fnc->dump_before == CONFIG_TRUE);
 
-    if (fnc->dump_after != CONFIG_DEFAULT)
+	if (fnc->dump_after != CONFIG_DEFAULT)
 	fn->dump_after = (fnc->dump_after == CONFIG_TRUE);
 
-    if (fnc->zero_before != CONFIG_DEFAULT)
+	if (fnc->zero_before != CONFIG_DEFAULT)
 	fn->zero_before = (fnc->zero_before == CONFIG_TRUE);
 
-    if (fnc->toggle_collect != CONFIG_DEFAULT)
+	if (fnc->toggle_collect != CONFIG_DEFAULT)
 	fn->toggle_collect = (fnc->toggle_collect == CONFIG_TRUE);
 
-    if (fnc->skip != CONFIG_DEFAULT)
+	if (fnc->skip != CONFIG_DEFAULT)
 	fn->skip = (fnc->skip == CONFIG_TRUE);
 
-    if (fnc->pop_on_jump != CONFIG_DEFAULT)
+	if (fnc->pop_on_jump != CONFIG_DEFAULT)
 	fn->pop_on_jump = (fnc->pop_on_jump == CONFIG_TRUE);
 
-    if (fnc->group != CONFIG_DEFAULT)
+	if (fnc->group != CONFIG_DEFAULT)
 	fn->group = fnc->group;
 
-    if (fnc->separate_callers != CONFIG_DEFAULT)
+	if (fnc->separate_callers != CONFIG_DEFAULT)
 	fn->separate_callers = fnc->separate_callers;
 
-    if (fnc->separate_recursions != CONFIG_DEFAULT)
+	if (fnc->separate_recursions != CONFIG_DEFAULT)
 	fn->separate_recursions = fnc->separate_recursions;
 
 #if CLG_ENABLE_DEBUG
-    if (fnc->verbosity != CONFIG_DEFAULT)
+	if (fnc->verbosity != CONFIG_DEFAULT)
 	fn->verbosity = fnc->verbosity;
 #endif
 }
@@ -353,50 +353,50 @@ static void update_fn_config1(fn_node* fn, fn_config* fnc)
  * <fn> is updated with the pattern config.
  */
 static void update_fn_config2(fn_node* fn, const HChar* name,
-                              config_node* node)
+							  config_node* node)
 {
-    config_node* n;
+	config_node* n;
 
-    CLG_DEBUG(3, "  update_fn_config2('%s', node '%s'): \n",
-	     name, node->name);
-    if ((*name == 0) && node->config) {
-      CLG_DEBUG(3, "   found!\n");
-      update_fn_config1(fn, node->config);
-      return;
-    }
+	CLG_DEBUG(3, "  update_fn_config2('%s', node '%s'): \n",
+		 name, node->name);
+	if ((*name == 0) && node->config) {
+	  CLG_DEBUG(3, "   found!\n");
+	  update_fn_config1(fn, node->config);
+	  return;
+	}
 
-    n = node->sub_node[ name[0]%NODE_DEGREE ];
-    while(n) {
-      if (VG_(strncmp)(name, n->name, n->length)==0) break;
-      n = n->next;
-    }
-    if (n) {
+	n = node->sub_node[ name[0]%NODE_DEGREE ];
+	while(n) {
+	  if (VG_(strncmp)(name, n->name, n->length)==0) break;
+	  n = n->next;
+	}
+	if (n) {
 	CLG_DEBUG(3, "   '%s' matching at hash %d\n",
 		  n->name, name[0]%NODE_DEGREE);
 	update_fn_config2(fn, name+n->length, n);
-    }
-    
-    if (node->wild_char) {
+	}
+
+	if (node->wild_char) {
 	CLG_DEBUG(3, "   skip '%c' for wildcard '?'\n", *name);
 	update_fn_config2(fn, name+1, node->wild_char);
-    }
+	}
 
-    if (node->wild_star) {
-      CLG_DEBUG(3, "   wildcard '*'\n");
-      while(*name) {
+	if (node->wild_star) {
+	  CLG_DEBUG(3, "   wildcard '*'\n");
+	  while(*name) {
 	update_fn_config2(fn, name, node->wild_star);
 	name++;
-      }
-      update_fn_config2(fn, name, node->wild_star);
-    }
+	  }
+	  update_fn_config2(fn, name, node->wild_star);
+	}
 }
 
 /* Update function config according to configs of name prefixes */
 void CLG_(update_fn_config)(fn_node* fn)
 {
-    CLG_DEBUG(3, "  update_fn_config('%s')\n", fn->name);
-    if (fn_configs)
-      update_fn_config2(fn, fn->name, fn_configs);
+	CLG_DEBUG(3, "  update_fn_config('%s')\n", fn->name);
+	if (fn_configs)
+	  update_fn_config2(fn, fn->name, fn_configs);
 }
 
 
@@ -427,30 +427,30 @@ Bool CLG_(process_cmd_line_option)(const HChar* arg)
    else if VG_BOOL_CLO(arg, "--compress-pos",     CLG_(clo).compress_pos) {}
 
    else if VG_STR_CLO(arg, "--fn-skip", tmp_str) {
-       fn_config* fnc = get_fnc(tmp_str);
-       fnc->skip = CONFIG_TRUE;
+	   fn_config* fnc = get_fnc(tmp_str);
+	   fnc->skip = CONFIG_TRUE;
    }
 
    else if VG_STR_CLO(arg, "--dump-before", tmp_str) {
-       fn_config* fnc = get_fnc(tmp_str);
-       fnc->dump_before = CONFIG_TRUE;
+	   fn_config* fnc = get_fnc(tmp_str);
+	   fnc->dump_before = CONFIG_TRUE;
    }
 
    else if VG_STR_CLO(arg, "--zero-before", tmp_str) {
-       fn_config* fnc = get_fnc(tmp_str);
-       fnc->zero_before = CONFIG_TRUE;
+	   fn_config* fnc = get_fnc(tmp_str);
+	   fnc->zero_before = CONFIG_TRUE;
    }
 
    else if VG_STR_CLO(arg, "--dump-after", tmp_str) {
-       fn_config* fnc = get_fnc(tmp_str);
-       fnc->dump_after = CONFIG_TRUE;
+	   fn_config* fnc = get_fnc(tmp_str);
+	   fnc->dump_after = CONFIG_TRUE;
    }
 
    else if VG_STR_CLO(arg, "--toggle-collect", tmp_str) {
-       fn_config* fnc = get_fnc(tmp_str);
-       fnc->toggle_collect = CONFIG_TRUE;
-       /* defaults to initial collection off */
-       CLG_(clo).collect_atstart = False;
+	   fn_config* fnc = get_fnc(tmp_str);
+	   fnc->toggle_collect = CONFIG_TRUE;
+	   /* defaults to initial collection off */
+	   CLG_(clo).collect_atstart = False;
    }
 
    else if VG_INT_CLO(arg, "--separate-recs", CLG_(clo).separate_recursions) {}
@@ -458,8 +458,8 @@ Bool CLG_(process_cmd_line_option)(const HChar* arg)
    /* change handling of a jump between functions to ret+call */
    else if VG_XACT_CLO(arg, "--pop-on-jump", CLG_(clo).pop_on_jump, True) {}
    else if VG_STR_CLO( arg, "--pop-on-jump", tmp_str) {
-       fn_config* fnc = get_fnc(tmp_str);
-       fnc->pop_on_jump = CONFIG_TRUE;
+	   fn_config* fnc = get_fnc(tmp_str);
+	   fnc->pop_on_jump = CONFIG_TRUE;
    }
 
 #if CLG_ENABLE_DEBUG
@@ -467,45 +467,45 @@ Bool CLG_(process_cmd_line_option)(const HChar* arg)
    else if VG_INT_CLO(arg, "--ct-vstart",  CLG_(clo).verbose_start) {}
 
    else if VG_STREQN(12, arg, "--ct-verbose") {
-       fn_config* fnc;
-       HChar* s;
-       UInt n = VG_(strtoll10)(arg+12, &s);
-       if ((n <= 0) || *s != '=') return False;
-       fnc = get_fnc(s+1);
-       fnc->verbosity = n;
+	   fn_config* fnc;
+	   HChar* s;
+	   UInt n = VG_(strtoll10)(arg+12, &s);
+	   if ((n <= 0) || *s != '=') return False;
+	   fnc = get_fnc(s+1);
+	   fnc->verbosity = n;
    }
 #endif
 
-   else if VG_XACT_CLO(arg, "--separate-callers=auto", 
-                            CLG_(clo).separate_callers, CONFIG_AUTO) {}
-   else if VG_INT_CLO( arg, "--separate-callers", 
-                            CLG_(clo).separate_callers) {}
+   else if VG_XACT_CLO(arg, "--separate-callers=auto",
+							CLG_(clo).separate_callers, CONFIG_AUTO) {}
+   else if VG_INT_CLO( arg, "--separate-callers",
+							CLG_(clo).separate_callers) {}
 
    else if VG_STREQN(10, arg, "--fn-group") {
-       fn_config* fnc;
-       HChar* s;
-       UInt n = VG_(strtoll10)(arg+10, &s);
-       if ((n <= 0) || *s != '=') return False;
-       fnc = get_fnc(s+1);
-       fnc->group = n;
+	   fn_config* fnc;
+	   HChar* s;
+	   UInt n = VG_(strtoll10)(arg+10, &s);
+	   if ((n <= 0) || *s != '=') return False;
+	   fnc = get_fnc(s+1);
+	   fnc->group = n;
    }
 
    else if VG_STREQN(18, arg, "--separate-callers") {
-       fn_config* fnc;
-       HChar* s;
-       UInt n = VG_(strtoll10)(arg+18, &s);
-       if ((n <= 0) || *s != '=') return False;
-       fnc = get_fnc(s+1);
-       fnc->separate_callers = n;
+	   fn_config* fnc;
+	   HChar* s;
+	   UInt n = VG_(strtoll10)(arg+18, &s);
+	   if ((n <= 0) || *s != '=') return False;
+	   fnc = get_fnc(s+1);
+	   fnc->separate_callers = n;
    }
 
    else if VG_STREQN(15, arg, "--separate-recs") {
-       fn_config* fnc;
-       HChar* s;
-       UInt n = VG_(strtoll10)(arg+15, &s);
-       if ((n <= 0) || *s != '=') return False;
-       fnc = get_fnc(s+1);
-       fnc->separate_recursions = n;
+	   fn_config* fnc;
+	   HChar* s;
+	   UInt n = VG_(strtoll10)(arg+15, &s);
+	   if ((n <= 0) || *s != '=') return False;
+	   fnc = get_fnc(s+1);
+	   fnc->separate_recursions = n;
    }
 
    else if VG_STR_CLO(arg, "--callgrind-out-file", CLG_(clo).out_format) {}
@@ -513,7 +513,7 @@ Bool CLG_(process_cmd_line_option)(const HChar* arg)
    else if VG_BOOL_CLO(arg, "--mangle-names", CLG_(clo).mangle_names) {}
 
    else if VG_BOOL_CLO(arg, "--skip-direct-rec",
-                            CLG_(clo).skip_direct_recursion) {}
+							CLG_(clo).skip_direct_recursion) {}
 
    else if VG_BOOL_CLO(arg, "--dump-bbs",   CLG_(clo).dump_bbs) {}
    else if VG_BOOL_CLO(arg, "--dump-line",  CLG_(clo).dump_line) {}
@@ -523,7 +523,23 @@ Bool CLG_(process_cmd_line_option)(const HChar* arg)
    else if VG_INT_CLO( arg, "--dump-every-bb", CLG_(clo).dump_every_bb) {}
 
    else if VG_BOOL_CLO(arg, "--collect-alloc",   CLG_(clo).collect_alloc) {}
-   else if VG_BOOL_CLO(arg, "--collect-systime", CLG_(clo).collect_systime) {}
+   else if VG_XACT_CLO(arg, "--collect-systime=no",
+					   CLG_(clo).collect_systime, systime_no) {}
+   else if VG_XACT_CLO(arg, "--collect-systime=msec",
+					   CLG_(clo).collect_systime, systime_msec) {}
+   else if VG_XACT_CLO(arg, "--collect-systime=yes", /* backward compatibility.  */
+					   CLG_(clo).collect_systime, systime_msec) {}
+   else if VG_XACT_CLO(arg, "--collect-systime=usec",
+					   CLG_(clo).collect_systime, systime_usec) {}
+   else if VG_XACT_CLO(arg, "--collect-systime=nsec",
+					   CLG_(clo).collect_systime, systime_nsec) {
+#  if defined(VGO_darwin)
+	  VG_(fmsg_bad_option)
+		 (arg,
+		  "--collect-systime=nsec not supported on darwin\n");
+#  endif
+   }
+
    else if VG_BOOL_CLO(arg, "--collect-bus",     CLG_(clo).collect_bus) {}
    /* for option compatibility with cachegrind */
    else if VG_BOOL_CLO(arg, "--cache-sim",       CLG_(clo).simulate_cache) {}
@@ -532,13 +548,13 @@ Bool CLG_(process_cmd_line_option)(const HChar* arg)
    /* for option compatibility with cachegrind */
    else if VG_BOOL_CLO(arg, "--branch-sim",      CLG_(clo).simulate_branch) {}
    else {
-       Bool isCachesimOption = (*CLG_(cachesim).parse_opt)(arg);
+	   Bool isCachesimOption = (*CLG_(cachesim).parse_opt)(arg);
 
-       /* cache simulator is used if a simulator option is given */
-       if (isCachesimOption)
+	   /* cache simulator is used if a simulator option is given */
+	   if (isCachesimOption)
 	   CLG_(clo).simulate_cache = True;
 
-       return isCachesimOption;
+	   return isCachesimOption;
    }
 
    return True;
@@ -580,7 +596,11 @@ void CLG_(print_usage)(void)
 #if CLG_EXPERIMENTAL
 "    --collect-alloc=no|yes    Collect memory allocation info? [no]\n"
 #endif
-"    --collect-systime=no|yes  Collect system call time info? [no]\n"
+"    --collect-systime=no|yes|msec|usec|nsec  Collect system call time info? [no]\n"
+"        no         Do not collect system call time info.\n"
+"        msec|yes   Collect syscount, syscall elapsed time (milli-seconds).\n"
+"        usec       Collect syscount, syscall elapsed time (micro-seconds).\n"
+"        nsec       Collect syscount, syscall elapsed and syscall cpu time (nano-seconds).\n"
 
 "\n   cost entity separation options:\n"
 "    --separate-threads=no|yes Separate data per thread [no]\n"
@@ -597,7 +617,7 @@ void CLG_(print_usage)(void)
 "\n   simulation options:\n"
 "    --branch-sim=no|yes       Do branch prediction simulation [no]\n"
 "    --cache-sim=no|yes        Do cache simulation [no]\n"
-    );
+	);
 
    (*CLG_(cachesim).print_opts)();
 
@@ -608,7 +628,7 @@ void CLG_(print_usage)(void)
 
 void CLG_(print_debug_usage)(void)
 {
-    VG_(printf)(
+	VG_(printf)(
 
 #if CLG_ENABLE_DEBUG
 "    --ct-verbose=<level>       Verbosity of standard debug output [0]\n"
@@ -618,7 +638,7 @@ void CLG_(print_debug_usage)(void)
 "    (none)\n"
 #endif
 
-    );
+	);
 }
 
 
@@ -646,7 +666,7 @@ void CLG_(set_clo_defaults)(void)
   CLG_(clo).collect_atstart  = True;
   CLG_(clo).collect_jumps    = False;
   CLG_(clo).collect_alloc    = False;
-  CLG_(clo).collect_systime  = False;
+  CLG_(clo).collect_systime  = systime_no;
   CLG_(clo).collect_bus      = False;
 
   CLG_(clo).skip_plt         = True;
