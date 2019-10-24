@@ -1,1 +1,3 @@
-../mips32/msa_logical_and_shift.vgtest
+prog: msa_logical_and_shift
+prereq: ../../../tests/mips_features mips-msa
+vgopts: -q

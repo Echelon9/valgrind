@@ -8,7 +8,7 @@
    framework.
 
    Copyright (C) 2000-2017 Julian Seward
-      jseward@acm.org
+	  jseward@acm.org
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -71,8 +69,8 @@ extern void VG_(di_notify_mprotect)( Addr a, SizeT len, UInt prot );
 
 /* this should really return ULong, as per VG_(di_notify_mmap). */
 extern void VG_(di_notify_pdb_debuginfo)( Int fd, Addr avma,
-                                          SizeT total_size,
-                                          PtrdiffT bias );
+										  SizeT total_size,
+										  PtrdiffT bias );
 
 /* this should also really return ULong */
 extern void VG_(di_notify_vm_protect)( Addr a, SizeT len, UInt prot );
@@ -93,14 +91,14 @@ Bool VG_(get_fnname_raw) ( DiEpoch ep, Addr a, const HChar** buf );
  iipc argument: same usage as in VG_(describe_IP) in pub_tool_debuginfo.h. */
 extern
 Bool VG_(get_fnname_no_cxx_demangle) ( DiEpoch ep, Addr a, const HChar** buf,
-                                       const InlIPCursor* iipc );
+									   const InlIPCursor* iipc );
 
-/* mips-linux only: find the offset of current address. This is needed for 
+/* mips-linux only: find the offset of current address. This is needed for
    stack unwinding for MIPS.
 */
 extern
 Bool VG_(get_inst_offset_in_function)( DiEpoch ep, Addr a,
-                                       /*OUT*/PtrdiffT* offset );
+									   /*OUT*/PtrdiffT* offset );
 
 
 /* Use DWARF2/3 CFA information to do one step of stack unwinding.
@@ -126,10 +124,10 @@ typedef
 #elif defined(VGA_s390x)
 typedef
    struct { Addr ia; Addr sp; Addr fp; Addr lr;
-            Addr f0; Addr f1; Addr f2; Addr f3;
-            Addr f4; Addr f5; Addr f6; Addr f7; }
+			Addr f0; Addr f1; Addr f2; Addr f3;
+			Addr f4; Addr f5; Addr f6; Addr f7; }
    D3UnwindRegs;
-#elif defined(VGA_mips32) || defined(VGA_mips64)
+#elif defined(VGA_mips32) || defined(VGA_mips64) || defined(VGA_nanomips)
 typedef
    struct { Addr pc; Addr sp; Addr fp; Addr ra; }
    D3UnwindRegs;
@@ -138,8 +136,8 @@ typedef
 #endif
 
 extern Bool VG_(use_CF_info) ( /*MOD*/D3UnwindRegs* uregs,
-                               Addr min_accessible,
-                               Addr max_accessible );
+							   Addr min_accessible,
+							   Addr max_accessible );
 
 /* returns the "generation" of the debug info.
    Each time some debuginfo is changed (e.g. loaded or unloaded),
@@ -159,11 +157,11 @@ extern Bool VG_(FPO_info_present)(void);
 
 /* Use MSVC FPO data to do one step of stack unwinding. */
 extern Bool VG_(use_FPO_info) ( /*MOD*/Addr* ipP,
-                                /*MOD*/Addr* spP,
-                                /*MOD*/Addr* fpP,
-                                DiEpoch ep,
-                                Addr min_accessible,
-                                Addr max_accessible );
+								/*MOD*/Addr* spP,
+								/*MOD*/Addr* fpP,
+								DiEpoch ep,
+								Addr min_accessible,
+								Addr max_accessible );
 
 /* Print the unwind info (if there is some) for the given address
    range [from,to]. */
@@ -175,12 +173,12 @@ extern void VG_(ppUnwindInfo) (Addr from, Addr to);
    GET_TOCPTR_AVMA/SET_TOCPTR_AVMA/GET_LOCAL_EP_AVMA/SET_LOCAL_EP_AVMA. */
 typedef
    struct {
-      Addr main;      /* lowest address of entity */
+	  Addr main;      /* lowest address of entity */
 #     if defined(VGA_ppc64be) || defined(VGA_ppc64le)
-      Addr tocptr;    /* ppc64be/le-linux only: value that R2 should have */
+	  Addr tocptr;    /* ppc64be/le-linux only: value that R2 should have */
 #     endif
 #     if defined(VGA_ppc64le)
-      Addr local_ep;  /* address for local entry point, ppc64le only */
+	  Addr local_ep;  /* address for local entry point, ppc64le only */
 #     endif
    }
    SymAVMAs;
@@ -209,15 +207,15 @@ typedef
    set either to NULL or to a NULL terminated vector containing
    pointers to the secondary names. */
 Int  VG_(DebugInfo_syms_howmany) ( const DebugInfo *di );
-void VG_(DebugInfo_syms_getidx)  ( const DebugInfo *di, 
-                                   Int idx,
-                                   /*OUT*/SymAVMAs* ad,
-                                   /*OUT*/UInt*     size,
-                                   /*OUT*/const HChar**   pri_name,
-                                   /*OUT*/const HChar***  sec_names,
-                                   /*OUT*/Bool*     isText,
-                                   /*OUT*/Bool*     isIFunc,
-                                   /*OUT*/Bool*     isGlobal );
+void VG_(DebugInfo_syms_getidx)  ( const DebugInfo *di,
+								   Int idx,
+								   /*OUT*/SymAVMAs* ad,
+								   /*OUT*/UInt*     size,
+								   /*OUT*/const HChar**   pri_name,
+								   /*OUT*/const HChar***  sec_names,
+								   /*OUT*/Bool*     isText,
+								   /*OUT*/Bool*     isIFunc,
+								   /*OUT*/Bool*     isGlobal );
 /* ppc64-linux only: find the TOC pointer (R2 value) that should be in
    force at the entry point address of the function containing
    guest_code_addr.  Returns 0 if not known. */
@@ -231,9 +229,9 @@ extern Addr VG_(get_tocptr) ( DiEpoch ep, Addr guest_code_addr );
    platforms, a symbol is deemed to be found only if it has a nonzero
    TOC pointer.  */
 extern
-Bool VG_(lookup_symbol_SLOW)(DiEpoch ep, 
-                             const HChar* sopatt, const HChar* name,
-                             SymAVMAs* avmas);
+Bool VG_(lookup_symbol_SLOW)(DiEpoch ep,
+							 const HChar* sopatt, const HChar* name,
+							 SymAVMAs* avmas);
 
 #endif   // __PUB_CORE_DEBUGINFO_H
 

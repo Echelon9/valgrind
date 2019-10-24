@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -1608,10 +1606,21 @@ static SyscallTableEntry syscall_table[] = {
 
    LINX_(__NR_membarrier,        sys_membarrier),       // 375
 
+   LINX_(__NR_copy_file_range,   sys_copy_file_range),   // 377
+   LINXY(__NR_preadv2,           sys_preadv2),           // 378
+   LINX_(__NR_pwritev2,          sys_pwritev2),          // 379
+
+   LINXY(__NR_pkey_mprotect,     sys_pkey_mprotect),    // 380
+   LINX_(__NR_pkey_alloc,        sys_pkey_alloc),       // 381
+   LINX_(__NR_pkey_free,         sys_pkey_free),        // 382
    LINXY(__NR_statx,             sys_statx),            // 383
 
    /* Explicitly not supported on i386 yet. */
-   GENX_(__NR_arch_prctl,        sys_ni_syscall)        // 384
+   GENX_(__NR_arch_prctl,        sys_ni_syscall),       // 384
+
+   LINXY(__NR_io_uring_setup,    sys_io_uring_setup),   // 425
+   LINXY(__NR_io_uring_enter,    sys_io_uring_enter),   // 426
+   LINXY(__NR_io_uring_register, sys_io_uring_register),// 427
 };
 
 SyscallTableEntry* ML_(get_linux_syscall_entry) ( UInt sysno )

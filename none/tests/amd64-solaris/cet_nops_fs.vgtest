@@ -1,1 +1,2 @@
-../amd64-linux/cet_nops_fs.vgtest
+prog: cet_nops_fs
+vgopts: -q

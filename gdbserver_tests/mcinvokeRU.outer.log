@@ -1,0 +1,884 @@
+==82619== Memcheck, a memory error detector
+==82619== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==82619== Using Valgrind-3.16.0.GIT and LibVEX; rerun with -h for copyright info
+==82619== Command: /Users/piotrsowa/Projects/github/valgrind/./coregrind/valgrind --command-line-only=yes --memcheck:leak-check=no --sim-hints=no-inner-prefix --tool=mcinvokeRU --tool=memcheck --vgdb=yes --vgdb-prefix=./vgdb-prefix-mcinvokeRU ./sleepers 1 0 1000000000 B-B-B-B- 1
+==82619== Parent PID: 82618
+==82619== 
+==82619== Conditional jump or move depends on uninitialised value(s)
+==82619==    at 0x10000D330: dyld::_main(macho_header const*, unsigned long, int, char const**, char const**, char const**, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008502: dyldbootstrap::start(macho_header const*, int, char const**, long, macho_header const*, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008035: _dyld_start (in /usr/lib/dyld)
+==82619==    by 0xD: ???
+==82619==    by 0x7FFEEFBFF9BE: ???
+==82619==    by 0x7FFEEFBFF9FD: ???
+==82619==    by 0x7FFEEFBFFA15: ???
+==82619==    by 0x7FFEEFBFFA2E: ???
+==82619==    by 0x7FFEEFBFFA4A: ???
+==82619==    by 0x7FFEEFBFFA5C: ???
+==82619==    by 0x7FFEEFBFFA6C: ???
+==82619==    by 0x7FFEEFBFFA77: ???
+==82619==    by 0x7FFEEFBFFA9E: ???
+==82619==    by 0x7FFEEFBFFAA9: ???
+==82619==    by 0x7FFEEFBFFAAB: ???
+==82619==    by 0x7FFEEFBFFAAD: ???
+==82619==    by 0x7FFEEFBFFAB8: ???
+==82619==    by 0x7FFEEFBFFAC1: ???
+==82619== 
+==82619== Conditional jump or move depends on uninitialised value(s)
+==82619==    at 0x10000F456: dyld::checkEnvironmentVariables(char const**) (in /usr/lib/dyld)
+==82619==    by 0x10000D339: dyld::_main(macho_header const*, unsigned long, int, char const**, char const**, char const**, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008502: dyldbootstrap::start(macho_header const*, int, char const**, long, macho_header const*, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008035: _dyld_start (in /usr/lib/dyld)
+==82619==    by 0xD: ???
+==82619==    by 0x7FFEEFBFF9BE: ???
+==82619==    by 0x7FFEEFBFF9FD: ???
+==82619==    by 0x7FFEEFBFFA15: ???
+==82619==    by 0x7FFEEFBFFA2E: ???
+==82619==    by 0x7FFEEFBFFA4A: ???
+==82619==    by 0x7FFEEFBFFA5C: ???
+==82619==    by 0x7FFEEFBFFA6C: ???
+==82619==    by 0x7FFEEFBFFA77: ???
+==82619==    by 0x7FFEEFBFFA9E: ???
+==82619==    by 0x7FFEEFBFFAA9: ???
+==82619==    by 0x7FFEEFBFFAAB: ???
+==82619==    by 0x7FFEEFBFFAAD: ???
+==82619==    by 0x7FFEEFBFFAB8: ???
+==82619==    by 0x7FFEEFBFFAC1: ???
+==82619== 
+==82619== Conditional jump or move depends on uninitialised value(s)
+==82619==    at 0x100009BBC: dyld::processDyldEnvironmentVariable(char const*, char const*, char const*) (in /usr/lib/dyld)
+==82619==    by 0x10000F566: dyld::checkEnvironmentVariables(char const**) (in /usr/lib/dyld)
+==82619==    by 0x10000D339: dyld::_main(macho_header const*, unsigned long, int, char const**, char const**, char const**, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008502: dyldbootstrap::start(macho_header const*, int, char const**, long, macho_header const*, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008035: _dyld_start (in /usr/lib/dyld)
+==82619==    by 0xD: ???
+==82619==    by 0x7FFEEFBFF9BE: ???
+==82619==    by 0x7FFEEFBFF9FD: ???
+==82619==    by 0x7FFEEFBFFA15: ???
+==82619==    by 0x7FFEEFBFFA2E: ???
+==82619==    by 0x7FFEEFBFFA4A: ???
+==82619==    by 0x7FFEEFBFFA5C: ???
+==82619==    by 0x7FFEEFBFFA6C: ???
+==82619==    by 0x7FFEEFBFFA77: ???
+==82619==    by 0x7FFEEFBFFA9E: ???
+==82619==    by 0x7FFEEFBFFAA9: ???
+==82619==    by 0x7FFEEFBFFAAB: ???
+==82619==    by 0x7FFEEFBFFAAD: ???
+==82619==    by 0x7FFEEFBFFAB8: ???
+==82619==    by 0x7FFEEFBFFAC1: ???
+==82619== 
+==82619== Conditional jump or move depends on uninitialised value(s)
+==82619==    at 0x10000D341: dyld::_main(macho_header const*, unsigned long, int, char const**, char const**, char const**, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008502: dyldbootstrap::start(macho_header const*, int, char const**, long, macho_header const*, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008035: _dyld_start (in /usr/lib/dyld)
+==82619==    by 0xD: ???
+==82619==    by 0x7FFEEFBFF9BE: ???
+==82619==    by 0x7FFEEFBFF9FD: ???
+==82619==    by 0x7FFEEFBFFA15: ???
+==82619==    by 0x7FFEEFBFFA2E: ???
+==82619==    by 0x7FFEEFBFFA4A: ???
+==82619==    by 0x7FFEEFBFFA5C: ???
+==82619==    by 0x7FFEEFBFFA6C: ???
+==82619==    by 0x7FFEEFBFFA77: ???
+==82619==    by 0x7FFEEFBFFA9E: ???
+==82619==    by 0x7FFEEFBFFAA9: ???
+==82619==    by 0x7FFEEFBFFAAB: ???
+==82619==    by 0x7FFEEFBFFAAD: ???
+==82619==    by 0x7FFEEFBFFAB8: ???
+==82619==    by 0x7FFEEFBFFAC1: ???
+==82619== 
+==82619== Conditional jump or move depends on uninitialised value(s)
+==82619==    at 0x10001139D: dyld::loadPhase3(char const*, char const*, dyld::LoadContext const&, unsigned int&, std::__1::vector<char const*, std::__1::allocator<char const*> >*) (in /usr/lib/dyld)
+==82619==    by 0x100010D17: dyld::loadPhase1(char const*, char const*, dyld::LoadContext const&, unsigned int&, std::__1::vector<char const*, std::__1::allocator<char const*> >*) (in /usr/lib/dyld)
+==82619==    by 0x10000AAC9: dyld::loadPhase0(char const*, char const*, dyld::LoadContext const&, unsigned int&, std::__1::vector<char const*, std::__1::allocator<char const*> >*) (in /usr/lib/dyld)
+==82619==    by 0x10000A61D: dyld::load(char const*, dyld::LoadContext const&, unsigned int&) (in /usr/lib/dyld)
+==82619==    by 0x10000E3A0: dyld::_main(macho_header const*, unsigned long, int, char const**, char const**, char const**, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008502: dyldbootstrap::start(macho_header const*, int, char const**, long, macho_header const*, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008035: _dyld_start (in /usr/lib/dyld)
+==82619==    by 0xD: ???
+==82619==    by 0x7FFEEFBFF9BE: ???
+==82619==    by 0x7FFEEFBFF9FD: ???
+==82619==    by 0x7FFEEFBFFA15: ???
+==82619==    by 0x7FFEEFBFFA2E: ???
+==82619==    by 0x7FFEEFBFFA4A: ???
+==82619==    by 0x7FFEEFBFFA5C: ???
+==82619==    by 0x7FFEEFBFFA6C: ???
+==82619==    by 0x7FFEEFBFFA77: ???
+==82619==    by 0x7FFEEFBFFA9E: ???
+==82619==    by 0x7FFEEFBFFAA9: ???
+==82619==    by 0x7FFEEFBFFAAB: ???
+==82619==    by 0x7FFEEFBFFAAD: ???
+==82619==    by 0x7FFEEFBFFAB8: ???
+==82619==    by 0x7FFEEFBFFAC1: ???
+==82619== 
+==82619== Conditional jump or move depends on uninitialised value(s)
+==82619==    at 0x10001139D: dyld::loadPhase3(char const*, char const*, dyld::LoadContext const&, unsigned int&, std::__1::vector<char const*, std::__1::allocator<char const*> >*) (in /usr/lib/dyld)
+==82619==    by 0x100010D17: dyld::loadPhase1(char const*, char const*, dyld::LoadContext const&, unsigned int&, std::__1::vector<char const*, std::__1::allocator<char const*> >*) (in /usr/lib/dyld)
+==82619==    by 0x10000AAC9: dyld::loadPhase0(char const*, char const*, dyld::LoadContext const&, unsigned int&, std::__1::vector<char const*, std::__1::allocator<char const*> >*) (in /usr/lib/dyld)
+==82619==    by 0x10000A658: dyld::load(char const*, dyld::LoadContext const&, unsigned int&) (in /usr/lib/dyld)
+==82619==    by 0x10000E3A0: dyld::_main(macho_header const*, unsigned long, int, char const**, char const**, char const**, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008502: dyldbootstrap::start(macho_header const*, int, char const**, long, macho_header const*, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008035: _dyld_start (in /usr/lib/dyld)
+==82619==    by 0xD: ???
+==82619==    by 0x7FFEEFBFF9BE: ???
+==82619==    by 0x7FFEEFBFF9FD: ???
+==82619==    by 0x7FFEEFBFFA15: ???
+==82619==    by 0x7FFEEFBFFA2E: ???
+==82619==    by 0x7FFEEFBFFA4A: ???
+==82619==    by 0x7FFEEFBFFA5C: ???
+==82619==    by 0x7FFEEFBFFA6C: ???
+==82619==    by 0x7FFEEFBFFA77: ???
+==82619==    by 0x7FFEEFBFFA9E: ???
+==82619==    by 0x7FFEEFBFFAA9: ???
+==82619==    by 0x7FFEEFBFFAAB: ???
+==82619==    by 0x7FFEEFBFFAAD: ???
+==82619==    by 0x7FFEEFBFFAB8: ???
+==82619==    by 0x7FFEEFBFFAC1: ???
+==82619== 
+--82619-- UNKNOWN fcntl 98!
+--82619-- UNKNOWN fcntl 98! (repeated 2 times)
+--82619-- UNKNOWN fcntl 98! (repeated 4 times)
+--82619-- UNKNOWN fcntl 98! (repeated 8 times)
+--82619-- UNKNOWN fcntl 98! (repeated 16 times)
+--82619-- UNKNOWN fcntl 98! (repeated 32 times)
+==82619== Conditional jump or move depends on uninitialised value(s)
+==82619==    at 0x100138726: ccaes_vng_ctr_crypt (in /usr/lib/system/libcorecrypto.dylib)
+==82619==    by 0x10013863B: bcc_update (in /usr/lib/system/libcorecrypto.dylib)
+==82619==    by 0x10013987C: df_bcc_update (in /usr/lib/system/libcorecrypto.dylib)
+==82619==    by 0x100139654: df (in /usr/lib/system/libcorecrypto.dylib)
+==82619==    by 0x100137FD4: nistctr_init (in /usr/lib/system/libcorecrypto.dylib)
+==82619==    by 0x100137E2B: init (in /usr/lib/system/libcorecrypto.dylib)
+==82619==    by 0x100302CFE: arc4_init (in /usr/lib/system/libsystem_c.dylib)
+==82619==    by 0x100302E1C: arc4random_buf (in /usr/lib/system/libsystem_c.dylib)
+==82619==    by 0x1005E9A24: _read_images (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x1005E8A4F: _hasObjcContents (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x1005FB55F: __objc_personality_v0 (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x10000C47A: dyld::notifyBatchPartial(dyld_image_states, bool, char const* (*)(dyld_image_states, unsigned int, dyld_image_info const*), bool, bool) (in /usr/lib/dyld)
+==82619==    by 0x10000C62D: dyld::registerObjCNotifiers(void (*)(unsigned int, char const* const*, mach_header const* const*), void (*)(char const*, mach_header const*), void (*)(char const*, mach_header const*)) (in /usr/lib/dyld)
+==82619==    by 0x100243A26: _dyld_objc_notify_register (in /usr/lib/system/libdyld.dylib)
+==82619==    by 0x1005E8233: environ_init (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x1001DAE35: _os_object_init (in /usr/lib/system/libdispatch.dylib)
+==82619==    by 0x1001E6AD1: libdispatch_init (in /usr/lib/system/libdispatch.dylib)
+==82619==    by 0x1000EA9C4: libSystem_initializer (in /usr/lib/libSystem.B.dylib)
+==82619==    by 0x10001F591: ImageLoaderMachO::doModInitFunctions(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001F797: ImageLoaderMachO::doInitialization(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001ABE9: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x10001AB7F: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019D72: ImageLoader::processInitializers(ImageLoader::LinkContext const&, unsigned int, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019E04: ImageLoader::runInitializers(ImageLoader::LinkContext const&, ImageLoader::InitializerTimingList&) (in /usr/lib/dyld)
+==82619==    by 0x10000971E: dyld::initializeMainExecutable() (in /usr/lib/dyld)
+==82619==    by 0x10000E708: dyld::_main(macho_header const*, unsigned long, int, char const**, char const**, char const**, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008502: dyldbootstrap::start(macho_header const*, int, char const**, long, macho_header const*, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008035: _dyld_start (in /usr/lib/dyld)
+==82619==    by 0xD: ???
+==82619==    by 0x7FFEEFBFF9BE: ???
+==82619==    by 0x7FFEEFBFF9FD: ???
+==82619==    by 0x7FFEEFBFFA15: ???
+==82619==    by 0x7FFEEFBFFA2E: ???
+==82619==    by 0x7FFEEFBFFA4A: ???
+==82619==    by 0x7FFEEFBFFA5C: ???
+==82619==    by 0x7FFEEFBFFA6C: ???
+==82619==    by 0x7FFEEFBFFA77: ???
+==82619==    by 0x7FFEEFBFFA9E: ???
+==82619==    by 0x7FFEEFBFFAA9: ???
+==82619==    by 0x7FFEEFBFFAAB: ???
+==82619== 
+==82619== Conditional jump or move depends on uninitialised value(s)
+==82619==    at 0x100138726: ccaes_vng_ctr_crypt (in /usr/lib/system/libcorecrypto.dylib)
+==82619==    by 0x10013863B: bcc_update (in /usr/lib/system/libcorecrypto.dylib)
+==82619==    by 0x10013990C: df_bcc_update (in /usr/lib/system/libcorecrypto.dylib)
+==82619==    by 0x100139654: df (in /usr/lib/system/libcorecrypto.dylib)
+==82619==    by 0x100137FD4: nistctr_init (in /usr/lib/system/libcorecrypto.dylib)
+==82619==    by 0x100137E2B: init (in /usr/lib/system/libcorecrypto.dylib)
+==82619==    by 0x100302CFE: arc4_init (in /usr/lib/system/libsystem_c.dylib)
+==82619==    by 0x100302E1C: arc4random_buf (in /usr/lib/system/libsystem_c.dylib)
+==82619==    by 0x1005E9A24: _read_images (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x1005E8A4F: _hasObjcContents (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x1005FB55F: __objc_personality_v0 (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x10000C47A: dyld::notifyBatchPartial(dyld_image_states, bool, char const* (*)(dyld_image_states, unsigned int, dyld_image_info const*), bool, bool) (in /usr/lib/dyld)
+==82619==    by 0x10000C62D: dyld::registerObjCNotifiers(void (*)(unsigned int, char const* const*, mach_header const* const*), void (*)(char const*, mach_header const*), void (*)(char const*, mach_header const*)) (in /usr/lib/dyld)
+==82619==    by 0x100243A26: _dyld_objc_notify_register (in /usr/lib/system/libdyld.dylib)
+==82619==    by 0x1005E8233: environ_init (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x1001DAE35: _os_object_init (in /usr/lib/system/libdispatch.dylib)
+==82619==    by 0x1001E6AD1: libdispatch_init (in /usr/lib/system/libdispatch.dylib)
+==82619==    by 0x1000EA9C4: libSystem_initializer (in /usr/lib/libSystem.B.dylib)
+==82619==    by 0x10001F591: ImageLoaderMachO::doModInitFunctions(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001F797: ImageLoaderMachO::doInitialization(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001ABE9: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x10001AB7F: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019D72: ImageLoader::processInitializers(ImageLoader::LinkContext const&, unsigned int, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019E04: ImageLoader::runInitializers(ImageLoader::LinkContext const&, ImageLoader::InitializerTimingList&) (in /usr/lib/dyld)
+==82619==    by 0x10000971E: dyld::initializeMainExecutable() (in /usr/lib/dyld)
+==82619==    by 0x10000E708: dyld::_main(macho_header const*, unsigned long, int, char const**, char const**, char const**, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008502: dyldbootstrap::start(macho_header const*, int, char const**, long, macho_header const*, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008035: _dyld_start (in /usr/lib/dyld)
+==82619==    by 0xD: ???
+==82619==    by 0x7FFEEFBFF9BE: ???
+==82619==    by 0x7FFEEFBFF9FD: ???
+==82619==    by 0x7FFEEFBFFA15: ???
+==82619==    by 0x7FFEEFBFFA2E: ???
+==82619==    by 0x7FFEEFBFFA4A: ???
+==82619==    by 0x7FFEEFBFFA5C: ???
+==82619==    by 0x7FFEEFBFFA6C: ???
+==82619==    by 0x7FFEEFBFFA77: ???
+==82619==    by 0x7FFEEFBFFA9E: ???
+==82619==    by 0x7FFEEFBFFAA9: ???
+==82619==    by 0x7FFEEFBFFAAB: ???
+==82619== 
+==82619== Conditional jump or move depends on uninitialised value(s)
+==82619==    at 0x100138726: ccaes_vng_ctr_crypt (in /usr/lib/system/libcorecrypto.dylib)
+==82619==    by 0x10013863B: bcc_update (in /usr/lib/system/libcorecrypto.dylib)
+==82619==    by 0x1001396B6: df (in /usr/lib/system/libcorecrypto.dylib)
+==82619==    by 0x100137FD4: nistctr_init (in /usr/lib/system/libcorecrypto.dylib)
+==82619==    by 0x100137E2B: init (in /usr/lib/system/libcorecrypto.dylib)
+==82619==    by 0x100302CFE: arc4_init (in /usr/lib/system/libsystem_c.dylib)
+==82619==    by 0x100302E1C: arc4random_buf (in /usr/lib/system/libsystem_c.dylib)
+==82619==    by 0x1005E9A24: _read_images (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x1005E8A4F: _hasObjcContents (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x1005FB55F: __objc_personality_v0 (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x10000C47A: dyld::notifyBatchPartial(dyld_image_states, bool, char const* (*)(dyld_image_states, unsigned int, dyld_image_info const*), bool, bool) (in /usr/lib/dyld)
+==82619==    by 0x10000C62D: dyld::registerObjCNotifiers(void (*)(unsigned int, char const* const*, mach_header const* const*), void (*)(char const*, mach_header const*), void (*)(char const*, mach_header const*)) (in /usr/lib/dyld)
+==82619==    by 0x100243A26: _dyld_objc_notify_register (in /usr/lib/system/libdyld.dylib)
+==82619==    by 0x1005E8233: environ_init (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x1001DAE35: _os_object_init (in /usr/lib/system/libdispatch.dylib)
+==82619==    by 0x1001E6AD1: libdispatch_init (in /usr/lib/system/libdispatch.dylib)
+==82619==    by 0x1000EA9C4: libSystem_initializer (in /usr/lib/libSystem.B.dylib)
+==82619==    by 0x10001F591: ImageLoaderMachO::doModInitFunctions(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001F797: ImageLoaderMachO::doInitialization(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001ABE9: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x10001AB7F: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019D72: ImageLoader::processInitializers(ImageLoader::LinkContext const&, unsigned int, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019E04: ImageLoader::runInitializers(ImageLoader::LinkContext const&, ImageLoader::InitializerTimingList&) (in /usr/lib/dyld)
+==82619==    by 0x10000971E: dyld::initializeMainExecutable() (in /usr/lib/dyld)
+==82619==    by 0x10000E708: dyld::_main(macho_header const*, unsigned long, int, char const**, char const**, char const**, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008502: dyldbootstrap::start(macho_header const*, int, char const**, long, macho_header const*, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008035: _dyld_start (in /usr/lib/dyld)
+==82619==    by 0xD: ???
+==82619==    by 0x7FFEEFBFF9BE: ???
+==82619==    by 0x7FFEEFBFF9FD: ???
+==82619==    by 0x7FFEEFBFFA15: ???
+==82619==    by 0x7FFEEFBFFA2E: ???
+==82619==    by 0x7FFEEFBFFA4A: ???
+==82619==    by 0x7FFEEFBFFA5C: ???
+==82619==    by 0x7FFEEFBFFA6C: ???
+==82619==    by 0x7FFEEFBFFA77: ???
+==82619==    by 0x7FFEEFBFFA9E: ???
+==82619==    by 0x7FFEEFBFFAA9: ???
+==82619==    by 0x7FFEEFBFFAAB: ???
+==82619==    by 0x7FFEEFBFFAAD: ???
+==82619== 
+==82619== Conditional jump or move depends on uninitialised value(s)
+==82619==    at 0x100138726: ccaes_vng_ctr_crypt (in /usr/lib/system/libcorecrypto.dylib)
+==82619==    by 0x10013976B: df (in /usr/lib/system/libcorecrypto.dylib)
+==82619==    by 0x100137FD4: nistctr_init (in /usr/lib/system/libcorecrypto.dylib)
+==82619==    by 0x100137E2B: init (in /usr/lib/system/libcorecrypto.dylib)
+==82619==    by 0x100302CFE: arc4_init (in /usr/lib/system/libsystem_c.dylib)
+==82619==    by 0x100302E1C: arc4random_buf (in /usr/lib/system/libsystem_c.dylib)
+==82619==    by 0x1005E9A24: _read_images (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x1005E8A4F: _hasObjcContents (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x1005FB55F: __objc_personality_v0 (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x10000C47A: dyld::notifyBatchPartial(dyld_image_states, bool, char const* (*)(dyld_image_states, unsigned int, dyld_image_info const*), bool, bool) (in /usr/lib/dyld)
+==82619==    by 0x10000C62D: dyld::registerObjCNotifiers(void (*)(unsigned int, char const* const*, mach_header const* const*), void (*)(char const*, mach_header const*), void (*)(char const*, mach_header const*)) (in /usr/lib/dyld)
+==82619==    by 0x100243A26: _dyld_objc_notify_register (in /usr/lib/system/libdyld.dylib)
+==82619==    by 0x1005E8233: environ_init (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x1001DAE35: _os_object_init (in /usr/lib/system/libdispatch.dylib)
+==82619==    by 0x1001E6AD1: libdispatch_init (in /usr/lib/system/libdispatch.dylib)
+==82619==    by 0x1000EA9C4: libSystem_initializer (in /usr/lib/libSystem.B.dylib)
+==82619==    by 0x10001F591: ImageLoaderMachO::doModInitFunctions(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001F797: ImageLoaderMachO::doInitialization(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001ABE9: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x10001AB7F: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019D72: ImageLoader::processInitializers(ImageLoader::LinkContext const&, unsigned int, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019E04: ImageLoader::runInitializers(ImageLoader::LinkContext const&, ImageLoader::InitializerTimingList&) (in /usr/lib/dyld)
+==82619==    by 0x10000971E: dyld::initializeMainExecutable() (in /usr/lib/dyld)
+==82619==    by 0x10000E708: dyld::_main(macho_header const*, unsigned long, int, char const**, char const**, char const**, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008502: dyldbootstrap::start(macho_header const*, int, char const**, long, macho_header const*, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008035: _dyld_start (in /usr/lib/dyld)
+==82619==    by 0xD: ???
+==82619==    by 0x7FFEEFBFF9BE: ???
+==82619==    by 0x7FFEEFBFF9FD: ???
+==82619==    by 0x7FFEEFBFFA15: ???
+==82619==    by 0x7FFEEFBFFA2E: ???
+==82619==    by 0x7FFEEFBFFA4A: ???
+==82619==    by 0x7FFEEFBFFA5C: ???
+==82619==    by 0x7FFEEFBFFA6C: ???
+==82619==    by 0x7FFEEFBFFA77: ???
+==82619==    by 0x7FFEEFBFFA9E: ???
+==82619==    by 0x7FFEEFBFFAA9: ???
+==82619==    by 0x7FFEEFBFFAAB: ???
+==82619==    by 0x7FFEEFBFFAAD: ???
+==82619==    by 0x7FFEEFBFFAB8: ???
+==82619== 
+==82619== Conditional jump or move depends on uninitialised value(s)
+==82619==    at 0x100139A4E: drbg_update (in /usr/lib/system/libcorecrypto.dylib)
+==82619==    by 0x10013804C: nistctr_init (in /usr/lib/system/libcorecrypto.dylib)
+==82619==    by 0x100137E2B: init (in /usr/lib/system/libcorecrypto.dylib)
+==82619==    by 0x100302CFE: arc4_init (in /usr/lib/system/libsystem_c.dylib)
+==82619==    by 0x100302E1C: arc4random_buf (in /usr/lib/system/libsystem_c.dylib)
+==82619==    by 0x1005E9A24: _read_images (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x1005E8A4F: _hasObjcContents (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x1005FB55F: __objc_personality_v0 (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x10000C47A: dyld::notifyBatchPartial(dyld_image_states, bool, char const* (*)(dyld_image_states, unsigned int, dyld_image_info const*), bool, bool) (in /usr/lib/dyld)
+==82619==    by 0x10000C62D: dyld::registerObjCNotifiers(void (*)(unsigned int, char const* const*, mach_header const* const*), void (*)(char const*, mach_header const*), void (*)(char const*, mach_header const*)) (in /usr/lib/dyld)
+==82619==    by 0x100243A26: _dyld_objc_notify_register (in /usr/lib/system/libdyld.dylib)
+==82619==    by 0x1005E8233: environ_init (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x1001DAE35: _os_object_init (in /usr/lib/system/libdispatch.dylib)
+==82619==    by 0x1001E6AD1: libdispatch_init (in /usr/lib/system/libdispatch.dylib)
+==82619==    by 0x1000EA9C4: libSystem_initializer (in /usr/lib/libSystem.B.dylib)
+==82619==    by 0x10001F591: ImageLoaderMachO::doModInitFunctions(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001F797: ImageLoaderMachO::doInitialization(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001ABE9: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x10001AB7F: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019D72: ImageLoader::processInitializers(ImageLoader::LinkContext const&, unsigned int, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019E04: ImageLoader::runInitializers(ImageLoader::LinkContext const&, ImageLoader::InitializerTimingList&) (in /usr/lib/dyld)
+==82619==    by 0x10000971E: dyld::initializeMainExecutable() (in /usr/lib/dyld)
+==82619==    by 0x10000E708: dyld::_main(macho_header const*, unsigned long, int, char const**, char const**, char const**, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008502: dyldbootstrap::start(macho_header const*, int, char const**, long, macho_header const*, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008035: _dyld_start (in /usr/lib/dyld)
+==82619==    by 0xD: ???
+==82619==    by 0x7FFEEFBFF9BE: ???
+==82619==    by 0x7FFEEFBFF9FD: ???
+==82619==    by 0x7FFEEFBFFA15: ???
+==82619==    by 0x7FFEEFBFFA2E: ???
+==82619==    by 0x7FFEEFBFFA4A: ???
+==82619==    by 0x7FFEEFBFFA5C: ???
+==82619==    by 0x7FFEEFBFFA6C: ???
+==82619==    by 0x7FFEEFBFFA77: ???
+==82619==    by 0x7FFEEFBFFA9E: ???
+==82619==    by 0x7FFEEFBFFAA9: ???
+==82619==    by 0x7FFEEFBFFAAB: ???
+==82619==    by 0x7FFEEFBFFAAD: ???
+==82619==    by 0x7FFEEFBFFAB8: ???
+==82619==    by 0x7FFEEFBFFAC1: ???
+==82619== 
+==82619== Conditional jump or move depends on uninitialised value(s)
+==82619==    at 0x100138726: ccaes_vng_ctr_crypt (in /usr/lib/system/libcorecrypto.dylib)
+==82619==    by 0x100139C6E: generate (in /usr/lib/system/libcorecrypto.dylib)
+==82619==    by 0x100302E87: arc4random_buf (in /usr/lib/system/libsystem_c.dylib)
+==82619==    by 0x1005E9A24: _read_images (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x1005E8A4F: _hasObjcContents (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x1005FB55F: __objc_personality_v0 (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x10000C47A: dyld::notifyBatchPartial(dyld_image_states, bool, char const* (*)(dyld_image_states, unsigned int, dyld_image_info const*), bool, bool) (in /usr/lib/dyld)
+==82619==    by 0x10000C62D: dyld::registerObjCNotifiers(void (*)(unsigned int, char const* const*, mach_header const* const*), void (*)(char const*, mach_header const*), void (*)(char const*, mach_header const*)) (in /usr/lib/dyld)
+==82619==    by 0x100243A26: _dyld_objc_notify_register (in /usr/lib/system/libdyld.dylib)
+==82619==    by 0x1005E8233: environ_init (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x1001DAE35: _os_object_init (in /usr/lib/system/libdispatch.dylib)
+==82619==    by 0x1001E6AD1: libdispatch_init (in /usr/lib/system/libdispatch.dylib)
+==82619==    by 0x1000EA9C4: libSystem_initializer (in /usr/lib/libSystem.B.dylib)
+==82619==    by 0x10001F591: ImageLoaderMachO::doModInitFunctions(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001F797: ImageLoaderMachO::doInitialization(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001ABE9: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x10001AB7F: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019D72: ImageLoader::processInitializers(ImageLoader::LinkContext const&, unsigned int, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019E04: ImageLoader::runInitializers(ImageLoader::LinkContext const&, ImageLoader::InitializerTimingList&) (in /usr/lib/dyld)
+==82619==    by 0x10000971E: dyld::initializeMainExecutable() (in /usr/lib/dyld)
+==82619==    by 0x10000E708: dyld::_main(macho_header const*, unsigned long, int, char const**, char const**, char const**, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008502: dyldbootstrap::start(macho_header const*, int, char const**, long, macho_header const*, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008035: _dyld_start (in /usr/lib/dyld)
+==82619==    by 0xD: ???
+==82619==    by 0x7FFEEFBFF9BE: ???
+==82619==    by 0x7FFEEFBFF9FD: ???
+==82619==    by 0x7FFEEFBFFA15: ???
+==82619==    by 0x7FFEEFBFFA2E: ???
+==82619==    by 0x7FFEEFBFFA4A: ???
+==82619==    by 0x7FFEEFBFFA5C: ???
+==82619==    by 0x7FFEEFBFFA6C: ???
+==82619==    by 0x7FFEEFBFFA77: ???
+==82619==    by 0x7FFEEFBFFA9E: ???
+==82619==    by 0x7FFEEFBFFAA9: ???
+==82619==    by 0x7FFEEFBFFAAB: ???
+==82619==    by 0x7FFEEFBFFAAD: ???
+==82619==    by 0x7FFEEFBFFAB8: ???
+==82619==    by 0x7FFEEFBFFAC1: ???
+==82619== 
+==82619== Conditional jump or move depends on uninitialised value(s)
+==82619==    at 0x100138726: ccaes_vng_ctr_crypt (in /usr/lib/system/libcorecrypto.dylib)
+==82619==    by 0x1001399D1: drbg_update (in /usr/lib/system/libcorecrypto.dylib)
+==82619==    by 0x100139CB9: generate (in /usr/lib/system/libcorecrypto.dylib)
+==82619==    by 0x100302E87: arc4random_buf (in /usr/lib/system/libsystem_c.dylib)
+==82619==    by 0x1005E9A24: _read_images (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x1005E8A4F: _hasObjcContents (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x1005FB55F: __objc_personality_v0 (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x10000C47A: dyld::notifyBatchPartial(dyld_image_states, bool, char const* (*)(dyld_image_states, unsigned int, dyld_image_info const*), bool, bool) (in /usr/lib/dyld)
+==82619==    by 0x10000C62D: dyld::registerObjCNotifiers(void (*)(unsigned int, char const* const*, mach_header const* const*), void (*)(char const*, mach_header const*), void (*)(char const*, mach_header const*)) (in /usr/lib/dyld)
+==82619==    by 0x100243A26: _dyld_objc_notify_register (in /usr/lib/system/libdyld.dylib)
+==82619==    by 0x1005E8233: environ_init (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x1001DAE35: _os_object_init (in /usr/lib/system/libdispatch.dylib)
+==82619==    by 0x1001E6AD1: libdispatch_init (in /usr/lib/system/libdispatch.dylib)
+==82619==    by 0x1000EA9C4: libSystem_initializer (in /usr/lib/libSystem.B.dylib)
+==82619==    by 0x10001F591: ImageLoaderMachO::doModInitFunctions(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001F797: ImageLoaderMachO::doInitialization(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001ABE9: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x10001AB7F: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019D72: ImageLoader::processInitializers(ImageLoader::LinkContext const&, unsigned int, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019E04: ImageLoader::runInitializers(ImageLoader::LinkContext const&, ImageLoader::InitializerTimingList&) (in /usr/lib/dyld)
+==82619==    by 0x10000971E: dyld::initializeMainExecutable() (in /usr/lib/dyld)
+==82619==    by 0x10000E708: dyld::_main(macho_header const*, unsigned long, int, char const**, char const**, char const**, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008502: dyldbootstrap::start(macho_header const*, int, char const**, long, macho_header const*, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008035: _dyld_start (in /usr/lib/dyld)
+==82619==    by 0xD: ???
+==82619==    by 0x7FFEEFBFF9BE: ???
+==82619==    by 0x7FFEEFBFF9FD: ???
+==82619==    by 0x7FFEEFBFFA15: ???
+==82619==    by 0x7FFEEFBFFA2E: ???
+==82619==    by 0x7FFEEFBFFA4A: ???
+==82619==    by 0x7FFEEFBFFA5C: ???
+==82619==    by 0x7FFEEFBFFA6C: ???
+==82619==    by 0x7FFEEFBFFA77: ???
+==82619==    by 0x7FFEEFBFFA9E: ???
+==82619==    by 0x7FFEEFBFFAA9: ???
+==82619==    by 0x7FFEEFBFFAAB: ???
+==82619==    by 0x7FFEEFBFFAAD: ???
+==82619==    by 0x7FFEEFBFFAB8: ???
+==82619==    by 0x7FFEEFBFFAC1: ???
+==82619== 
+==82619== Conditional jump or move depends on uninitialised value(s)
+==82619==    at 0x1001399EE: drbg_update (in /usr/lib/system/libcorecrypto.dylib)
+==82619==    by 0x100139CB9: generate (in /usr/lib/system/libcorecrypto.dylib)
+==82619==    by 0x100302E87: arc4random_buf (in /usr/lib/system/libsystem_c.dylib)
+==82619==    by 0x1005E9A24: _read_images (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x1005E8A4F: _hasObjcContents (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x1005FB55F: __objc_personality_v0 (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x10000C47A: dyld::notifyBatchPartial(dyld_image_states, bool, char const* (*)(dyld_image_states, unsigned int, dyld_image_info const*), bool, bool) (in /usr/lib/dyld)
+==82619==    by 0x10000C62D: dyld::registerObjCNotifiers(void (*)(unsigned int, char const* const*, mach_header const* const*), void (*)(char const*, mach_header const*), void (*)(char const*, mach_header const*)) (in /usr/lib/dyld)
+==82619==    by 0x100243A26: _dyld_objc_notify_register (in /usr/lib/system/libdyld.dylib)
+==82619==    by 0x1005E8233: environ_init (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x1001DAE35: _os_object_init (in /usr/lib/system/libdispatch.dylib)
+==82619==    by 0x1001E6AD1: libdispatch_init (in /usr/lib/system/libdispatch.dylib)
+==82619==    by 0x1000EA9C4: libSystem_initializer (in /usr/lib/libSystem.B.dylib)
+==82619==    by 0x10001F591: ImageLoaderMachO::doModInitFunctions(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001F797: ImageLoaderMachO::doInitialization(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001ABE9: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x10001AB7F: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019D72: ImageLoader::processInitializers(ImageLoader::LinkContext const&, unsigned int, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019E04: ImageLoader::runInitializers(ImageLoader::LinkContext const&, ImageLoader::InitializerTimingList&) (in /usr/lib/dyld)
+==82619==    by 0x10000971E: dyld::initializeMainExecutable() (in /usr/lib/dyld)
+==82619==    by 0x10000E708: dyld::_main(macho_header const*, unsigned long, int, char const**, char const**, char const**, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008502: dyldbootstrap::start(macho_header const*, int, char const**, long, macho_header const*, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008035: _dyld_start (in /usr/lib/dyld)
+==82619==    by 0xD: ???
+==82619==    by 0x7FFEEFBFF9BE: ???
+==82619==    by 0x7FFEEFBFF9FD: ???
+==82619==    by 0x7FFEEFBFFA15: ???
+==82619==    by 0x7FFEEFBFFA2E: ???
+==82619==    by 0x7FFEEFBFFA4A: ???
+==82619==    by 0x7FFEEFBFFA5C: ???
+==82619==    by 0x7FFEEFBFFA6C: ???
+==82619==    by 0x7FFEEFBFFA77: ???
+==82619==    by 0x7FFEEFBFFA9E: ???
+==82619==    by 0x7FFEEFBFFAA9: ???
+==82619==    by 0x7FFEEFBFFAAB: ???
+==82619==    by 0x7FFEEFBFFAAD: ???
+==82619==    by 0x7FFEEFBFFAB8: ???
+==82619==    by 0x7FFEEFBFFAC1: ???
+==82619== 
+==82619== Conditional jump or move depends on uninitialised value(s)
+==82619==    at 0x100139A4E: drbg_update (in /usr/lib/system/libcorecrypto.dylib)
+==82619==    by 0x100139CB9: generate (in /usr/lib/system/libcorecrypto.dylib)
+==82619==    by 0x100302E87: arc4random_buf (in /usr/lib/system/libsystem_c.dylib)
+==82619==    by 0x1005E9A24: _read_images (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x1005E8A4F: _hasObjcContents (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x1005FB55F: __objc_personality_v0 (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x10000C47A: dyld::notifyBatchPartial(dyld_image_states, bool, char const* (*)(dyld_image_states, unsigned int, dyld_image_info const*), bool, bool) (in /usr/lib/dyld)
+==82619==    by 0x10000C62D: dyld::registerObjCNotifiers(void (*)(unsigned int, char const* const*, mach_header const* const*), void (*)(char const*, mach_header const*), void (*)(char const*, mach_header const*)) (in /usr/lib/dyld)
+==82619==    by 0x100243A26: _dyld_objc_notify_register (in /usr/lib/system/libdyld.dylib)
+==82619==    by 0x1005E8233: environ_init (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x1001DAE35: _os_object_init (in /usr/lib/system/libdispatch.dylib)
+==82619==    by 0x1001E6AD1: libdispatch_init (in /usr/lib/system/libdispatch.dylib)
+==82619==    by 0x1000EA9C4: libSystem_initializer (in /usr/lib/libSystem.B.dylib)
+==82619==    by 0x10001F591: ImageLoaderMachO::doModInitFunctions(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001F797: ImageLoaderMachO::doInitialization(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001ABE9: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x10001AB7F: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019D72: ImageLoader::processInitializers(ImageLoader::LinkContext const&, unsigned int, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019E04: ImageLoader::runInitializers(ImageLoader::LinkContext const&, ImageLoader::InitializerTimingList&) (in /usr/lib/dyld)
+==82619==    by 0x10000971E: dyld::initializeMainExecutable() (in /usr/lib/dyld)
+==82619==    by 0x10000E708: dyld::_main(macho_header const*, unsigned long, int, char const**, char const**, char const**, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008502: dyldbootstrap::start(macho_header const*, int, char const**, long, macho_header const*, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008035: _dyld_start (in /usr/lib/dyld)
+==82619==    by 0xD: ???
+==82619==    by 0x7FFEEFBFF9BE: ???
+==82619==    by 0x7FFEEFBFF9FD: ???
+==82619==    by 0x7FFEEFBFFA15: ???
+==82619==    by 0x7FFEEFBFFA2E: ???
+==82619==    by 0x7FFEEFBFFA4A: ???
+==82619==    by 0x7FFEEFBFFA5C: ???
+==82619==    by 0x7FFEEFBFFA6C: ???
+==82619==    by 0x7FFEEFBFFA77: ???
+==82619==    by 0x7FFEEFBFFA9E: ???
+==82619==    by 0x7FFEEFBFFAA9: ???
+==82619==    by 0x7FFEEFBFFAAB: ???
+==82619==    by 0x7FFEEFBFFAAD: ???
+==82619==    by 0x7FFEEFBFFAB8: ???
+==82619==    by 0x7FFEEFBFFAC1: ???
+==82619== 
+==82619== Conditional jump or move depends on uninitialised value(s)
+==82619==    at 0x1005F0A27: _objc_rootAlloc (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x100595CA4: _libxpc_initializer (in /usr/lib/system/libxpc.dylib)
+==82619==    by 0x1000EA9C9: libSystem_initializer (in /usr/lib/libSystem.B.dylib)
+==82619==    by 0x10001F591: ImageLoaderMachO::doModInitFunctions(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001F797: ImageLoaderMachO::doInitialization(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001ABE9: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x10001AB7F: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019D72: ImageLoader::processInitializers(ImageLoader::LinkContext const&, unsigned int, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019E04: ImageLoader::runInitializers(ImageLoader::LinkContext const&, ImageLoader::InitializerTimingList&) (in /usr/lib/dyld)
+==82619==    by 0x10000971E: dyld::initializeMainExecutable() (in /usr/lib/dyld)
+==82619==    by 0x10000E708: dyld::_main(macho_header const*, unsigned long, int, char const**, char const**, char const**, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008502: dyldbootstrap::start(macho_header const*, int, char const**, long, macho_header const*, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008035: _dyld_start (in /usr/lib/dyld)
+==82619==    by 0xD: ???
+==82619==    by 0x7FFEEFBFF9BE: ???
+==82619==    by 0x7FFEEFBFF9FD: ???
+==82619==    by 0x7FFEEFBFFA15: ???
+==82619==    by 0x7FFEEFBFFA2E: ???
+==82619==    by 0x7FFEEFBFFA4A: ???
+==82619==    by 0x7FFEEFBFFA5C: ???
+==82619==    by 0x7FFEEFBFFA6C: ???
+==82619==    by 0x7FFEEFBFFA77: ???
+==82619==    by 0x7FFEEFBFFA9E: ???
+==82619==    by 0x7FFEEFBFFAA9: ???
+==82619==    by 0x7FFEEFBFFAAB: ???
+==82619==    by 0x7FFEEFBFFAAD: ???
+==82619==    by 0x7FFEEFBFFAB8: ???
+==82619==    by 0x7FFEEFBFFAC1: ???
+==82619== 
+==82619== Use of uninitialised value of size 8
+==82619==    at 0x1005F0A29: _objc_rootAlloc (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x100595CA4: _libxpc_initializer (in /usr/lib/system/libxpc.dylib)
+==82619==    by 0x1000EA9C9: libSystem_initializer (in /usr/lib/libSystem.B.dylib)
+==82619==    by 0x10001F591: ImageLoaderMachO::doModInitFunctions(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001F797: ImageLoaderMachO::doInitialization(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001ABE9: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x10001AB7F: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019D72: ImageLoader::processInitializers(ImageLoader::LinkContext const&, unsigned int, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019E04: ImageLoader::runInitializers(ImageLoader::LinkContext const&, ImageLoader::InitializerTimingList&) (in /usr/lib/dyld)
+==82619==    by 0x10000971E: dyld::initializeMainExecutable() (in /usr/lib/dyld)
+==82619==    by 0x10000E708: dyld::_main(macho_header const*, unsigned long, int, char const**, char const**, char const**, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008502: dyldbootstrap::start(macho_header const*, int, char const**, long, macho_header const*, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008035: _dyld_start (in /usr/lib/dyld)
+==82619==    by 0xD: ???
+==82619==    by 0x7FFEEFBFF9BE: ???
+==82619==    by 0x7FFEEFBFF9FD: ???
+==82619==    by 0x7FFEEFBFFA15: ???
+==82619==    by 0x7FFEEFBFFA2E: ???
+==82619==    by 0x7FFEEFBFFA4A: ???
+==82619==    by 0x7FFEEFBFFA5C: ???
+==82619==    by 0x7FFEEFBFFA6C: ???
+==82619==    by 0x7FFEEFBFFA77: ???
+==82619==    by 0x7FFEEFBFFA9E: ???
+==82619==    by 0x7FFEEFBFFAA9: ???
+==82619==    by 0x7FFEEFBFFAAB: ???
+==82619==    by 0x7FFEEFBFFAAD: ???
+==82619==    by 0x7FFEEFBFFAB8: ???
+==82619==    by 0x7FFEEFBFFAC1: ???
+==82619== 
+==82619== Use of uninitialised value of size 8
+==82619==    at 0x1005F0A3B: objc_memmove_collectable (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x100595CA4: _libxpc_initializer (in /usr/lib/system/libxpc.dylib)
+==82619==    by 0x1000EA9C9: libSystem_initializer (in /usr/lib/libSystem.B.dylib)
+==82619==    by 0x10001F591: ImageLoaderMachO::doModInitFunctions(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001F797: ImageLoaderMachO::doInitialization(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001ABE9: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x10001AB7F: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019D72: ImageLoader::processInitializers(ImageLoader::LinkContext const&, unsigned int, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019E04: ImageLoader::runInitializers(ImageLoader::LinkContext const&, ImageLoader::InitializerTimingList&) (in /usr/lib/dyld)
+==82619==    by 0x10000971E: dyld::initializeMainExecutable() (in /usr/lib/dyld)
+==82619==    by 0x10000E708: dyld::_main(macho_header const*, unsigned long, int, char const**, char const**, char const**, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008502: dyldbootstrap::start(macho_header const*, int, char const**, long, macho_header const*, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008035: _dyld_start (in /usr/lib/dyld)
+==82619==    by 0xD: ???
+==82619==    by 0x7FFEEFBFF9BE: ???
+==82619==    by 0x7FFEEFBFF9FD: ???
+==82619==    by 0x7FFEEFBFFA15: ???
+==82619==    by 0x7FFEEFBFFA2E: ???
+==82619==    by 0x7FFEEFBFFA4A: ???
+==82619==    by 0x7FFEEFBFFA5C: ???
+==82619==    by 0x7FFEEFBFFA6C: ???
+==82619==    by 0x7FFEEFBFFA77: ???
+==82619==    by 0x7FFEEFBFFA9E: ???
+==82619==    by 0x7FFEEFBFFAA9: ???
+==82619==    by 0x7FFEEFBFFAAB: ???
+==82619==    by 0x7FFEEFBFFAAD: ???
+==82619==    by 0x7FFEEFBFFAB8: ???
+==82619==    by 0x7FFEEFBFFAC1: ???
+==82619== 
+==82619== Use of uninitialised value of size 8
+==82619==    at 0x1005F0A59: objc_initializeClassPair (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x100595CA4: _libxpc_initializer (in /usr/lib/system/libxpc.dylib)
+==82619==    by 0x1000EA9C9: libSystem_initializer (in /usr/lib/libSystem.B.dylib)
+==82619==    by 0x10001F591: ImageLoaderMachO::doModInitFunctions(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001F797: ImageLoaderMachO::doInitialization(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001ABE9: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x10001AB7F: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019D72: ImageLoader::processInitializers(ImageLoader::LinkContext const&, unsigned int, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019E04: ImageLoader::runInitializers(ImageLoader::LinkContext const&, ImageLoader::InitializerTimingList&) (in /usr/lib/dyld)
+==82619==    by 0x10000971E: dyld::initializeMainExecutable() (in /usr/lib/dyld)
+==82619==    by 0x10000E708: dyld::_main(macho_header const*, unsigned long, int, char const**, char const**, char const**, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008502: dyldbootstrap::start(macho_header const*, int, char const**, long, macho_header const*, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008035: _dyld_start (in /usr/lib/dyld)
+==82619==    by 0xD: ???
+==82619==    by 0x7FFEEFBFF9BE: ???
+==82619==    by 0x7FFEEFBFF9FD: ???
+==82619==    by 0x7FFEEFBFFA15: ???
+==82619==    by 0x7FFEEFBFFA2E: ???
+==82619==    by 0x7FFEEFBFFA4A: ???
+==82619==    by 0x7FFEEFBFFA5C: ???
+==82619==    by 0x7FFEEFBFFA6C: ???
+==82619==    by 0x7FFEEFBFFA77: ???
+==82619==    by 0x7FFEEFBFFA9E: ???
+==82619==    by 0x7FFEEFBFFAA9: ???
+==82619==    by 0x7FFEEFBFFAAB: ???
+==82619==    by 0x7FFEEFBFFAAD: ???
+==82619==    by 0x7FFEEFBFFAB8: ???
+==82619==    by 0x7FFEEFBFFAC1: ???
+==82619== 
+==82619== Use of uninitialised value of size 8
+==82619==    at 0x1005F0A67: objc_initializeClassPair (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x100595CA4: _libxpc_initializer (in /usr/lib/system/libxpc.dylib)
+==82619==    by 0x1000EA9C9: libSystem_initializer (in /usr/lib/libSystem.B.dylib)
+==82619==    by 0x10001F591: ImageLoaderMachO::doModInitFunctions(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001F797: ImageLoaderMachO::doInitialization(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001ABE9: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x10001AB7F: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019D72: ImageLoader::processInitializers(ImageLoader::LinkContext const&, unsigned int, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019E04: ImageLoader::runInitializers(ImageLoader::LinkContext const&, ImageLoader::InitializerTimingList&) (in /usr/lib/dyld)
+==82619==    by 0x10000971E: dyld::initializeMainExecutable() (in /usr/lib/dyld)
+==82619==    by 0x10000E708: dyld::_main(macho_header const*, unsigned long, int, char const**, char const**, char const**, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008502: dyldbootstrap::start(macho_header const*, int, char const**, long, macho_header const*, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008035: _dyld_start (in /usr/lib/dyld)
+==82619==    by 0xD: ???
+==82619==    by 0x7FFEEFBFF9BE: ???
+==82619==    by 0x7FFEEFBFF9FD: ???
+==82619==    by 0x7FFEEFBFFA15: ???
+==82619==    by 0x7FFEEFBFFA2E: ???
+==82619==    by 0x7FFEEFBFFA4A: ???
+==82619==    by 0x7FFEEFBFFA5C: ???
+==82619==    by 0x7FFEEFBFFA6C: ???
+==82619==    by 0x7FFEEFBFFA77: ???
+==82619==    by 0x7FFEEFBFFA9E: ???
+==82619==    by 0x7FFEEFBFFAA9: ???
+==82619==    by 0x7FFEEFBFFAAB: ???
+==82619==    by 0x7FFEEFBFFAAD: ???
+==82619==    by 0x7FFEEFBFFAB8: ???
+==82619==    by 0x7FFEEFBFFAC1: ???
+==82619== 
+==82619== Conditional jump or move depends on uninitialised value(s)
+==82619==    at 0x1005F0A27: _objc_rootAlloc (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x100595CBD: _libxpc_initializer (in /usr/lib/system/libxpc.dylib)
+==82619==    by 0x1000EA9C9: libSystem_initializer (in /usr/lib/libSystem.B.dylib)
+==82619==    by 0x10001F591: ImageLoaderMachO::doModInitFunctions(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001F797: ImageLoaderMachO::doInitialization(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001ABE9: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x10001AB7F: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019D72: ImageLoader::processInitializers(ImageLoader::LinkContext const&, unsigned int, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019E04: ImageLoader::runInitializers(ImageLoader::LinkContext const&, ImageLoader::InitializerTimingList&) (in /usr/lib/dyld)
+==82619==    by 0x10000971E: dyld::initializeMainExecutable() (in /usr/lib/dyld)
+==82619==    by 0x10000E708: dyld::_main(macho_header const*, unsigned long, int, char const**, char const**, char const**, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008502: dyldbootstrap::start(macho_header const*, int, char const**, long, macho_header const*, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008035: _dyld_start (in /usr/lib/dyld)
+==82619==    by 0xD: ???
+==82619==    by 0x7FFEEFBFF9BE: ???
+==82619==    by 0x7FFEEFBFF9FD: ???
+==82619==    by 0x7FFEEFBFFA15: ???
+==82619==    by 0x7FFEEFBFFA2E: ???
+==82619==    by 0x7FFEEFBFFA4A: ???
+==82619==    by 0x7FFEEFBFFA5C: ???
+==82619==    by 0x7FFEEFBFFA6C: ???
+==82619==    by 0x7FFEEFBFFA77: ???
+==82619==    by 0x7FFEEFBFFA9E: ???
+==82619==    by 0x7FFEEFBFFAA9: ???
+==82619==    by 0x7FFEEFBFFAAB: ???
+==82619==    by 0x7FFEEFBFFAAD: ???
+==82619==    by 0x7FFEEFBFFAB8: ???
+==82619==    by 0x7FFEEFBFFAC1: ???
+==82619== 
+==82619== Use of uninitialised value of size 8
+==82619==    at 0x1005F0A29: _objc_rootAlloc (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x100595CBD: _libxpc_initializer (in /usr/lib/system/libxpc.dylib)
+==82619==    by 0x1000EA9C9: libSystem_initializer (in /usr/lib/libSystem.B.dylib)
+==82619==    by 0x10001F591: ImageLoaderMachO::doModInitFunctions(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001F797: ImageLoaderMachO::doInitialization(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001ABE9: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x10001AB7F: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019D72: ImageLoader::processInitializers(ImageLoader::LinkContext const&, unsigned int, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019E04: ImageLoader::runInitializers(ImageLoader::LinkContext const&, ImageLoader::InitializerTimingList&) (in /usr/lib/dyld)
+==82619==    by 0x10000971E: dyld::initializeMainExecutable() (in /usr/lib/dyld)
+==82619==    by 0x10000E708: dyld::_main(macho_header const*, unsigned long, int, char const**, char const**, char const**, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008502: dyldbootstrap::start(macho_header const*, int, char const**, long, macho_header const*, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008035: _dyld_start (in /usr/lib/dyld)
+==82619==    by 0xD: ???
+==82619==    by 0x7FFEEFBFF9BE: ???
+==82619==    by 0x7FFEEFBFF9FD: ???
+==82619==    by 0x7FFEEFBFFA15: ???
+==82619==    by 0x7FFEEFBFFA2E: ???
+==82619==    by 0x7FFEEFBFFA4A: ???
+==82619==    by 0x7FFEEFBFFA5C: ???
+==82619==    by 0x7FFEEFBFFA6C: ???
+==82619==    by 0x7FFEEFBFFA77: ???
+==82619==    by 0x7FFEEFBFFA9E: ???
+==82619==    by 0x7FFEEFBFFAA9: ???
+==82619==    by 0x7FFEEFBFFAAB: ???
+==82619==    by 0x7FFEEFBFFAAD: ???
+==82619==    by 0x7FFEEFBFFAB8: ???
+==82619==    by 0x7FFEEFBFFAC1: ???
+==82619== 
+==82619== Use of uninitialised value of size 8
+==82619==    at 0x1005F0A3B: objc_memmove_collectable (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x100595CBD: _libxpc_initializer (in /usr/lib/system/libxpc.dylib)
+==82619==    by 0x1000EA9C9: libSystem_initializer (in /usr/lib/libSystem.B.dylib)
+==82619==    by 0x10001F591: ImageLoaderMachO::doModInitFunctions(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001F797: ImageLoaderMachO::doInitialization(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001ABE9: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x10001AB7F: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019D72: ImageLoader::processInitializers(ImageLoader::LinkContext const&, unsigned int, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019E04: ImageLoader::runInitializers(ImageLoader::LinkContext const&, ImageLoader::InitializerTimingList&) (in /usr/lib/dyld)
+==82619==    by 0x10000971E: dyld::initializeMainExecutable() (in /usr/lib/dyld)
+==82619==    by 0x10000E708: dyld::_main(macho_header const*, unsigned long, int, char const**, char const**, char const**, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008502: dyldbootstrap::start(macho_header const*, int, char const**, long, macho_header const*, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008035: _dyld_start (in /usr/lib/dyld)
+==82619==    by 0xD: ???
+==82619==    by 0x7FFEEFBFF9BE: ???
+==82619==    by 0x7FFEEFBFF9FD: ???
+==82619==    by 0x7FFEEFBFFA15: ???
+==82619==    by 0x7FFEEFBFFA2E: ???
+==82619==    by 0x7FFEEFBFFA4A: ???
+==82619==    by 0x7FFEEFBFFA5C: ???
+==82619==    by 0x7FFEEFBFFA6C: ???
+==82619==    by 0x7FFEEFBFFA77: ???
+==82619==    by 0x7FFEEFBFFA9E: ???
+==82619==    by 0x7FFEEFBFFAA9: ???
+==82619==    by 0x7FFEEFBFFAAB: ???
+==82619==    by 0x7FFEEFBFFAAD: ???
+==82619==    by 0x7FFEEFBFFAB8: ???
+==82619==    by 0x7FFEEFBFFAC1: ???
+==82619== 
+==82619== Use of uninitialised value of size 8
+==82619==    at 0x1005F0A59: objc_initializeClassPair (in /usr/lib/libobjc.A.dylib)
+==82619==    by 0x100595CBD: _libxpc_initializer (in /usr/lib/system/libxpc.dylib)
+==82619==    by 0x1000EA9C9: libSystem_initializer (in /usr/lib/libSystem.B.dylib)
+==82619==    by 0x10001F591: ImageLoaderMachO::doModInitFunctions(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001F797: ImageLoaderMachO::doInitialization(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001ABE9: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x10001AB7F: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019D72: ImageLoader::processInitializers(ImageLoader::LinkContext const&, unsigned int, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019E04: ImageLoader::runInitializers(ImageLoader::LinkContext const&, ImageLoader::InitializerTimingList&) (in /usr/lib/dyld)
+==82619==    by 0x10000971E: dyld::initializeMainExecutable() (in /usr/lib/dyld)
+==82619==    by 0x10000E708: dyld::_main(macho_header const*, unsigned long, int, char const**, char const**, char const**, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008502: dyldbootstrap::start(macho_header const*, int, char const**, long, macho_header const*, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008035: _dyld_start (in /usr/lib/dyld)
+==82619==    by 0xD: ???
+==82619==    by 0x7FFEEFBFF9BE: ???
+==82619==    by 0x7FFEEFBFF9FD: ???
+==82619==    by 0x7FFEEFBFFA15: ???
+==82619==    by 0x7FFEEFBFFA2E: ???
+==82619==    by 0x7FFEEFBFFA4A: ???
+==82619==    by 0x7FFEEFBFFA5C: ???
+==82619==    by 0x7FFEEFBFFA6C: ???
+==82619==    by 0x7FFEEFBFFA77: ???
+==82619==    by 0x7FFEEFBFFA9E: ???
+==82619==    by 0x7FFEEFBFFAA9: ???
+==82619==    by 0x7FFEEFBFFAAB: ???
+==82619==    by 0x7FFEEFBFFAAD: ???
+==82619==    by 0x7FFEEFBFFAB8: ???
+==82619==    by 0x7FFEEFBFFAC1: ???
+==82619== 
+==82619== Conditional jump or move depends on uninitialised value(s)
+==82619==    at 0x100596C1F: xpc_uint64_create (in /usr/lib/system/libxpc.dylib)
+==82619==    by 0x100596BAD: _xpc_collect_images (in /usr/lib/system/libxpc.dylib)
+==82619==    by 0x10059601E: _libxpc_initializer (in /usr/lib/system/libxpc.dylib)
+==82619==    by 0x1000EA9C9: libSystem_initializer (in /usr/lib/libSystem.B.dylib)
+==82619==    by 0x10001F591: ImageLoaderMachO::doModInitFunctions(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001F797: ImageLoaderMachO::doInitialization(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001ABE9: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x10001AB7F: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019D72: ImageLoader::processInitializers(ImageLoader::LinkContext const&, unsigned int, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019E04: ImageLoader::runInitializers(ImageLoader::LinkContext const&, ImageLoader::InitializerTimingList&) (in /usr/lib/dyld)
+==82619==    by 0x10000971E: dyld::initializeMainExecutable() (in /usr/lib/dyld)
+==82619==    by 0x10000E708: dyld::_main(macho_header const*, unsigned long, int, char const**, char const**, char const**, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008502: dyldbootstrap::start(macho_header const*, int, char const**, long, macho_header const*, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008035: _dyld_start (in /usr/lib/dyld)
+==82619==    by 0xD: ???
+==82619==    by 0x7FFEEFBFF9BE: ???
+==82619==    by 0x7FFEEFBFF9FD: ???
+==82619==    by 0x7FFEEFBFFA15: ???
+==82619==    by 0x7FFEEFBFFA2E: ???
+==82619==    by 0x7FFEEFBFFA4A: ???
+==82619==    by 0x7FFEEFBFFA5C: ???
+==82619==    by 0x7FFEEFBFFA6C: ???
+==82619==    by 0x7FFEEFBFFA77: ???
+==82619==    by 0x7FFEEFBFFA9E: ???
+==82619==    by 0x7FFEEFBFFAA9: ???
+==82619==    by 0x7FFEEFBFFAAB: ???
+==82619==    by 0x7FFEEFBFFAAD: ???
+==82619==    by 0x7FFEEFBFFAB8: ???
+==82619==    by 0x7FFEEFBFFAC1: ???
+==82619== 
+==82619== Conditional jump or move depends on uninitialised value(s)
+==82619==    at 0x10059697A: _xpc_dictionary_insert (in /usr/lib/system/libxpc.dylib)
+==82619==    by 0x100596D05: _xpc_dyld_image_callback (in /usr/lib/system/libxpc.dylib)
+==82619==    by 0x10000B873: dyld::registerLoadCallback(void (*)(mach_header const*, char const*, bool)) (in /usr/lib/dyld)
+==82619==    by 0x100596BBD: _xpc_collect_images (in /usr/lib/system/libxpc.dylib)
+==82619==    by 0x10059601E: _libxpc_initializer (in /usr/lib/system/libxpc.dylib)
+==82619==    by 0x1000EA9C9: libSystem_initializer (in /usr/lib/libSystem.B.dylib)
+==82619==    by 0x10001F591: ImageLoaderMachO::doModInitFunctions(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001F797: ImageLoaderMachO::doInitialization(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001ABE9: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x10001AB7F: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019D72: ImageLoader::processInitializers(ImageLoader::LinkContext const&, unsigned int, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019E04: ImageLoader::runInitializers(ImageLoader::LinkContext const&, ImageLoader::InitializerTimingList&) (in /usr/lib/dyld)
+==82619==    by 0x10000971E: dyld::initializeMainExecutable() (in /usr/lib/dyld)
+==82619==    by 0x10000E708: dyld::_main(macho_header const*, unsigned long, int, char const**, char const**, char const**, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008502: dyldbootstrap::start(macho_header const*, int, char const**, long, macho_header const*, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008035: _dyld_start (in /usr/lib/dyld)
+==82619==    by 0xD: ???
+==82619==    by 0x7FFEEFBFF9BE: ???
+==82619==    by 0x7FFEEFBFF9FD: ???
+==82619==    by 0x7FFEEFBFFA15: ???
+==82619==    by 0x7FFEEFBFFA2E: ???
+==82619==    by 0x7FFEEFBFFA4A: ???
+==82619==    by 0x7FFEEFBFFA5C: ???
+==82619==    by 0x7FFEEFBFFA6C: ???
+==82619==    by 0x7FFEEFBFFA77: ???
+==82619==    by 0x7FFEEFBFFA9E: ???
+==82619==    by 0x7FFEEFBFFAA9: ???
+==82619==    by 0x7FFEEFBFFAAB: ???
+==82619==    by 0x7FFEEFBFFAAD: ???
+==82619==    by 0x7FFEEFBFFAB8: ???
+==82619==    by 0x7FFEEFBFFAC1: ???
+==82619== 
+==82619== Conditional jump or move depends on uninitialised value(s)
+==82619==    at 0x1005969E4: _xpc_dictionary_insert (in /usr/lib/system/libxpc.dylib)
+==82619==    by 0x100596D05: _xpc_dyld_image_callback (in /usr/lib/system/libxpc.dylib)
+==82619==    by 0x10000B873: dyld::registerLoadCallback(void (*)(mach_header const*, char const*, bool)) (in /usr/lib/dyld)
+==82619==    by 0x100596BBD: _xpc_collect_images (in /usr/lib/system/libxpc.dylib)
+==82619==    by 0x10059601E: _libxpc_initializer (in /usr/lib/system/libxpc.dylib)
+==82619==    by 0x1000EA9C9: libSystem_initializer (in /usr/lib/libSystem.B.dylib)
+==82619==    by 0x10001F591: ImageLoaderMachO::doModInitFunctions(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001F797: ImageLoaderMachO::doInitialization(ImageLoader::LinkContext const&) (in /usr/lib/dyld)
+==82619==    by 0x10001ABE9: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x10001AB7F: ImageLoader::recursiveInitialization(ImageLoader::LinkContext const&, unsigned int, char const*, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019D72: ImageLoader::processInitializers(ImageLoader::LinkContext const&, unsigned int, ImageLoader::InitializerTimingList&, ImageLoader::UninitedUpwards&) (in /usr/lib/dyld)
+==82619==    by 0x100019E04: ImageLoader::runInitializers(ImageLoader::LinkContext const&, ImageLoader::InitializerTimingList&) (in /usr/lib/dyld)
+==82619==    by 0x10000971E: dyld::initializeMainExecutable() (in /usr/lib/dyld)
+==82619==    by 0x10000E708: dyld::_main(macho_header const*, unsigned long, int, char const**, char const**, char const**, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008502: dyldbootstrap::start(macho_header const*, int, char const**, long, macho_header const*, unsigned long*) (in /usr/lib/dyld)
+==82619==    by 0x100008035: _dyld_start (in /usr/lib/dyld)
+==82619==    by 0xD: ???
+==82619==    by 0x7FFEEFBFF9BE: ???
+==82619==    by 0x7FFEEFBFF9FD: ???
+==82619==    by 0x7FFEEFBFFA15: ???
+==82619==    by 0x7FFEEFBFFA2E: ???
+==82619==    by 0x7FFEEFBFFA4A: ???
+==82619==    by 0x7FFEEFBFFA5C: ???
+==82619==    by 0x7FFEEFBFFA6C: ???
+==82619==    by 0x7FFEEFBFFA77: ???
+==82619==    by 0x7FFEEFBFFA9E: ???
+==82619==    by 0x7FFEEFBFFAA9: ???
+==82619==    by 0x7FFEEFBFFAAB: ???
+==82619==    by 0x7FFEEFBFFAAD: ???
+==82619==    by 0x7FFEEFBFFAB8: ???
+==82619==    by 0x7FFEEFBFFAC1: ???
+==82619== 
+==82619== execve(0x10100f730(/usr/local/Cellar/valgrind/lib/valgrind/memcheck-amd64-darwin), 0x10100f670, 0x10100f550) failed, errno 2
+==82619== EXEC FAILED: I can't recover from execve() failing, so I'm dying.
+==82619== Add more stringent tests in PRE(sys_execve), or work out how to recover.

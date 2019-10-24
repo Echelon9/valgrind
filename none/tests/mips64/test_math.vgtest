@@ -1,1 +1,2 @@
-../mips32/test_math.vgtest
+prog: test_math
+vgopts: -q

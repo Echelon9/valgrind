@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -1020,6 +1018,8 @@ static SyscallTableEntry syscall_table[] = {
 
    LINXY(__NR_getrandom,         sys_getrandom),        // 359
    LINXY(__NR_memfd_create,      sys_memfd_create),     // 360
+
+   LINX_(__NR_copy_file_range,   sys_copy_file_range),  // 379
 
    LINXY(__NR_statx,             sys_statx),            // 383
 };

@@ -8,7 +8,7 @@
 ##------------------------------------------------------------##
 
 # Process this file with autoconf to produce a configure script.
-AC_INIT([Valgrind],[3.15.0],[valgrind-users@lists.sourceforge.net])
+AC_INIT([Valgrind],[3.16.0.GIT],[valgrind-users@lists.sourceforge.net])
 AC_CONFIG_SRCDIR(coregrind/m_main.c)
 AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE([foreign dist-bzip2 subdir-objects])
@@ -368,6 +368,7 @@ case "${host_os}" in
         AC_DEFINE([DARWIN_10_11], 101100, [DARWIN_VERS value for Mac OS X 10.11])
         AC_DEFINE([DARWIN_10_12], 101200, [DARWIN_VERS value for macOS 10.12])
         AC_DEFINE([DARWIN_10_13], 101300, [DARWIN_VERS value for macOS 10.13])
+        AC_DEFINE([DARWIN_10_14], 101400, [DARWIN_VERS value for macOS 10.14])
 
 	AC_MSG_CHECKING([for the kernel version])
 	kernel=`uname -r`
@@ -443,9 +444,15 @@ case "${host_os}" in
 		  DEFAULT_SUPP="darwin17.supp ${DEFAULT_SUPP}"
 		  DEFAULT_SUPP="darwin10-drd.supp ${DEFAULT_SUPP}"
 		  ;;
+             18.*)
+                  AC_MSG_RESULT([Darwin 18.x (${kernel}) / macOS 10.14 Mojave])
+                  AC_DEFINE([DARWIN_VERS], DARWIN_10_14, [Darwin / Mac OS X version])
+                  DEFAULT_SUPP="darwin18.supp ${DEFAULT_SUPP}"
+                  DEFAULT_SUPP="darwin10-drd.supp ${DEFAULT_SUPP}"
+                  ;;
              *) 
 		  AC_MSG_RESULT([unsupported (${kernel})])
-		  AC_MSG_ERROR([Valgrind works on Darwin 10.x, 11.x, 12.x, 13.x, 14.x, 15.x, 16.x and 17.x (Mac OS X 10.6/7/8/9/10/11 and macOS 10.12/13)])
+		  AC_MSG_ERROR([Valgrind works on Darwin 10.x, 11.x, 12.x, 13.x, 14.x, 15.x, 16.x and 17.x (Mac OS X 10.6/7/8/9/10/11 and macOS 10.12/13/14)])
 		  ;;
 	esac
         ;;
@@ -4172,6 +4179,11 @@ AC_CHECK_FUNCS([     \
         utimensat    \
         process_vm_readv  \
         process_vm_writev \
+        copy_file_range \
+        preadv \
+        pwritev \
+        preadv2 \
+        pwritev2 \
         ])
 
 # AC_CHECK_LIB adds any library found to the variable LIBS, and links these
@@ -4187,6 +4199,12 @@ AM_CONDITIONAL([HAVE_PTHREAD_SPINLOCK],
                [test x$ac_cv_func_pthread_spin_lock = xyes])
 AM_CONDITIONAL([HAVE_PTHREAD_SETNAME_NP],
                [test x$ac_cv_func_pthread_setname_np = xyes])
+AM_CONDITIONAL([HAVE_COPY_FILE_RANGE],
+               [test x$ac_cv_func_copy_file_range = xyes])
+AM_CONDITIONAL([HAVE_PREADV_PWRITEV],
+               [test x$ac_cv_func_preadv = xyes && test x$ac_cv_func_pwritev = xyes])
+AM_CONDITIONAL([HAVE_PREADV2_PWRITEV2],
+               [test x$ac_cv_func_preadv2 = xyes && test x$ac_cv_func_pwritev2 = xyes])
 
 if test x$VGCONF_PLATFORM_PRI_CAPS = xMIPS32_LINUX \
      -o x$VGCONF_PLATFORM_PRI_CAPS = xMIPS64_LINUX ; then

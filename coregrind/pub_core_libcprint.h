@@ -8,7 +8,7 @@
    framework.
 
    Copyright (C) 2000-2017 Julian Seward
-      jseward@acm.org
+	  jseward@acm.org
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -40,21 +38,21 @@
 
 typedef
    enum {
-      VgLogTo_Fd,
-      VgLogTo_File,
-      VgLogTo_Socket
+	  VgLogTo_Fd,
+	  VgLogTo_File,
+	  VgLogTo_Socket
    }
    VgLogTo;
 
 /* An output file descriptor wrapped up with its type and expanded name. */
 typedef
    struct {
-      Int fd;
-      VgLogTo type;
-      HChar *fsname_expanded; // 'fs' stands for file or socket
+	  Int fd;
+	  VgLogTo type;
+	  HChar *fsname_expanded; // 'fs' stands for file or socket
    }
    OutputSink;
- 
+
 /* And the destinations for normal and XML output. */
 extern OutputSink VG_(log_output_sink);
 extern OutputSink VG_(xml_output_sink);
@@ -62,7 +60,7 @@ extern OutputSink VG_(xml_output_sink);
 /* Initializes normal log and xml sinks (of type fd, file, or socket).
    Any problem encountered is considered a hard error and causes V. to exit. */
 extern void VG_(init_log_xml_sinks)(VgLogTo log_to, VgLogTo xml_to,
-                                  Int /*initial*/log_fd, Int /*initial*/xml_fd);
+								  Int /*initial*/log_fd, Int /*initial*/xml_fd);
 
 extern void VG_(print_preamble)(Bool logging_to_fd);
 
@@ -87,8 +85,8 @@ __attribute__((noreturn))
 extern void VG_(err_config_error) ( const HChar* format, ... );
 
 /* Called by main_process_cmd_line_options to indicate an unrecognised
-   command line option. */
-__attribute__((noreturn))
+   command line option.
+   It shutdowns the system if Clo_Mode is cloE or cloP.*/
 extern void VG_(fmsg_unknown_option) ( const HChar *opt );
 
 #endif   // __PUB_CORE_LIBCPRINT_H

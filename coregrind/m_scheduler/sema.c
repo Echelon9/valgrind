@@ -8,7 +8,7 @@
    framework.
 
    Copyright (C) 2000-2017 Julian Seward
-      jseward@acm.org
+	  jseward@acm.org
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -40,7 +38,7 @@
 #endif
 #include "priv_sema.h"
 
-/* 
+/*
    Slower (than the removed futex-based sema scheme) but more portable
    pipe-based token passing scheme.
  */
@@ -50,7 +48,7 @@
    to see more clearly the change of ownership of the lock.  Need to
    be careful to reinitialise it at fork() time. */
 static HChar sema_char = '!'; /* will cause assertion failures if used
-                                 before sema_init */
+								 before sema_init */
 
 void ML_(sema_init)(vg_sema_t *sema)
 {
@@ -64,21 +62,21 @@ void ML_(sema_init)(vg_sema_t *sema)
    sema->pipe[0] = VG_(safe_fd)(sema->pipe[0]);
    sema->pipe[1] = VG_(safe_fd)(sema->pipe[1]);
 
-   if (0) 
-      VG_(debugLog)(0,"zz","sema_init: %d %d\n", sema->pipe[0], 
-                                                 sema->pipe[1]);
+   if (0)
+	  VG_(debugLog)(0,"zz","sema_init: %d %d\n", sema->pipe[0],
+												 sema->pipe[1]);
    vg_assert(sema->pipe[0] != sema->pipe[1]);
 
    sema->owner_lwpid = -1;
 
    /* create initial token */
    sema_char = 'A';
-   buf[0] = sema_char; 
+   buf[0] = sema_char;
    buf[1] = 0;
    sema_char++;
    INNER_REQUEST(ANNOTATE_RWLOCK_CREATE(sema));
    INNER_REQUEST(ANNOTATE_BENIGN_RACE_SIZED(&sema->owner_lwpid,
-                                            sizeof(sema->owner_lwpid), ""));
+											sizeof(sema->owner_lwpid), ""));
    res = VG_(write)(sema->pipe[1], buf, 1);
    vg_assert(res == 1);
 }
@@ -109,12 +107,12 @@ void ML_(sema_down)( vg_sema_t *sema, Bool as_LL )
    ret = VG_(read)(sema->pipe[0], buf, 1);
    INNER_REQUEST(ANNOTATE_RWLOCK_ACQUIRED(sema, /*is_w*/1));
 
-   if (ret != 1) 
-      VG_(debugLog)(0, "scheduler", 
-                       "VG_(sema_down): read returned %d\n", ret);
+   //if (ret != 1)
+   //   VG_(debugLog)(0, "scheduler",
+   //                    "VG_(sema_down): read returned %d\n", ret);
 
    if (ret == -VKI_EINTR)
-      goto again;
+	  goto again;
 
    vg_assert(ret == 1);		/* should get exactly 1 token */
    vg_assert(buf[0] >= 'A' && buf[0] <= 'Z');
@@ -132,7 +130,7 @@ void ML_(sema_up)( vg_sema_t *sema, Bool as_LL )
    Int ret;
    HChar buf[2];
    vg_assert(as_LL == sema->held_as_LL);
-   buf[0] = sema_char; 
+   buf[0] = sema_char;
    buf[1] = 0;
    vg_assert(sema->owner_lwpid != -1); /* must be initialised */
    vg_assert(sema->pipe[0] != sema->pipe[1]);
@@ -143,11 +141,11 @@ void ML_(sema_up)( vg_sema_t *sema, Bool as_LL )
    INNER_REQUEST(ANNOTATE_RWLOCK_RELEASED(sema, /*is_w*/1));
    ret = VG_(write)(sema->pipe[1], buf, 1);
 
-   if (ret != 1) 
-      VG_(debugLog)(0, "scheduler", 
-                       "VG_(sema_up):write returned %d\n", ret);
+   //if (ret != 1)
+   //   VG_(debugLog)(0, "scheduler",
+   //                    "VG_(sema_up):write returned %d\n", ret);
 
-   vg_assert(ret == 1);
+   //vg_assert(ret == 1);
 }
 
 /*--------------------------------------------------------------------*/

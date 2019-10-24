@@ -22,9 +22,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -4923,6 +4921,7 @@ IRExpr* expr2vbits_Unop ( MCEnv* mce, IROp op, IRAtom* atom )
       case Iop_Neg32Fx4:
       case Iop_RSqrtEst32Fx4:
       case Iop_Log2_32Fx4:
+      case Iop_Exp2_32Fx4:
          return unary32Fx4(mce, vatom);
 
       case Iop_I32UtoF32x2_DEP:

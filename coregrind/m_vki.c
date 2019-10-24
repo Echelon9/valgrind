@@ -9,7 +9,7 @@
    framework.
 
    Copyright (C) 2006-2017 OpenWorks LLP
-      info@open-works.co.uk
+	  info@open-works.co.uk
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -22,9 +22,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -43,8 +41,9 @@
    hence m_vki is the logical place to store that info. */
 
 #if defined(VGP_ppc32_linux) || defined(VGP_ppc64be_linux) \
-    || defined(VGP_ppc64le_linux) || defined(VGP_arm64_linux) \
-    || defined(VGP_mips32_linux)  || defined(VGP_mips64_linux)
+	|| defined(VGP_ppc64le_linux) || defined(VGP_arm64_linux) \
+	|| defined(VGP_mips32_linux)  || defined(VGP_mips64_linux) \
+	|| defined(VGP_nanomips_linux)
 unsigned long VKI_PAGE_SHIFT = 12;
 unsigned long VKI_PAGE_SIZE  = 1UL << 12;
 #endif
@@ -53,7 +52,7 @@ unsigned long VKI_PAGE_SIZE  = 1UL << 12;
 /* Do initial consistency checks on some of the definitions to do with
    signals (vki_sigset_t and vki_sigaction_{toK,fromK}_t).  This stuff
    is fragile enough that it's important to check at startup that
-   the world looks like what we expect it to look like. 
+   the world looks like what we expect it to look like.
 
    The most important thing is to check that the definition of signal
    sets for this platform is right.  A signal set consists of some
@@ -83,8 +82,8 @@ void VG_(vki_do_initial_consistency_checks) ( void )
    vg_assert(_VKI_NSIG == NSIG);
    vg_assert(_VKI_NSIG == 32);
    vg_assert(_VKI_NSIG_WORDS == 1);
-   vg_assert(sizeof(sigset_t) /* defined by Darwin */ 
-             == sizeof(vki_sigset_t) /* what we actually use */);
+   vg_assert(sizeof(sigset_t) /* defined by Darwin */
+			 == sizeof(vki_sigset_t) /* what we actually use */);
 #  else
 #    error "Unknown plat"
 #  endif
@@ -93,52 +92,52 @@ void VG_(vki_do_initial_consistency_checks) ( void )
 
 #  if defined(VGO_linux)
    /* the toK- and fromK- forms are identical */
-   vg_assert( sizeof(vki_sigaction_toK_t) 
-              == sizeof(vki_sigaction_fromK_t) );
+   vg_assert( sizeof(vki_sigaction_toK_t)
+			  == sizeof(vki_sigaction_fromK_t) );
 #  elif defined(VGO_darwin)
    /* the toK- and fromK- forms differ by one function-pointer field
-      (sa_tramp) */
-   vg_assert( sizeof(vki_sigaction_toK_t) 
-              == sizeof(vki_sigaction_fromK_t) + sizeof(void*) );
+	  (sa_tramp) */
+   vg_assert( sizeof(vki_sigaction_toK_t)
+			  == sizeof(vki_sigaction_fromK_t) + sizeof(void*) );
 
    vg_assert(sizeof(struct sigaction) == sizeof(vki_sigaction_fromK_t));
    vg_assert(sizeof(struct __sigaction) == sizeof(vki_sigaction_toK_t));
    { struct __sigaction    t1;
-     vki_sigaction_toK_t   t2;
-     struct sigaction      f1;
-     vki_sigaction_fromK_t f2;
-     vg_assert(sizeof(t1.sa_handler) == sizeof(t2.ksa_handler));
-     vg_assert(sizeof(t1.sa_tramp)   == sizeof(t2.sa_tramp));
-     vg_assert(sizeof(t1.sa_mask)    == sizeof(t2.sa_mask));
-     vg_assert(sizeof(t1.sa_flags)   == sizeof(t2.sa_flags));
-     vg_assert(sizeof(f1.sa_handler) == sizeof(f2.ksa_handler));
-     vg_assert(sizeof(f1.sa_mask)    == sizeof(f2.sa_mask));
-     vg_assert(sizeof(f1.sa_flags)   == sizeof(f2.sa_flags));
+	 vki_sigaction_toK_t   t2;
+	 struct sigaction      f1;
+	 vki_sigaction_fromK_t f2;
+	 vg_assert(sizeof(t1.sa_handler) == sizeof(t2.ksa_handler));
+	 vg_assert(sizeof(t1.sa_tramp)   == sizeof(t2.sa_tramp));
+	 vg_assert(sizeof(t1.sa_mask)    == sizeof(t2.sa_mask));
+	 vg_assert(sizeof(t1.sa_flags)   == sizeof(t2.sa_flags));
+	 vg_assert(sizeof(f1.sa_handler) == sizeof(f2.ksa_handler));
+	 vg_assert(sizeof(f1.sa_mask)    == sizeof(f2.sa_mask));
+	 vg_assert(sizeof(f1.sa_flags)   == sizeof(f2.sa_flags));
 #    if 0
-     vg_assert(offsetof(t1,sa_handler) == offsetof(t2.ksa_handler));
-     vg_assert(offsetof(t1.sa_tramp)   == offsetof(t2.sa_tramp));
-     vg_assert(offsetof(t1.sa_mask)    == offsetof(t2.sa_mask));
-     vg_assert(offsetof(t1.sa_flags)   == offsetof(t2.sa_flags));
-     vg_assert(offsetof(f1.sa_handler) == offsetof(f2.ksa_handler));
-     vg_assert(offsetof(f1.sa_mask)    == offsetof(f2.sa_mask));
-     vg_assert(offsetof(f1.sa_flags)   == offsetof(f2.sa_flags));
+	 vg_assert(offsetof(t1,sa_handler) == offsetof(t2.ksa_handler));
+	 vg_assert(offsetof(t1.sa_tramp)   == offsetof(t2.sa_tramp));
+	 vg_assert(offsetof(t1.sa_mask)    == offsetof(t2.sa_mask));
+	 vg_assert(offsetof(t1.sa_flags)   == offsetof(t2.sa_flags));
+	 vg_assert(offsetof(f1.sa_handler) == offsetof(f2.ksa_handler));
+	 vg_assert(offsetof(f1.sa_mask)    == offsetof(f2.sa_mask));
+	 vg_assert(offsetof(f1.sa_flags)   == offsetof(f2.sa_flags));
 #    endif
    }
    /* also .. */
    /* VKI_SET_SIGMASK is hardwired into syscall-x86-darwin.S and
-      syscall-amd64-darwin.S */
+	  syscall-amd64-darwin.S */
    vg_assert(VKI_SIG_SETMASK == 3);
 
 #  elif defined(VGO_solaris)
    /* the toK- and fromK- forms are identical */
    vg_assert(sizeof(vki_sigaction_toK_t)
-             == sizeof(vki_sigaction_fromK_t));
+			 == sizeof(vki_sigaction_fromK_t));
    /* VKI_SET_SIGMASK is hardwired into syscall-x86-solaris.S
-      and syscall-amd64-solaris.S */
+	  and syscall-amd64-solaris.S */
    vg_assert(VKI_SIG_SETMASK == 3);
 
 #  else
-#     error "Unknown OS" 
+#     error "Unknown OS"
 #  endif
 }
 

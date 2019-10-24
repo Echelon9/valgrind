@@ -1,1 +1,2 @@
-../mips32/bad_sioc.vgtest
+prog: bad_sioc
+vgopts: -q

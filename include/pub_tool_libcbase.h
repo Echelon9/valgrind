@@ -8,7 +8,7 @@
    framework.
 
    Copyright (C) 2000-2017 Julian Seward
-      jseward@acm.org
+	  jseward@acm.org
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -75,9 +73,9 @@ extern double VG_(strtod)  ( const HChar* str, HChar** endptr );
 
 /* Use this for normal null-termination-style string comparison. */
 #define VG_STREQ(s1,s2) ( (s1 != NULL && s2 != NULL \
-                           && VG_(strcmp)((s1),(s2))==0) ? True : False )
+						   && VG_(strcmp)((s1),(s2))==0) ? True : False )
 #define VG_STREQN(n,s1,s2) ( (s1 != NULL && s2 != NULL \
-                             && VG_(strncmp)((s1),(s2),(n))==0) ? True : False )
+							 && VG_(strncmp)((s1),(s2),(n))==0) ? True : False )
 
 extern SizeT  VG_(strlen)         ( const HChar* str );
 extern SizeT  VG_(strnlen)        ( const HChar* str, SizeT n );
@@ -122,15 +120,15 @@ extern Bool VG_(parse_UInt) ( const HChar** ppc, UInt* result );
    automatically accept the word "none" to indicate an empty enum_set (0).
    If allow_all, VG_(parse_enum_set) automatically accept the word "all"
    to indicate an enum_set with all bits corresponding to the words in tokens
-    set.
+	set.
    If "none" or "all" is present in 'input', no other word can be given
    in 'input'.
    If parsing is successful, returns True and sets *enum_set.
    If parsing fails, returns False. */
 extern Bool VG_(parse_enum_set) ( const HChar *tokens,
-                                  Bool  allow_all,
-                                  const HChar *input,
-                                  UInt *enum_set);
+								  Bool  allow_all,
+								  const HChar *input,
+								  UInt *enum_set);
 
 /* ---------------------------------------------------------------------
    mem* functions
@@ -149,35 +147,35 @@ inline __attribute__((always_inline))
 static void VG_(bzero_inline) ( void* s, SizeT sz )
 {
    if (LIKELY(0 == (((Addr)sz) & (Addr)(sizeof(UWord)-1)))
-       && LIKELY(0 == (((Addr)s) & (Addr)(sizeof(UWord)-1)))) {
-      UWord* p = (UWord*)s;
-      switch (sz / (SizeT)sizeof(UWord)) {
-          case 12: p[0] = p[1] = p[2] = p[3]
-                  = p[4] = p[5] = p[6] = p[7] 
-                  = p[8] = p[9] = p[10] = p[11] = 0UL; return;
-          case 11: p[0] = p[1] = p[2] = p[3]
-                  = p[4] = p[5] = p[6] = p[7] 
-                  = p[8] = p[9] = p[10] = 0UL; return;
-          case 10: p[0] = p[1] = p[2] = p[3]
-                  = p[4] = p[5] = p[6] = p[7] 
-                  = p[8] = p[9] = 0UL; return;
-          case 9: p[0] = p[1] = p[2] = p[3]
-                  = p[4] = p[5] = p[6] = p[7] 
-                  = p[8] = 0UL; return;
-          case 8: p[0] = p[1] = p[2] = p[3]
-                  = p[4] = p[5] = p[6] = p[7] = 0UL; return;
-          case 7: p[0] = p[1] = p[2] = p[3]
-                  = p[4] = p[5] = p[6] = 0UL; return;
-          case 6: p[0] = p[1] = p[2] = p[3]
-                  = p[4] = p[5] = 0UL; return;
-          case 5: p[0] = p[1] = p[2] = p[3] = p[4] = 0UL; return;
-          case 4: p[0] = p[1] = p[2] = p[3] = 0UL; return;
-          case 3: p[0] = p[1] = p[2] = 0UL; return;
-          case 2: p[0] = p[1] = 0UL; return;
-          case 1: p[0] = 0UL; return;
-          case 0: return;
-          default: break;
-      }
+	   && LIKELY(0 == (((Addr)s) & (Addr)(sizeof(UWord)-1)))) {
+	  UWord* p = (UWord*)s;
+	  switch (sz / (SizeT)sizeof(UWord)) {
+		  case 12: p[0] = p[1] = p[2] = p[3]
+				  = p[4] = p[5] = p[6] = p[7]
+				  = p[8] = p[9] = p[10] = p[11] = 0UL; return;
+		  case 11: p[0] = p[1] = p[2] = p[3]
+				  = p[4] = p[5] = p[6] = p[7]
+				  = p[8] = p[9] = p[10] = 0UL; return;
+		  case 10: p[0] = p[1] = p[2] = p[3]
+				  = p[4] = p[5] = p[6] = p[7]
+				  = p[8] = p[9] = 0UL; return;
+		  case 9: p[0] = p[1] = p[2] = p[3]
+				  = p[4] = p[5] = p[6] = p[7]
+				  = p[8] = 0UL; return;
+		  case 8: p[0] = p[1] = p[2] = p[3]
+				  = p[4] = p[5] = p[6] = p[7] = 0UL; return;
+		  case 7: p[0] = p[1] = p[2] = p[3]
+				  = p[4] = p[5] = p[6] = 0UL; return;
+		  case 6: p[0] = p[1] = p[2] = p[3]
+				  = p[4] = p[5] = 0UL; return;
+		  case 5: p[0] = p[1] = p[2] = p[3] = p[4] = 0UL; return;
+		  case 4: p[0] = p[1] = p[2] = p[3] = 0UL; return;
+		  case 3: p[0] = p[1] = p[2] = 0UL; return;
+		  case 2: p[0] = p[1] = 0UL; return;
+		  case 1: p[0] = 0UL; return;
+		  case 0: return;
+		  default: break;
+	  }
    }
    VG_(memset)(s, 0, sz);
 }
@@ -204,6 +202,18 @@ static void VG_(bzero_inline) ( void* s, SizeT sz )
 #define VG_PGROUNDDN(p)    VG_ROUNDDN(p, VKI_PAGE_SIZE)
 #define VG_PGROUNDUP(p)    VG_ROUNDUP(p, VKI_PAGE_SIZE)
 
+/* Converts `Device ID` given as pair of 32-bit values (dev_major, dev_minor)
+ * to 64-bit dev_t using MMMM Mmmm mmmM MMmm encoding. This is
+ * downward compatible with legacy systems where dev_t is 16 bits wide,
+ * encoded as MMmm. It is also downward compatible with the Linux kernel,
+ * which uses 32-bit dev_t, encoded as mmmM MMmm.
+ * Original macro can be found in bits/sysmacros.h. */
+#define VG_MAKEDEV(__major, __minor)            \
+   ((((ULong) (__major & 0x00000fffu)) <<  8) | \
+	(((ULong) (__major & 0xfffff000u)) << 32) | \
+	(((ULong) (__minor & 0x000000ffu)) <<  0) | \
+	(((ULong) (__minor & 0xffffff00u)) << 12))
+
 /* ---------------------------------------------------------------------
    Misc useful functions
    ------------------------------------------------------------------ */
@@ -211,7 +221,7 @@ static void VG_(bzero_inline) ( void* s, SizeT sz )
 /* Like qsort().  The name VG_(ssort) is for historical reasons -- it used
  * to be a shell sort, but is now a quicksort. */
 extern void VG_(ssort)( void* base, SizeT nmemb, SizeT size,
-                        Int (*compar)(const void*, const void*) );
+						Int (*compar)(const void*, const void*) );
 
 /* Returns the base-2 logarithm of a 32 bit unsigned number.  Returns
  -1 if it is not a power of two.  Nb: VG_(log2)(1) == 0. */

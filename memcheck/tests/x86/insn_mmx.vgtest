@@ -1,1 +1,3 @@
-../../../none/tests/x86/insn_mmx.vgtest
+prog: ../../../none/tests/x86/insn_mmx
+prereq: ../../../tests/x86_amd64_features x86-mmx
+vgopts: -q

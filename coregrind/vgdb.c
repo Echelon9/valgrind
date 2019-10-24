@@ -19,9 +19,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -1090,7 +1088,7 @@ void report_pid(int pid, Bool on_stdout)
    } else {
       char cmdline[100];
       ssize_t sz;
-      while ((sz = read(fd, cmdline, sizeof cmdline - 1)) != 0) {
+      while ((sz = read(fd, cmdline, sizeof cmdline - 1)) > 0) {
          for (i = 0; i < sz; i++)
             if (cmdline[i] == 0)
                cmdline[i] = ' ';

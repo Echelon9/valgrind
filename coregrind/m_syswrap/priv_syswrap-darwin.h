@@ -8,7 +8,7 @@
    framework.
 
    Copyright (C) 2005-2017 Apple Inc.
-      Greg Parker  gparker@apple.com
+	  Greg Parker  gparker@apple.com
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -53,7 +51,7 @@ void VG_(show_open_ports)(void);
 
 Bool ML_(sync_mappings)(const HChar *when, const HChar *where, UWord num);
 
-// Unix syscalls.  
+// Unix syscalls.
 // GEN = it uses the generic wrapper
 // NYI = wrapper not yet implemented in Valgrind
 // NOC = the non-"_nocancel" wrapper is used
@@ -574,7 +572,7 @@ DECL_TEMPLATE(darwin, getattrlistbulk);          // 461
 // NYI clonefileat     // 462
 #endif /* DARWIN_VERS >= DARWIN_10_12 */
 #if DARWIN_VERS >= DARWIN_10_10
-// NYI openat          // 463
+DECL_TEMPLATE(darwin, openat);                   // 463
 // NYI openat_nocancel // 464
 // NYI renameat        // 465
 DECL_TEMPLATE(darwin, faccessat);                // 466
@@ -765,7 +763,7 @@ DECL_TEMPLATE(darwin, task_for_pid);
 DECL_TEMPLATE(darwin, pid_for_task);
 
 #if DARWIN_VERS >= DARWIN_10_13
-// NYI thread_get_special_reply_port                // 50
+DECL_TEMPLATE(darwin, thread_get_special_reply_port);
 #endif /* DARWIN_VERS >= DARWIN_10_13 */
 
 #if DARWIN_VERS >= DARWIN_10_12
@@ -785,46 +783,51 @@ DECL_TEMPLATE(darwin, iokit_user_client_trap);
 DECL_TEMPLATE(darwin, swtch);
 DECL_TEMPLATE(darwin, swtch_pri);
 
+#if DARWIN_VERS >= DARWIN_10_14
+// NYI kernelrpc_mach_port_get_attributes_trap      // 40
+#endif /* DARWIN_VERS >= DARWIN_10_14 */
+
 // Machine-dependent traps
 DECL_TEMPLATE(darwin, thread_fast_set_cthread_self);
 
 // syswrap-<arch>-darwin.c
 #include <mach/mach.h>
-extern 
-void thread_state_from_vex(thread_state_t mach_generic, 
-                           thread_state_flavor_t flavor, 
-                           mach_msg_type_number_t count, 
-                           VexGuestArchState *vex_generic);
 extern
-void thread_state_to_vex(const thread_state_t mach_generic, 
-                         thread_state_flavor_t flavor, 
-                         mach_msg_type_number_t count, 
-                         VexGuestArchState *vex_generic);
-extern 
-ThreadState *build_thread(const thread_state_t state, 
-                          thread_state_flavor_t flavor, 
-                          mach_msg_type_number_t count);
+void thread_state_from_vex(thread_state_t mach_generic,
+						   thread_state_flavor_t flavor,
+						   mach_msg_type_number_t count,
+						   VexGuestArchState *vex_generic);
 extern
-void hijack_thread_state(thread_state_t mach_generic, 
-                         thread_state_flavor_t flavor, 
-                         mach_msg_type_number_t count, 
-                         ThreadState *tst);
+void thread_state_to_vex(const thread_state_t mach_generic,
+						 thread_state_flavor_t flavor,
+						 mach_msg_type_number_t count,
+						 VexGuestArchState *vex_generic);
+extern
+ThreadState *build_thread(const thread_state_t state,
+						  thread_state_flavor_t flavor,
+						  mach_msg_type_number_t count);
+extern
+void hijack_thread_state(thread_state_t mach_generic,
+						 thread_state_flavor_t flavor,
+						 mach_msg_type_number_t count,
+						 ThreadState *tst);
 extern
 __attribute__((noreturn))
 void call_on_new_stack_0_1 ( Addr stack,
-			     Addr retaddr,
-			     void (*f)(Word),
-                             Word arg1 );
+				 Addr retaddr,
+				 void (*f)(Word),
+							 Word arg1 );
 
 extern void pthread_hijack_asm(void);
-extern void pthread_hijack(Addr self, Addr kport, Addr func, Addr func_arg, 
-                           Addr stacksize, Addr flags, Addr sp);
+extern void pthread_hijack(Addr self, Addr kport, Addr func, Addr func_arg,
+						   Addr stacksize, Addr flags, Addr sp);
 extern void wqthread_hijack_asm(void);
 extern void wqthread_hijack(Addr self, Addr kport, Addr stackaddr, Addr workitem, Int reuse, Addr sp);
 
 extern Addr pthread_starter;
 extern Addr wqthread_starter;
 extern SizeT pthread_structsize;
+extern SizeT pthread_tsd_offset;
 
 
 #endif

@@ -18,9 +18,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -633,6 +631,7 @@ static irop_t irops[] = {
   { DEFOP(Iop_Sqrt32Fx4, UNDEF_UNKNOWN), },
   { DEFOP(Iop_Scale2_32Fx4, UNDEF_UNKNOWN), },
   { DEFOP(Iop_Log2_32Fx4, UNDEF_UNKNOWN), },
+  { DEFOP(Iop_Exp2_32Fx4, UNDEF_UNKNOWN), },
   { DEFOP(Iop_Neg32Fx4, UNDEF_UNKNOWN), },
   { DEFOP(Iop_RecipEst32Fx4, UNDEF_UNKNOWN), },
   { DEFOP(Iop_RecipStep32Fx4, UNDEF_UNKNOWN), },

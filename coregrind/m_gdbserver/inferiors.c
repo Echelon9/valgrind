@@ -39,13 +39,13 @@ struct thread_info *current_inferior;
 #define get_thread(inf) ((struct thread_info *)(inf))
 
 void add_inferior_to_list (struct inferior_list *list,
-		      struct inferior_list_entry *new_inferior)
+			  struct inferior_list_entry *new_inferior)
 {
    new_inferior->next = NULL;
    if (list->tail != NULL)
-      list->tail->next = new_inferior;
+	  list->tail->next = new_inferior;
    else
-      list->head = new_inferior;
+	  list->head = new_inferior;
    list->tail = new_inferior;
 }
 
@@ -55,17 +55,17 @@ void for_each_inferior (struct inferior_list *list,
    struct inferior_list_entry *cur = list->head, *next;
 
    while (cur != NULL) {
-      next = cur->next;
-      (*action) (cur);
-      cur = next;
+	  next = cur->next;
+	  (*action) (cur);
+	  cur = next;
    }
 }
 
 void change_inferior_id (struct inferior_list *list,
-		    unsigned long new_id)
+			unsigned long new_id)
 {
    if (list->head != list->tail)
-      error ("tried to change thread ID after multiple threads are created\n");
+	  error ("tried to change thread ID after multiple threads are created\n");
 
    list->head->id = new_id;
 }
@@ -76,38 +76,38 @@ void remove_inferior (struct inferior_list *list,
    struct inferior_list_entry **cur;
 
    if (list->head == entry) {
-      list->head = entry->next;
-      if (list->tail == entry)
-         list->tail = list->head;
-      return;
+	  list->head = entry->next;
+	  if (list->tail == entry)
+		 list->tail = list->head;
+	  return;
    }
 
    cur = &list->head;
    while (*cur && (*cur)->next != entry)
-      cur = &(*cur)->next;
+	  cur = &(*cur)->next;
 
    if (*cur == NULL)
-      return;
+	  return;
 
    (*cur)->next = entry->next;
 
    if (list->tail == entry)
-      list->tail = *cur;
+	  list->tail = *cur;
 }
 
 void add_thread (unsigned long thread_id, void *target_data, unsigned int gdb_id)
 {
    struct thread_info *new_thread
-      = (struct thread_info *) malloc (sizeof (*new_thread));
+	  = (struct thread_info *) malloc (sizeof (*new_thread));
 
    VG_(memset) (new_thread, 0, sizeof (*new_thread));
 
    new_thread->entry.id = thread_id;
 
    add_inferior_to_list (&all_threads, & new_thread->entry);
-  
+
    if (current_inferior == NULL)
-      current_inferior = new_thread;
+	  current_inferior = new_thread;
 
    new_thread->target_data = target_data;
    set_inferior_regcache_data (new_thread, new_register_cache ());
@@ -119,10 +119,10 @@ unsigned int thread_id_to_gdb_id (unsigned long thread_id)
    struct inferior_list_entry *inf = all_threads.head;
 
    while (inf != NULL) {
-      struct thread_info *thread = get_thread (inf);
-      if (inf->id == thread_id)
-         return thread->gdb_id;
-      inf = inf->next;
+	  struct thread_info *thread = get_thread (inf);
+	  if (inf->id == thread_id)
+		 return thread->gdb_id;
+	  inf = inf->next;
    }
 
    return 0;
@@ -138,10 +138,10 @@ struct thread_info * gdb_id_to_thread (unsigned int gdb_id)
    struct inferior_list_entry *inf = all_threads.head;
 
    while (inf != NULL) {
-      struct thread_info *thread = get_thread (inf);
-      if (thread->gdb_id == gdb_id)
-         return thread;
-      inf = inf->next;
+	  struct thread_info *thread = get_thread (inf);
+	  if (thread->gdb_id == gdb_id)
+		 return thread;
+	  inf = inf->next;
    }
 
    return NULL;
@@ -176,33 +176,33 @@ void clear_inferiors (void)
 }
 
 struct inferior_list_entry * find_inferior (struct inferior_list *list,
-                                            int (*func) 
-                                              (struct inferior_list_entry *,
-                                               void *),
-                                            void *arg)
+											int (*func)
+											  (struct inferior_list_entry *,
+											   void *),
+											void *arg)
 {
    struct inferior_list_entry *inf = list->head;
 
    while (inf != NULL) {
-      if ((*func) (inf, arg))
-         return inf;
-      inf = inf->next;
+	  if ((*func) (inf, arg))
+		 return inf;
+	  inf = inf->next;
    }
-   
+
    return NULL;
 }
 
 struct inferior_list_entry * find_inferior_id (struct inferior_list *list,
-                                               unsigned long id)
+											   unsigned long id)
 {
    struct inferior_list_entry *inf = list->head;
 
    while (inf != NULL) {
-      if (inf->id == id)
-         return inf;
-      inf = inf->next;
+	  if (inf->id == id)
+		 return inf;
+	  inf = inf->next;
    }
-   
+
    return NULL;
 }
 

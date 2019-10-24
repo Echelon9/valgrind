@@ -32,21 +32,21 @@
    With the Xcode 3.2 linker those flags produce two results:
 
    (1) A load command to allocate the stack at the said location:
-          Load command 3
-                cmd LC_SEGMENT_64
-            cmdsize 72
-            segname __UNIXSTACK
-             vmaddr 0x0000000133800000
-             vmsize 0x0000000000800000
-            fileoff 2285568
-           filesize 0
-            maxprot 0x00000007
-           initprot 0x00000003
-             nsects 0
-              flags 0x0
+		  Load command 3
+				cmd LC_SEGMENT_64
+			cmdsize 72
+			segname __UNIXSTACK
+			 vmaddr 0x0000000133800000
+			 vmsize 0x0000000000800000
+			fileoff 2285568
+		   filesize 0
+			maxprot 0x00000007
+		   initprot 0x00000003
+			 nsects 0
+			  flags 0x0
 
    (2) A request (in LC_UNIXTHREAD) to set %rsp to the correct value
-       at process startup, 0x134000000.
+	   at process startup, 0x134000000.
 
    With Xcode 4.0.1, (1) is missing but (2) is still present.  The
    tool executable therefore starts up with %rsp pointing to unmapped
@@ -58,18 +58,18 @@
    One really sick workaround is to observe that the executables
    contain a redundant MachO load command:
 
-      Load command 2
-            cmd LC_SEGMENT_64
-        cmdsize 72
-        segname __LINKEDIT
-         vmaddr 0x0000000138dea000
-         vmsize 0x00000000000ad000
-        fileoff 2658304
-       filesize 705632
-        maxprot 0x00000007
-       initprot 0x00000001
-         nsects 0
-          flags 0x0
+	  Load command 2
+			cmd LC_SEGMENT_64
+		cmdsize 72
+		segname __LINKEDIT
+		 vmaddr 0x0000000138dea000
+		 vmsize 0x00000000000ad000
+		fileoff 2658304
+	   filesize 705632
+		maxprot 0x00000007
+	   initprot 0x00000001
+		 nsects 0
+		  flags 0x0
 
    The described section presumably contains information intended for
    the dynamic linker, but is irrelevant because this is a statically
@@ -120,10 +120,10 @@
 /* Get hold of DARWIN_VERS, and check it has a sane value. */
 #include "config.h"
 #if DARWIN_VERS != DARWIN_10_5 && DARWIN_VERS != DARWIN_10_6 \
-    && DARWIN_VERS != DARWIN_10_7 && DARWIN_VERS != DARWIN_10_8 \
-    && DARWIN_VERS != DARWIN_10_9 && DARWIN_VERS != DARWIN_10_10 \
-    && DARWIN_VERS != DARWIN_10_11 && DARWIN_VERS != DARWIN_10_12 \
-    && DARWIN_VERS != DARWIN_10_13
+	&& DARWIN_VERS != DARWIN_10_7 && DARWIN_VERS != DARWIN_10_8 \
+	&& DARWIN_VERS != DARWIN_10_9 && DARWIN_VERS != DARWIN_10_10 \
+	&& DARWIN_VERS != DARWIN_10_11 && DARWIN_VERS != DARWIN_10_12 \
+	&& DARWIN_VERS != DARWIN_10_13 && DARWIN_VERS != DARWIN_10_14
 #  error "Unknown DARWIN_VERS value.  This file only compiles on Darwin."
 #endif
 
@@ -165,18 +165,18 @@ void fail ( HChar* msg )
 
 typedef
    struct {
-      /* These two describe the entire mapped-in ("primary") image,
-         fat headers, kitchen sink, whatnot: the entire file.  The
-         image is mapped into img[0 .. img_szB-1]. */
-      UChar* img;
-      SizeT  img_szB;
-      /* These two describe the Mach-O object of interest, which is
-         presumably somewhere inside the primary image.
-         map_image_aboard() below, which generates this info, will
-         carefully check that the macho_ fields denote a section of
-         memory that falls entirely inside img[0 .. img_szB-1]. */
-      UChar* macho_img;
-      SizeT  macho_img_szB;
+	  /* These two describe the entire mapped-in ("primary") image,
+		 fat headers, kitchen sink, whatnot: the entire file.  The
+		 image is mapped into img[0 .. img_szB-1]. */
+	  UChar* img;
+	  SizeT  img_szB;
+	  /* These two describe the Mach-O object of interest, which is
+		 presumably somewhere inside the primary image.
+		 map_image_aboard() below, which generates this info, will
+		 carefully check that the macho_ fields denote a section of
+		 memory that falls entirely inside img[0 .. img_szB-1]. */
+	  UChar* macho_img;
+	  SizeT  macho_img_szB;
    }
    ImageInfo;
 
@@ -184,31 +184,31 @@ typedef
 Bool is_macho_object_file( const void* buf, SizeT szB )
 {
    /* (JRS: the Mach-O headers might not be in this mapped data,
-      because we only mapped a page for this initial check,
-      or at least not very much, and what's at the start of the file
-      is in general a so-called fat header.  The Mach-O object we're
-      interested in could be arbitrarily far along the image, and so
-      we can't assume its header will fall within this page.) */
+	  because we only mapped a page for this initial check,
+	  or at least not very much, and what's at the start of the file
+	  is in general a so-called fat header.  The Mach-O object we're
+	  interested in could be arbitrarily far along the image, and so
+	  we can't assume its header will fall within this page.) */
 
    /* But we can say that either it's a fat object, in which case it
-      begins with a fat header, or it's unadorned Mach-O, in which
-      case it starts with a normal header.  At least do what checks we
-      can to establish whether or not we're looking at something
-      sane. */
+	  begins with a fat header, or it's unadorned Mach-O, in which
+	  case it starts with a normal header.  At least do what checks we
+	  can to establish whether or not we're looking at something
+	  sane. */
 
    const struct fat_header*  fh_be = buf;
    const struct mach_header_64* mh    = buf;
 
    assert(buf);
    if (szB < sizeof(struct fat_header))
-      return False;
+	  return False;
    if (ntohl(fh_be->magic) == FAT_MAGIC)
-      return True;
+	  return True;
 
    if (szB < sizeof(struct mach_header_64))
-      return False;
+	  return False;
    if (mh->magic == MH_MAGIC_64)
-      return True;
+	  return True;
 
    return False;
 }
@@ -222,7 +222,7 @@ static void unmap_image ( /*MOD*/ImageInfo* ii )
    assert(ii->img_szB > 0);
    r = munmap( ii->img, ii->img_szB );
    /* Do we care if this fails?  I suppose so; it would indicate
-      some fairly serious snafu with the mapping of the file. */
+	  some fairly serious snafu with the mapping of the file. */
    assert( !r );
    memset(ii, 0, sizeof(*ii));
 }
@@ -240,120 +240,120 @@ static Int map_image_aboard ( /*OUT*/ImageInfo* ii, HChar* filename )
 
    /* First off, try to map the thing in. */
    { SizeT  size;
-     Int r, fd;
-     struct stat stat_buf;
+	 Int r, fd;
+	 struct stat stat_buf;
 
-     r = stat(filename, &stat_buf);
-     if (r)
-        fail("Can't stat image (to determine its size)?!");
-     size = stat_buf.st_size;
+	 r = stat(filename, &stat_buf);
+	 if (r)
+		fail("Can't stat image (to determine its size)?!");
+	 size = stat_buf.st_size;
 
-     fd = open(filename, O_RDWR, 0);
-     if (fd == -1)
-        fail("Can't open image for possible modification!");
-     if (DEBUGPRINTING)
-        printf("size %lu fd %d\n", size, fd);
-     void* v = mmap ( NULL, size, PROT_READ|PROT_WRITE,
-                                  MAP_FILE|MAP_SHARED, fd, 0 );
-     if (v == MAP_FAILED) {
-        perror("mmap failed");
-        fail("Can't mmap image for possible modification!");
-     }
+	 fd = open(filename, O_RDWR, 0);
+	 if (fd == -1)
+		fail("Can't open image for possible modification!");
+	 if (DEBUGPRINTING)
+		printf("size %lu fd %d\n", size, fd);
+	 void* v = mmap ( NULL, size, PROT_READ|PROT_WRITE,
+								  MAP_FILE|MAP_SHARED, fd, 0 );
+	 if (v == MAP_FAILED) {
+		perror("mmap failed");
+		fail("Can't mmap image for possible modification!");
+	 }
 
-     close(fd);
+	 close(fd);
 
-     ii->img     = (UChar*)v;
-     ii->img_szB = size;
+	 ii->img     = (UChar*)v;
+	 ii->img_szB = size;
    }
 
    /* Now it's mapped in and we have .img and .img_szB set.  Look for
-      the embedded Mach-O object.  If not findable, unmap and fail. */
+	  the embedded Mach-O object.  If not findable, unmap and fail. */
    { struct fat_header*  fh_be;
-     struct fat_header   fh;
-     struct mach_header_64* mh;
-     
-     // Assume initially that we have a thin image, and update
-     // these if it turns out to be fat.
-     ii->macho_img     = ii->img;
-     ii->macho_img_szB = ii->img_szB;
+	 struct fat_header   fh;
+	 struct mach_header_64* mh;
 
-     // Check for fat header.
-     if (ii->img_szB < sizeof(struct fat_header))
-        fail("Invalid Mach-O file (0 too small).");
+	 // Assume initially that we have a thin image, and update
+	 // these if it turns out to be fat.
+	 ii->macho_img     = ii->img;
+	 ii->macho_img_szB = ii->img_szB;
 
-     // Fat header is always BIG-ENDIAN
-     fh_be = (struct fat_header *)ii->img;
-     fh.magic = ntohl(fh_be->magic);
-     fh.nfat_arch = ntohl(fh_be->nfat_arch);
-     if (fh.magic == FAT_MAGIC) {
-        // Look for a good architecture.
-        struct fat_arch *arch_be;
-        struct fat_arch arch;
-        Int f;
-        if (ii->img_szB < sizeof(struct fat_header)
-                          + fh.nfat_arch * sizeof(struct fat_arch))
-           fail("Invalid Mach-O file (1 too small).");
+	 // Check for fat header.
+	 if (ii->img_szB < sizeof(struct fat_header))
+		fail("Invalid Mach-O file (0 too small).");
 
-        for (f = 0, arch_be = (struct fat_arch *)(fh_be+1); 
-             f < fh.nfat_arch;
-             f++, arch_be++) {
-           Int cputype;
+	 // Fat header is always BIG-ENDIAN
+	 fh_be = (struct fat_header *)ii->img;
+	 fh.magic = ntohl(fh_be->magic);
+	 fh.nfat_arch = ntohl(fh_be->nfat_arch);
+	 if (fh.magic == FAT_MAGIC) {
+		// Look for a good architecture.
+		struct fat_arch *arch_be;
+		struct fat_arch arch;
+		Int f;
+		if (ii->img_szB < sizeof(struct fat_header)
+						  + fh.nfat_arch * sizeof(struct fat_arch))
+		   fail("Invalid Mach-O file (1 too small).");
+
+		for (f = 0, arch_be = (struct fat_arch *)(fh_be+1);
+			 f < fh.nfat_arch;
+			 f++, arch_be++) {
+		   Int cputype;
 #          if defined(PLAT_x86_darwin)
-           cputype = CPU_TYPE_X86;
+		   cputype = CPU_TYPE_X86;
 #          elif defined(PLAT_amd64_darwin)
-           cputype = CPU_TYPE_X86_64;
+		   cputype = CPU_TYPE_X86_64;
 #          else
 #            error "unknown architecture"
 #          endif
-           arch.cputype    = ntohl(arch_be->cputype);
-           arch.cpusubtype = ntohl(arch_be->cpusubtype);
-           arch.offset     = ntohl(arch_be->offset);
-           arch.size       = ntohl(arch_be->size);
-           if (arch.cputype == cputype) {
-              if (ii->img_szB < arch.offset + arch.size)
-                 fail("Invalid Mach-O file (2 too small).");
-              ii->macho_img     = ii->img + arch.offset;
-              ii->macho_img_szB = arch.size;
-              break;
-           }
-        }
-        if (f == fh.nfat_arch)
-           fail("No acceptable architecture found in fat file.");
-     }
+		   arch.cputype    = ntohl(arch_be->cputype);
+		   arch.cpusubtype = ntohl(arch_be->cpusubtype);
+		   arch.offset     = ntohl(arch_be->offset);
+		   arch.size       = ntohl(arch_be->size);
+		   if (arch.cputype == cputype) {
+			  if (ii->img_szB < arch.offset + arch.size)
+				 fail("Invalid Mach-O file (2 too small).");
+			  ii->macho_img     = ii->img + arch.offset;
+			  ii->macho_img_szB = arch.size;
+			  break;
+		   }
+		}
+		if (f == fh.nfat_arch)
+		   fail("No acceptable architecture found in fat file.");
+	 }
 
-     /* Sanity check what we found. */
+	 /* Sanity check what we found. */
 
-     /* assured by logic above */
-     assert(ii->img_szB >= sizeof(struct fat_header));
+	 /* assured by logic above */
+	 assert(ii->img_szB >= sizeof(struct fat_header));
 
-     if (ii->macho_img_szB < sizeof(struct mach_header_64))
-        fail("Invalid Mach-O file (3 too small).");
+	 if (ii->macho_img_szB < sizeof(struct mach_header_64))
+		fail("Invalid Mach-O file (3 too small).");
 
-     if (ii->macho_img_szB > ii->img_szB)
-        fail("Invalid Mach-O file (thin bigger than fat).");
+	 if (ii->macho_img_szB > ii->img_szB)
+		fail("Invalid Mach-O file (thin bigger than fat).");
 
-     if (ii->macho_img >= ii->img
-         && ii->macho_img + ii->macho_img_szB <= ii->img + ii->img_szB) {
-        /* thin entirely within fat, as expected */
-     } else {
-        fail("Invalid Mach-O file (thin not inside fat).");
-     }
+	 if (ii->macho_img >= ii->img
+		 && ii->macho_img + ii->macho_img_szB <= ii->img + ii->img_szB) {
+		/* thin entirely within fat, as expected */
+	 } else {
+		fail("Invalid Mach-O file (thin not inside fat).");
+	 }
 
-     mh = (struct mach_header_64 *)ii->macho_img;
-     if (mh->magic == MH_MAGIC) {
-        assert(ii->img);
-        assert(ii->macho_img);
-        assert(ii->img_szB > 0);
-        assert(ii->macho_img_szB > 0);
-        assert(ii->macho_img >= ii->img);
-        assert(ii->macho_img + ii->macho_img_szB <= ii->img + ii->img_szB);
-        return 32;
-     }
-     if (mh->magic != MH_MAGIC_64)
-        fail("Invalid Mach-O file (bad magic).");
+	 mh = (struct mach_header_64 *)ii->macho_img;
+	 if (mh->magic == MH_MAGIC) {
+		assert(ii->img);
+		assert(ii->macho_img);
+		assert(ii->img_szB > 0);
+		assert(ii->macho_img_szB > 0);
+		assert(ii->macho_img >= ii->img);
+		assert(ii->macho_img + ii->macho_img_szB <= ii->img + ii->img_szB);
+		return 32;
+	 }
+	 if (mh->magic != MH_MAGIC_64)
+		fail("Invalid Mach-O file (bad magic).");
 
-     if (ii->macho_img_szB < sizeof(struct mach_header_64) + mh->sizeofcmds)
-        fail("Invalid Mach-O file (4 too small).");
+	 if (ii->macho_img_szB < sizeof(struct mach_header_64) + mh->sizeofcmds)
+		fail("Invalid Mach-O file (4 too small).");
    }
 
    assert(ii->img);
@@ -373,17 +373,17 @@ static Int map_image_aboard ( /*OUT*/ImageInfo* ii, HChar* filename )
 /*------------------------------------------------------------*/
 
 void modify_macho_loadcmds ( HChar* filename,
-                             ULong  expected_stack_start,
-                             ULong  expected_stack_size )
+							 ULong  expected_stack_start,
+							 ULong  expected_stack_size )
 {
    ImageInfo ii;
    memset(&ii, 0, sizeof(ii));
 
    Int size = map_image_aboard( &ii, filename );
    if (size == 32) {
-      fprintf(stderr, "fixup_macho_loadcmds:   Is 32-bit MachO file;"
-              " no modifications needed.\n");
-      goto out;
+	  fprintf(stderr, "fixup_macho_loadcmds:   Is 32-bit MachO file;"
+			  " no modifications needed.\n");
+	  goto out;
    }
 
    assert(size == 64);
@@ -391,10 +391,10 @@ void modify_macho_loadcmds ( HChar* filename,
    assert(ii.macho_img != NULL && ii.macho_img_szB > 0);
 
    /* Poke around in the Mach-O header, to find some important
-      stuff.
-      * the location of the __UNIXSTACK load command, if any
-      * the location of the __LINKEDIT load command, if any
-      * the initial RSP value as stated in the LC_UNIXTHREAD
+	  stuff.
+	  * the location of the __UNIXSTACK load command, if any
+	  * the location of the __LINKEDIT load command, if any
+	  * the initial RSP value as stated in the LC_UNIXTHREAD
    */
 
    /* The collected data */
@@ -407,152 +407,152 @@ void modify_macho_loadcmds ( HChar* filename,
    /* Loop over the load commands and fill in the above 4 variables. */
 
    { struct mach_header_64 *mh = (struct mach_header_64 *)ii.macho_img;
-      struct load_command *cmd;
-      Int c;
+	  struct load_command *cmd;
+	  Int c;
 
-      for (c = 0, cmd = (struct load_command *)(mh+1);
-           c < mh->ncmds;
-           c++, cmd = (struct load_command *)(cmd->cmdsize
-                                              + (unsigned long)cmd)) {
-         if (DEBUGPRINTING)
-            printf("load cmd: offset %4lu   size %3d   kind %2d = ",
-                   (unsigned long)((UChar*)cmd - (UChar*)ii.macho_img),
-                   cmd->cmdsize, cmd->cmd);
+	  for (c = 0, cmd = (struct load_command *)(mh+1);
+		   c < mh->ncmds;
+		   c++, cmd = (struct load_command *)(cmd->cmdsize
+											  + (unsigned long)cmd)) {
+		 if (DEBUGPRINTING)
+			printf("load cmd: offset %4lu   size %3d   kind %2d = ",
+				   (unsigned long)((UChar*)cmd - (UChar*)ii.macho_img),
+				   cmd->cmdsize, cmd->cmd);
 
-         switch (cmd->cmd) {
-            case LC_SEGMENT_64:
-               if (DEBUGPRINTING)
-                  printf("LC_SEGMENT_64");
-               break;
-            case LC_SYMTAB:
-               if (DEBUGPRINTING)
-                  printf("LC_SYMTAB");
-               break;
-            case LC_DYSYMTAB:
-               if (DEBUGPRINTING)
-                  printf("LC_DYSYMTAB");
-               break;
-            case LC_UUID:
-               if (DEBUGPRINTING)
-                  printf("LC_UUID");
-               break;
-            case LC_UNIXTHREAD:
-               if (DEBUGPRINTING)
-                  printf("LC_UNIXTHREAD");
-               break;
-            default:
-               if (DEBUGPRINTING)
-                  printf("???");
-               fail("unexpected load command in Mach header");
-            break;
-         }
-         if (DEBUGPRINTING)
-            printf("\n");
+		 switch (cmd->cmd) {
+			case LC_SEGMENT_64:
+			   if (DEBUGPRINTING)
+				  printf("LC_SEGMENT_64");
+			   break;
+			case LC_SYMTAB:
+			   if (DEBUGPRINTING)
+				  printf("LC_SYMTAB");
+			   break;
+			case LC_DYSYMTAB:
+			   if (DEBUGPRINTING)
+				  printf("LC_DYSYMTAB");
+			   break;
+			case LC_UUID:
+			   if (DEBUGPRINTING)
+				  printf("LC_UUID");
+			   break;
+			case LC_UNIXTHREAD:
+			   if (DEBUGPRINTING)
+				  printf("LC_UNIXTHREAD");
+			   break;
+			default:
+			   if (DEBUGPRINTING)
+				  printf("???");
+			   fail("unexpected load command in Mach header");
+			break;
+		 }
+		 if (DEBUGPRINTING)
+			printf("\n");
 
-         /* Note what the stated initial RSP value is, so we can
-            check it is as expected. */
-         if (cmd->cmd == LC_UNIXTHREAD) {
-            struct thread_command* tcmd = (struct thread_command*)cmd;
-            UInt* w32s = (UInt*)( (UChar*)tcmd + sizeof(*tcmd) );
-            if (DEBUGPRINTING)
-               printf("UnixThread: flavor %u = ", w32s[0]);
-            if (w32s[0] == x86_THREAD_STATE64 && !have_rsp) {
-               if (DEBUGPRINTING)
-                  printf("x86_THREAD_STATE64\n");
-               x86_thread_state64_t* state64
-                  = (x86_thread_state64_t*)(&w32s[2]);
-               have_rsp = True;
-               init_rsp = state64->__rsp;
-               if (DEBUGPRINTING)
-                  printf("rsp = 0x%llx\n", init_rsp);
-            } else {
-               if (DEBUGPRINTING)
-                  printf("???");
-            }
-            if (DEBUGPRINTING)
-               printf("\n");
-         }
+		 /* Note what the stated initial RSP value is, so we can
+			check it is as expected. */
+		 if (cmd->cmd == LC_UNIXTHREAD) {
+			struct thread_command* tcmd = (struct thread_command*)cmd;
+			UInt* w32s = (UInt*)( (UChar*)tcmd + sizeof(*tcmd) );
+			if (DEBUGPRINTING)
+			   printf("UnixThread: flavor %u = ", w32s[0]);
+			if (w32s[0] == x86_THREAD_STATE64 && !have_rsp) {
+			   if (DEBUGPRINTING)
+				  printf("x86_THREAD_STATE64\n");
+			   x86_thread_state64_t* state64
+				  = (x86_thread_state64_t*)(&w32s[2]);
+			   have_rsp = True;
+			   init_rsp = state64->__rsp;
+			   if (DEBUGPRINTING)
+				  printf("rsp = 0x%llx\n", init_rsp);
+			} else {
+			   if (DEBUGPRINTING)
+				  printf("???");
+			}
+			if (DEBUGPRINTING)
+			   printf("\n");
+		 }
 
-         if (cmd->cmd == LC_SEGMENT_64) {
-            struct segment_command_64 *seg = (struct segment_command_64 *)cmd;
-            if (0 == strcmp(seg->segname, "__LINKEDIT"))
-               seg__linkedit = seg;
-            if (0 == strcmp(seg->segname, "__UNIXSTACK"))
-               seg__unixstack = seg;
-            if (0 == strcmp(seg->segname, "__PAGEZERO"))
-               seg__pagezero = seg;
-         }
+		 if (cmd->cmd == LC_SEGMENT_64) {
+			struct segment_command_64 *seg = (struct segment_command_64 *)cmd;
+			if (0 == strcmp(seg->segname, "__LINKEDIT"))
+			   seg__linkedit = seg;
+			if (0 == strcmp(seg->segname, "__UNIXSTACK"))
+			   seg__unixstack = seg;
+			if (0 == strcmp(seg->segname, "__PAGEZERO"))
+			   seg__pagezero = seg;
+		 }
 
-      }
+	  }
    }
 
    /*
-      Actions are then as follows:
+	  Actions are then as follows:
 
-      * (always) check the RSP value is as expected, and abort if not
+	  * (always) check the RSP value is as expected, and abort if not
 
-      * if there's a UNIXSTACK load command, check it is as expected.
-        If not abort, if yes, do nothing more.
+	  * if there's a UNIXSTACK load command, check it is as expected.
+		If not abort, if yes, do nothing more.
 
-      * (so there's no UNIXSTACK load command).  if there's a LINKEDIT
-        load command, check if it is minimally usable (has 0 for
-        nsects and flags).  If yes, convert it to a UNIXSTACK load
-        command.  If there is none, or is unusable, then we're out of
-        options and have to abort.
+	  * (so there's no UNIXSTACK load command).  if there's a LINKEDIT
+		load command, check if it is minimally usable (has 0 for
+		nsects and flags).  If yes, convert it to a UNIXSTACK load
+		command.  If there is none, or is unusable, then we're out of
+		options and have to abort.
    */
    if (!have_rsp)
-      fail("Can't find / check initial RSP setting");
+	  fail("Can't find / check initial RSP setting");
    if (init_rsp != expected_stack_start + expected_stack_size)
-      fail("Initial RSP value not as expected");
+	  fail("Initial RSP value not as expected");
 
    fprintf(stderr, "fixup_macho_loadcmds:   "
-                   "initial RSP is as expected (0x%llx)\n",
-                   expected_stack_start + expected_stack_size );
+				   "initial RSP is as expected (0x%llx)\n",
+				   expected_stack_start + expected_stack_size );
 
    if (seg__unixstack) {
-      struct segment_command_64 *seg = seg__unixstack;
-      if (seg->vmaddr != expected_stack_start)
-         fail("has __UNIXSTACK, but wrong ::vmaddr");
-      if (seg->vmsize != expected_stack_size)
-         fail("has __UNIXSTACK, but wrong ::vmsize");
-      if (seg->maxprot != 7)
-         fail("has __UNIXSTACK, but wrong ::maxprot (should be 7)");
-      if (seg->initprot != 3)
-         fail("has __UNIXSTACK, but wrong ::initprot (should be 3)");
-      if (seg->nsects != 0)
-         fail("has __UNIXSTACK, but wrong ::nsects (should be 0)");
-      if (seg->flags != 0)
-         fail("has __UNIXSTACK, but wrong ::flags (should be 0)");
-      /* looks ok */
-      fprintf(stderr, "fixup_macho_loadcmds:   "
-              "acceptable __UNIXSTACK present; no modifications.\n" );
-      goto maybe_mash_pagezero;
+	  struct segment_command_64 *seg = seg__unixstack;
+	  if (seg->vmaddr != expected_stack_start)
+		 fail("has __UNIXSTACK, but wrong ::vmaddr");
+	  if (seg->vmsize != expected_stack_size)
+		 fail("has __UNIXSTACK, but wrong ::vmsize");
+//	  if (seg->maxprot != 7)
+//		 fail("has __UNIXSTACK, but wrong ::maxprot (should be 7)");
+	  if (seg->initprot != 3)
+		 fail("has __UNIXSTACK, but wrong ::initprot (should be 3)");
+	  if (seg->nsects != 0)
+		 fail("has __UNIXSTACK, but wrong ::nsects (should be 0)");
+	  if (seg->flags != 0)
+		 fail("has __UNIXSTACK, but wrong ::flags (should be 0)");
+	  /* looks ok */
+	  fprintf(stderr, "fixup_macho_loadcmds:   "
+			  "acceptable __UNIXSTACK present; no modifications.\n" );
+	  goto maybe_mash_pagezero;
    }
 
    if (seg__linkedit) {
-      struct segment_command_64 *seg = seg__linkedit;
-      if (seg->nsects != 0)
-         fail("has __LINKEDIT, but wrong ::nsects (should be 0)");
-      if (seg->flags != 0)
-         fail("has __LINKEDIT, but wrong ::flags (should be 0)");
-      fprintf(stderr, "fixup_macho_loadcmds:   "
-              "no __UNIXSTACK present.\n" );
-      fprintf(stderr, "fixup_macho_loadcmds:   "
-              "converting __LINKEDIT to __UNIXSTACK.\n" );
-      strcpy(seg->segname, "__UNIXSTACK");
-      seg->vmaddr   = expected_stack_start;
-      seg->vmsize   = expected_stack_size;
-      seg->fileoff  = 0;
-      seg->filesize = 0;
-      seg->maxprot  = 7;
-      seg->initprot = 3;
-      /* success */
-      goto maybe_mash_pagezero;
+	  struct segment_command_64 *seg = seg__linkedit;
+	  if (seg->nsects != 0)
+		 fail("has __LINKEDIT, but wrong ::nsects (should be 0)");
+	  if (seg->flags != 0)
+		 fail("has __LINKEDIT, but wrong ::flags (should be 0)");
+	  fprintf(stderr, "fixup_macho_loadcmds:   "
+			  "no __UNIXSTACK present.\n" );
+	  fprintf(stderr, "fixup_macho_loadcmds:   "
+			  "converting __LINKEDIT to __UNIXSTACK.\n" );
+	  strcpy(seg->segname, "__UNIXSTACK");
+	  seg->vmaddr   = expected_stack_start;
+	  seg->vmsize   = expected_stack_size;
+	  seg->fileoff  = 0;
+	  seg->filesize = 0;
+	  seg->maxprot  = 7;
+	  seg->initprot = 3;
+	  /* success */
+	  goto maybe_mash_pagezero;
    }
 
    /* out of options */
    fail("no __UNIXSTACK found and no usable __LINKEDIT found; "
-        "out of options.");
+		"out of options.");
    /* NOTREACHED */
 
   maybe_mash_pagezero:
@@ -560,17 +560,17 @@ void modify_macho_loadcmds ( HChar* filename,
 #  if DARWIN_VERS >= DARWIN_10_10
    assert(size == 64);
    if (!seg__pagezero) {
-      fail("Can't find __PAGEZERO to modify; can't continue.");
+	  fail("Can't find __PAGEZERO to modify; can't continue.");
    }
    fprintf(stderr, "fixup_macho_loadcmds:   "
-           "changing __PAGEZERO.vmaddr from %p to 0x0.\n",
-           (void*)seg__pagezero->vmaddr);
+		   "changing __PAGEZERO.vmaddr from %p to 0x0.\n",
+		   (void*)seg__pagezero->vmaddr);
    seg__pagezero->vmaddr = 0;
 #  endif
 
-  out:   
+  out:
    if (ii.img)
-      unmap_image(&ii);
+	  unmap_image(&ii);
 }
 
 
@@ -578,16 +578,16 @@ static Bool is_plausible_tool_exe_name ( HChar* nm )
 {
    HChar* p;
    if (!nm)
-      return False;
+	  return False;
 
    // Does it end with this string?
    p = strstr(nm, "-x86-darwin");
    if (p && 0 == strcmp(p, "-x86-darwin"))
-      return True;
+	  return True;
 
    p = strstr(nm, "-amd64-darwin");
    if (p && 0 == strcmp(p, "-amd64-darwin"))
-      return True;
+	  return True;
 
    return False;
 }
@@ -600,8 +600,8 @@ int main ( int argc, char** argv )
    ULong req_stack_size = 0;
 
    if (argc != 4)
-      fail("args: -stack_addr-arg -stack_size-arg "
-           "name-of-tool-executable-to-modify"); 
+	  fail("args: -stack_addr-arg -stack_size-arg "
+		   "name-of-tool-executable-to-modify");
 
    r= sscanf(argv[1], "0x%llx", &req_stack_addr);
    if (r != 1) fail("invalid stack_addr arg");
@@ -610,22 +610,22 @@ int main ( int argc, char** argv )
    if (r != 1) fail("invalid stack_size arg");
 
    fprintf(stderr, "fixup_macho_loadcmds: "
-           "requested stack_addr (top) 0x%llx, "
-           "stack_size 0x%llx\n", req_stack_addr, req_stack_size );
+		   "requested stack_addr (top) 0x%llx, "
+		   "stack_size 0x%llx\n", req_stack_addr, req_stack_size );
 
    if (!is_plausible_tool_exe_name(argv[3]))
-      fail("implausible tool exe name -- not of the form *-{x86,amd64}-darwin");
+	  fail("implausible tool exe name -- not of the form *-{x86,amd64}-darwin");
 
-   fprintf(stderr, "fixup_macho_loadcmds: examining tool exe: %s\n", 
-           argv[3] );
+   fprintf(stderr, "fixup_macho_loadcmds: examining tool exe: %s\n",
+		   argv[3] );
    modify_macho_loadcmds( argv[3], req_stack_addr - req_stack_size,
-                          req_stack_size );
+						  req_stack_size );
 
    return 0;
 }
 
 /*
-      cmd LC_SEGMENT_64
+	  cmd LC_SEGMENT_64
   cmdsize 72
   segname __LINKEDIT
    vmaddr 0x0000000138dea000
@@ -635,11 +635,11 @@ int main ( int argc, char** argv )
   maxprot 0x00000007
  initprot 0x00000001
    nsects 0
-    flags 0x0
+	flags 0x0
 */
 
 /*
-      cmd LC_SEGMENT_64
+	  cmd LC_SEGMENT_64
   cmdsize 72
   segname __UNIXSTACK
    vmaddr 0x0000000133800000
@@ -649,5 +649,5 @@ int main ( int argc, char** argv )
   maxprot 0x00000007
  initprot 0x00000003
    nsects 0
-    flags 0x0
+	flags 0x0
 */

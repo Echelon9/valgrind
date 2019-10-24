@@ -9,7 +9,7 @@
    framework.
 
    Copyright (C) 2000-2017 Julian Seward
-      jseward@acm.org
+	  jseward@acm.org
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -22,9 +22,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -52,83 +50,93 @@
 /* Arguments for a syscall. */
 typedef
    struct SyscallArgs {
-      Word sysno;
-      RegWord arg1;
-      RegWord arg2;
-      RegWord arg3;
-      RegWord arg4;
-      RegWord arg5;
-      RegWord arg6;
-      RegWord arg7;
-      RegWord arg8;
+	  Word sysno;
+	  RegWord arg1;
+	  RegWord arg2;
+	  RegWord arg3;
+	  RegWord arg4;
+	  RegWord arg5;
+	  RegWord arg6;
+	  RegWord arg7;
+	  RegWord arg8;
    }
    SyscallArgs;
 
 /* Current status of a syscall being done on behalf of the client. */
 typedef
    struct SyscallStatus {
-      enum { 
-         /* call is complete, result is in 'res' */
-         SsComplete=1,
-         /* syscall not yet completed; must be handed to the kernel */
-         SsHandToKernel, 
-         /* not currently handling a syscall for this thread */
-         SsIdle 
-      } what;
-      SysRes sres; /* only meaningful for .what == SsComplete */
+	  enum {
+		 /* call is complete, result is in 'res' */
+		 SsComplete=1,
+		 /* syscall not yet completed; must be handed to the kernel */
+		 SsHandToKernel,
+		 /* not currently handling a syscall for this thread */
+		 SsIdle
+	  } what;
+	  SysRes sres; /* only meaningful for .what == SsComplete */
    }
    SyscallStatus;
 
 /* Guest state layout info for syscall args. */
 typedef
    struct {
-      // Note that, depending on the platform, arguments may be found in
-      // registers or on the stack.  (See the comment at the top of
-      // syswrap-main.c for per-platform details.)  For register arguments
-      // (which have o_arg field names) the o_arg value is the offset into
-      // the vex register state.  For stack arguments (which have s_arg
-      // field names), the s_arg value is the offset from the stack pointer.
-      Int o_sysno;
+	  // Note that, depending on the platform, arguments may be found in
+	  // registers or on the stack.  (See the comment at the top of
+	  // syswrap-main.c for per-platform details.)  For register arguments
+	  // (which have o_arg field names) the o_arg value is the offset into
+	  // the vex register state.  For stack arguments (which have s_arg
+	  // field names), the s_arg value is the offset from the stack pointer.
+	  Int o_sysno;
 #     if defined(VGP_x86_linux) || defined(VGP_amd64_linux) \
-         || defined(VGP_ppc32_linux) \
-         || defined(VGP_ppc64be_linux) || defined(VGP_ppc64le_linux) \
-         || defined(VGP_arm_linux) || defined(VGP_s390x_linux) \
-         || defined(VGP_mips64_linux) || defined(VGP_arm64_linux)
-      Int o_arg1;
-      Int o_arg2;
-      Int o_arg3;
-      Int o_arg4;
-      Int o_arg5;
-      Int o_arg6;
-      Int uu_arg7;
-      Int uu_arg8;
+		 || defined(VGP_ppc32_linux) \
+		 || defined(VGP_ppc64be_linux) || defined(VGP_ppc64le_linux) \
+		 || defined(VGP_arm_linux) || defined(VGP_s390x_linux) \
+		 || defined(VGP_arm64_linux) \
+		 || defined(VGP_nanomips_linux)
+	  Int o_arg1;
+	  Int o_arg2;
+	  Int o_arg3;
+	  Int o_arg4;
+	  Int o_arg5;
+	  Int o_arg6;
+	  Int uu_arg7;
+	  Int uu_arg8;
 #     elif defined(VGP_mips32_linux)
-      Int o_arg1;
-      Int o_arg2;
-      Int o_arg3;
-      Int o_arg4;
-      Int s_arg5;
-      Int s_arg6;
-      Int s_arg7;
-      Int uu_arg8;
+	  Int o_arg1;
+	  Int o_arg2;
+	  Int o_arg3;
+	  Int o_arg4;
+	  Int s_arg5;
+	  Int s_arg6;
+	  Int s_arg7;
+	  Int uu_arg8;
 #     elif defined(VGP_x86_darwin) || defined(VGP_x86_solaris)
-      Int s_arg1;
-      Int s_arg2;
-      Int s_arg3;
-      Int s_arg4;
-      Int s_arg5;
-      Int s_arg6;
-      Int s_arg7;
-      Int s_arg8;
+	  Int s_arg1;
+	  Int s_arg2;
+	  Int s_arg3;
+	  Int s_arg4;
+	  Int s_arg5;
+	  Int s_arg6;
+	  Int s_arg7;
+	  Int s_arg8;
 #     elif defined(VGP_amd64_darwin) || defined(VGP_amd64_solaris)
-      Int o_arg1;
-      Int o_arg2;
-      Int o_arg3;
-      Int o_arg4;
-      Int o_arg5;
-      Int o_arg6;
-      Int s_arg7;
-      Int s_arg8;
+	  Int o_arg1;
+	  Int o_arg2;
+	  Int o_arg3;
+	  Int o_arg4;
+	  Int o_arg5;
+	  Int o_arg6;
+	  Int s_arg7;
+	  Int s_arg8;
+#     elif defined(VGP_mips64_linux)
+	  Int o_arg1;
+	  Int o_arg2;
+	  Int o_arg3;
+	  Int o_arg4;
+	  Int o_arg5;
+	  Int o_arg6;
+	  Int o_arg7;
+	  Int o_arg8;
 #     else
 #       error "Unknown platform"
 #     endif
@@ -149,17 +157,17 @@ typedef
 
 typedef
    struct {
-      void (*before) ( ThreadId,
-                       SyscallArgLayout*,
-                       /*MOD*/SyscallArgs*,
-                       /*OUT*/SyscallStatus*,
-                       /*OUT*/UWord*
-                     );
+	  void (*before) ( ThreadId,
+					   SyscallArgLayout*,
+					   /*MOD*/SyscallArgs*,
+					   /*OUT*/SyscallStatus*,
+					   /*OUT*/UWord*
+					 );
 
-      void (*after)  ( ThreadId, 
-                       SyscallArgs*,
-                       SyscallStatus*
-                     );
+	  void (*after)  ( ThreadId,
+					   SyscallArgs*,
+					   SyscallStatus*
+					 );
    }
    SyscallTableEntry;
 
@@ -167,11 +175,11 @@ typedef
    wrappers for the relevant syscall used in the OS kernel for that
    number.  Note that the constant names don't always match the
    wrapper names in a straightforward way.  For example, on x86/Linux:
-      
-      __NR_lchown       --> sys_lchown16()
-      __NR_lchown32     --> sys_lchown()
-      __NR_select       --> old_select()
-      __NR__newselect   --> sys_select()
+
+	  __NR_lchown       --> sys_lchown16()
+	  __NR_lchown32     --> sys_lchown()
+	  __NR_select       --> old_select()
+	  __NR__newselect   --> sys_select()
 */
 
 
@@ -199,7 +207,7 @@ SyscallTableEntry* ML_(get_solaris_syscall_entry)( UInt sysno );
 
 #else
 #  error Unknown OS
-#endif   
+#endif
 
 /* ---------------------------------------------------------------------
    Declaring and defining wrappers.
@@ -213,7 +221,7 @@ SyscallTableEntry* ML_(get_solaris_syscall_entry)( UInt sysno );
    that ensures the names won't clash with other wrappers.
 
    You should create corresponding global declarations using
-   DECL_TEMPLATE (indirectly) below.  
+   DECL_TEMPLATE (indirectly) below.
 
    Note.  The silly name "arrghs" is used rather than just "args"
    because a few wrappers declare the name "args" themselves, and
@@ -223,19 +231,19 @@ SyscallTableEntry* ML_(get_solaris_syscall_entry)( UInt sysno );
 
 #define DEFN_PRE_TEMPLATE(auxstr, name)                          \
    void vgSysWrap_##auxstr##_##name##_before                     \
-                                 ( ThreadId tid,                 \
-                                   SyscallArgLayout* layout,     \
-                                   /*MOD*/SyscallArgs* arrghs,   \
-                                   /*OUT*/SyscallStatus* status, \
-                                   /*OUT*/UWord* flags           \
-                                 )
+								 ( ThreadId tid,                 \
+								   SyscallArgLayout* layout,     \
+								   /*MOD*/SyscallArgs* arrghs,   \
+								   /*OUT*/SyscallStatus* status, \
+								   /*OUT*/UWord* flags           \
+								 )
 
 #define DEFN_POST_TEMPLATE(auxstr, name)                         \
    void vgSysWrap_##auxstr##_##name##_after                      \
-                                 ( ThreadId tid,                 \
-                                   SyscallArgs* arrghs,          \
-                                   SyscallStatus* status         \
-                                 )
+								 ( ThreadId tid,                 \
+								   SyscallArgs* arrghs,          \
+								   SyscallStatus* status         \
+								 )
 
 
 /* This macro generates declarations (prototypes) for wrappers.  It
@@ -245,18 +253,18 @@ SyscallTableEntry* ML_(get_solaris_syscall_entry)( UInt sysno );
 #define DECL_TEMPLATE(auxstr, name)                              \
    extern                                                        \
    void vgSysWrap_##auxstr##_##name##_before                     \
-                                 ( ThreadId tid,                 \
-                                   SyscallArgLayout* layout,     \
-                                   /*MOD*/SyscallArgs* arrghs,   \
-                                   /*OUT*/SyscallStatus* status, \
-                                   /*OUT*/UWord* flags           \
-                                 );                              \
+								 ( ThreadId tid,                 \
+								   SyscallArgLayout* layout,     \
+								   /*MOD*/SyscallArgs* arrghs,   \
+								   /*OUT*/SyscallStatus* status, \
+								   /*OUT*/UWord* flags           \
+								 );                              \
    extern                                                        \
    void vgSysWrap_##auxstr##_##name##_after                      \
-                                 ( ThreadId tid,                 \
-                                   SyscallArgs* arrghs,          \
-                                   SyscallStatus* status         \
-                                 );
+								 ( ThreadId tid,                 \
+								   SyscallArgs* arrghs,          \
+								   SyscallStatus* status         \
+								 );
 
 
 
@@ -267,12 +275,12 @@ SyscallTableEntry* ML_(get_solaris_syscall_entry)( UInt sysno );
    [sysno] = { vgSysWrap_##auxstr##_##name##_before, NULL }
 #define WRAPPER_ENTRY_XY(auxstr, sysno, name) \
    [sysno] = { vgSysWrap_##auxstr##_##name##_before, \
-               vgSysWrap_##auxstr##_##name##_after }
+			   vgSysWrap_##auxstr##_##name##_after }
 
 #define WRAPPER_PRE_NAME(auxstr, name) \
-    vgSysWrap_##auxstr##_##name##_before
+	vgSysWrap_##auxstr##_##name##_before
 #define WRAPPER_POST_NAME(auxstr, name) \
-    vgSysWrap_##auxstr##_##name##_after
+	vgSysWrap_##auxstr##_##name##_after
 
 /* Add a generic wrapper to a syscall table. */
 #if defined(VGO_linux) || defined(VGO_solaris)
@@ -287,7 +295,7 @@ SyscallTableEntry* ML_(get_solaris_syscall_entry)( UInt sysno );
 
 /* Add a Linux-specific, arch-independent wrapper to a syscall
    table. */
-#define LINX_(sysno, name)    WRAPPER_ENTRY_X_(linux, sysno, name) 
+#define LINX_(sysno, name)    WRAPPER_ENTRY_X_(linux, sysno, name)
 #define LINXY(sysno, name)    WRAPPER_ENTRY_XY(linux, sysno, name)
 
 
@@ -353,31 +361,31 @@ static inline UWord getERR ( SyscallStatus* st ) {
 /* Set the current result status/value in various ways. */
 #define SET_STATUS_Success(zzz)                      \
    do { status->what = SsComplete;                   \
-        status->sres = VG_(mk_SysRes_Success)(zzz);  \
+		status->sres = VG_(mk_SysRes_Success)(zzz);  \
    } while (0)
 
 #define SET_STATUS_Failure(zzz)                      \
    do { Word wzz = (Word)(zzz);                      \
-        /* Catch out wildly bogus error values. */   \
-        vg_assert(wzz >= 0 && wzz < 10000);          \
-        status->what = SsComplete;                   \
-        status->sres = VG_(mk_SysRes_Error)(wzz);    \
+		/* Catch out wildly bogus error values. */   \
+		vg_assert(wzz >= 0 && wzz < 10000);          \
+		status->what = SsComplete;                   \
+		status->sres = VG_(mk_SysRes_Error)(wzz);    \
    } while (0)
 
 #define SET_STATUS_from_SysRes(zzz)                  \
    do {                                              \
-     status->what = SsComplete;                      \
-     status->sres = (zzz);                           \
+	 status->what = SsComplete;                      \
+	 status->sres = (zzz);                           \
    } while (0)
 
 
 #define PRINT(format, args...)                       \
    if (VG_(clo_trace_syscalls))                      \
-      VG_(printf)(format, ## args)
+	  VG_(printf)(format, ## args)
 
 #define FUSE_COMPATIBLE_MAY_BLOCK()                            \
    if (SimHintiS(SimHint_fuse_compatible, VG_(clo_sim_hints))) \
-      *flags |= SfMayBlock
+	  *flags |= SfMayBlock
 
 
 /* Macros used to tell tools about uses of scalar arguments.  Note,
@@ -437,8 +445,8 @@ static inline UWord getERR ( SyscallStatus* st ) {
 
 /* Tell the tool that the syscall number is being read. */
 #define PRRSN \
-      VG_(tdict).track_pre_reg_read(Vg_CoreSysCall, tid, "(syscallno)", \
-                                    layout->o_sysno, sizeof(RegWord));
+	  VG_(tdict).track_pre_reg_read(Vg_CoreSysCall, tid, "(syscallno)", \
+									layout->o_sysno, sizeof(RegWord));
 
 /* REGISTER PARAMETERS */
 
@@ -448,38 +456,38 @@ static inline UWord getERR ( SyscallStatus* st ) {
    careful about endianness. */
 
 /* little-endian: the part of the guest state being read is
-      let here = offset_of_reg
-      in  [here .. here + sizeof(t) - 1]
+	  let here = offset_of_reg
+	  in  [here .. here + sizeof(t) - 1]
    since the least significant parts of the guest register are stored
    in memory at the lowest address.
 */
 #define PRRAn_LE(n,s,t,a)                          \
    do {                                            \
-      Int here = layout->o_arg##n;                 \
-      vg_assert(sizeof(t) <= sizeof(RegWord));     \
-      vg_assert(here >= 0);                        \
-      VG_(tdict).track_pre_reg_read(               \
-         Vg_CoreSysCall, tid, s"("#a")",           \
-         here, sizeof(t)                           \
-      );                                           \
+	  Int here = layout->o_arg##n;                 \
+	  vg_assert(sizeof(t) <= sizeof(RegWord));     \
+	  vg_assert(here >= 0);                        \
+	  VG_(tdict).track_pre_reg_read(               \
+		 Vg_CoreSysCall, tid, s"("#a")",           \
+		 here, sizeof(t)                           \
+	  );                                           \
    } while (0)
 
 /* big-endian: the part of the guest state being read is
-      let next = offset_of_reg + sizeof(reg) 
-      in  [next - sizeof(t) .. next - 1]
+	  let next = offset_of_reg + sizeof(reg)
+	  in  [next - sizeof(t) .. next - 1]
    since the least significant parts of the guest register are stored
    in memory at the highest address.
 */
 #define PRRAn_BE(n,s,t,a)                            \
    do {                                              \
-      Int here = layout->o_arg##n;                   \
-      Int next = layout->o_arg##n + sizeof(RegWord); \
-      vg_assert(sizeof(t) <= sizeof(RegWord));       \
-      vg_assert(here >= 0);                          \
-      VG_(tdict).track_pre_reg_read(                 \
-         Vg_CoreSysCall, tid, s"("#a")",             \
-         next-sizeof(t), sizeof(t)                   \
-      );                                             \
+	  Int here = layout->o_arg##n;                   \
+	  Int next = layout->o_arg##n + sizeof(RegWord); \
+	  vg_assert(sizeof(t) <= sizeof(RegWord));       \
+	  vg_assert(here >= 0);                          \
+	  VG_(tdict).track_pre_reg_read(                 \
+		 Vg_CoreSysCall, tid, s"("#a")",             \
+		 next-sizeof(t), sizeof(t)                   \
+	  );                                             \
    } while (0)
 
 #if defined(VG_BIGENDIAN)
@@ -499,48 +507,48 @@ static inline UWord getERR ( SyscallStatus* st ) {
    careful about endianness. */
 
 /* little-endian: the part of the guest state being read is
-      let here = offset_of_reg
-      in  [here .. here + sizeof(t) - 1]
+	  let here = offset_of_reg
+	  in  [here .. here + sizeof(t) - 1]
    since the least significant parts of the guest register are stored
    in memory at the lowest address.
 */
 #define PSRAn_LE(n,s,t,a)                          \
    do {                                            \
-      Addr here = layout->s_arg##n + VG_(get_SP)(tid); \
-      vg_assert(sizeof(t) <= sizeof(RegWord));     \
-      VG_(tdict).track_pre_mem_read(               \
-         Vg_CoreSysCallArgInMem, tid, s"("#a")",   \
-         here, sizeof(t)                           \
-      );                                           \
+	  Addr here = layout->s_arg##n + VG_(get_SP)(tid); \
+	  vg_assert(sizeof(t) <= sizeof(RegWord));     \
+	  VG_(tdict).track_pre_mem_read(               \
+		 Vg_CoreSysCallArgInMem, tid, s"("#a")",   \
+		 here, sizeof(t)                           \
+	  );                                           \
    } while (0)
 
 /* big-endian: the part of the guest state being read is
-      let next = offset_of_reg + sizeof(reg) 
-      in  [next - sizeof(t) .. next - 1]
+	  let next = offset_of_reg + sizeof(reg)
+	  in  [next - sizeof(t) .. next - 1]
    since the least significant parts of the guest register are stored
    in memory at the highest address.
 */
 #if (defined(VGP_mips32_linux) && defined (_MIPSEB))
  #define PSRAn_BE(n,s,t,a)                                        \
-    do {                                                          \
-      Addr next = layout->s_arg##n + sizeof(RegWord) +            \
-                  VG_(get_SP)(tid);                               \
-      vg_assert(sizeof(t) <= sizeof(RegWord));                    \
-      VG_(tdict).track_pre_mem_read(                              \
-         Vg_CoreSysCallArgInMem, tid, s"("#a")",                  \
-         next-sizeof(t), sizeof(t)                                \
-      );                                                          \
+	do {                                                          \
+	  Addr next = layout->s_arg##n + sizeof(RegWord) +            \
+				  VG_(get_SP)(tid);                               \
+	  vg_assert(sizeof(t) <= sizeof(RegWord));                    \
+	  VG_(tdict).track_pre_mem_read(                              \
+		 Vg_CoreSysCallArgInMem, tid, s"("#a")",                  \
+		 next-sizeof(t), sizeof(t)                                \
+	  );                                                          \
    } while (0)
 #else
 #define PSRAn_BE(n,s,t,a)                                         \
    do {                                                           \
-      Addr next = layout->o_arg##n + sizeof(RegWord) +            \
-                  VG_(threads)[tid].arch.vex.VG_STACK_PTR;        \
-      vg_assert(sizeof(t) <= sizeof(RegWord));                    \
-      VG_(tdict).track_pre_mem_read(                              \
-         Vg_CoreSysCallArgInMem, tid, s"("#a")",                  \
-         next-sizeof(t), sizeof(t)                                \
-      );                                                          \
+	  Addr next = layout->o_arg##n + sizeof(RegWord) +            \
+				  VG_(threads)[tid].arch.vex.VG_STACK_PTR;        \
+	  vg_assert(sizeof(t) <= sizeof(RegWord));                    \
+	  VG_(tdict).track_pre_mem_read(                              \
+		 Vg_CoreSysCallArgInMem, tid, s"("#a")",                  \
+		 next-sizeof(t), sizeof(t)                                \
+	  );                                                          \
    } while (0)
 #endif
 
@@ -555,55 +563,55 @@ static inline UWord getERR ( SyscallStatus* st ) {
 
 #define PRE_REG_READ0(tr, s) \
    if (VG_(tdict).track_pre_reg_read) { \
-      PRRSN; \
+	  PRRSN; \
    }
 #define PRE_REG_READ1(tr, s, t1, a1) \
    if (VG_(tdict).track_pre_reg_read) { \
-      PRRSN; \
-      PRA1(s,t1,a1);                            \
+	  PRRSN; \
+	  PRA1(s,t1,a1);                            \
    }
 #define PRE_REG_READ2(tr, s, t1, a1, t2, a2) \
    if (VG_(tdict).track_pre_reg_read) { \
-      PRRSN; \
-      PRA1(s,t1,a1); PRA2(s,t2,a2);           \
+	  PRRSN; \
+	  PRA1(s,t1,a1); PRA2(s,t2,a2);           \
    }
 #define PRE_REG_READ3(tr, s, t1, a1, t2, a2, t3, a3) \
    if (VG_(tdict).track_pre_reg_read) { \
-      PRRSN; \
-      PRA1(s,t1,a1); PRA2(s,t2,a2); PRA3(s,t3,a3);  \
+	  PRRSN; \
+	  PRA1(s,t1,a1); PRA2(s,t2,a2); PRA3(s,t3,a3);  \
    }
 #define PRE_REG_READ4(tr, s, t1, a1, t2, a2, t3, a3, t4, a4) \
    if (VG_(tdict).track_pre_reg_read) { \
-      PRRSN; \
-      PRA1(s,t1,a1); PRA2(s,t2,a2); PRA3(s,t3,a3);  \
-      PRA4(s,t4,a4);                                    \
+	  PRRSN; \
+	  PRA1(s,t1,a1); PRA2(s,t2,a2); PRA3(s,t3,a3);  \
+	  PRA4(s,t4,a4);                                    \
    }
 #define PRE_REG_READ5(tr, s, t1, a1, t2, a2, t3, a3, t4, a4, t5, a5) \
    if (VG_(tdict).track_pre_reg_read) { \
-      PRRSN; \
-      PRA1(s,t1,a1); PRA2(s,t2,a2); PRA3(s,t3,a3);  \
-      PRA4(s,t4,a4); PRA5(s,t5,a5);                   \
+	  PRRSN; \
+	  PRA1(s,t1,a1); PRA2(s,t2,a2); PRA3(s,t3,a3);  \
+	  PRA4(s,t4,a4); PRA5(s,t5,a5);                   \
    }
 #define PRE_REG_READ6(tr, s, t1, a1, t2, a2, t3, a3, t4, a4, t5, a5, t6, a6) \
    if (VG_(tdict).track_pre_reg_read) { \
-      PRRSN; \
-      PRA1(s,t1,a1); PRA2(s,t2,a2); PRA3(s,t3,a3);   \
-      PRA4(s,t4,a4); PRA5(s,t5,a5); PRA6(s,t6,a6);   \
+	  PRRSN; \
+	  PRA1(s,t1,a1); PRA2(s,t2,a2); PRA3(s,t3,a3);   \
+	  PRA4(s,t4,a4); PRA5(s,t5,a5); PRA6(s,t6,a6);   \
    }
 #define PRE_REG_READ7(tr, s, t1, a1, t2, a2, t3, a3, t4, a4, t5, a5, t6, a6, t7, a7) \
    if (VG_(tdict).track_pre_reg_read) { \
-      PRRSN; \
-      PRA1(s,t1,a1); PRA2(s,t2,a2); PRA3(s,t3,a3);   \
-      PRA4(s,t4,a4); PRA5(s,t5,a5); PRA6(s,t6,a6);   \
-      PRA7(s,t7,a7);                                     \
+	  PRRSN; \
+	  PRA1(s,t1,a1); PRA2(s,t2,a2); PRA3(s,t3,a3);   \
+	  PRA4(s,t4,a4); PRA5(s,t5,a5); PRA6(s,t6,a6);   \
+	  PRA7(s,t7,a7);                                     \
    }
 
 #define PRE_REG_READ8(tr, s, t1, a1, t2, a2, t3, a3, t4, a4, t5, a5, t6, a6, t7, a7, t8, a8) \
    if (VG_(tdict).track_pre_reg_read) { \
-      PRRSN; \
-      PRA1(s,t1,a1); PRA2(s,t2,a2); PRA3(s,t3,a3);   \
-      PRA4(s,t4,a4); PRA5(s,t5,a5); PRA6(s,t6,a6);   \
-      PRA7(s,t7,a7); PRA8(s,t8,a8);                    \
+	  PRRSN; \
+	  PRA1(s,t1,a1); PRA2(s,t2,a2); PRA3(s,t3,a3);   \
+	  PRA4(s,t4,a4); PRA5(s,t5,a5); PRA6(s,t6,a6);   \
+	  PRA7(s,t7,a7); PRA8(s,t8,a8);                    \
    }
 
 #define PRE_MEM_READ(zzname, zzaddr, zzlen) \
@@ -620,13 +628,13 @@ static inline UWord getERR ( SyscallStatus* st ) {
 
 
 #define PRE_FIELD_READ(zzname, zzfield) \
-    PRE_MEM_READ(zzname, (UWord)&zzfield, sizeof(zzfield))
+	PRE_MEM_READ(zzname, (UWord)&zzfield, sizeof(zzfield))
 
 #define PRE_FIELD_WRITE(zzname, zzfield) \
-    PRE_MEM_WRITE(zzname, (UWord)&zzfield, sizeof(zzfield))
+	PRE_MEM_WRITE(zzname, (UWord)&zzfield, sizeof(zzfield))
 
 #define POST_FIELD_WRITE(zzfield) \
-    POST_MEM_WRITE((UWord)&zzfield, sizeof(zzfield))
+	POST_MEM_WRITE((UWord)&zzfield, sizeof(zzfield))
 
 // Macros to support 64-bit syscall args split into two 32 bit values
 #define LOHI64(lo,hi)   ( ((ULong)(lo)) | (((ULong)(hi)) << 32) )

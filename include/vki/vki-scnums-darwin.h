@@ -8,7 +8,7 @@
    framework.
 
    Copyright (C) 2007-2017 Apple Inc.
-      Greg Parker  gparker@apple.com
+	  Greg Parker  gparker@apple.com
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -66,27 +64,27 @@
 #define VG_DARWIN_SYSCALL_NUMBER_MASK     (~VG_DARWIN_SYSCALL_CLASS_MASK)
 
 #define VG_DARWIN_SYSCALL_CLASS_NONE      0       /* Invalid */
-#define VG_DARWIN_SYSCALL_CLASS_MACH      1       /* Mach */      
+#define VG_DARWIN_SYSCALL_CLASS_MACH      1       /* Mach */
 #define VG_DARWIN_SYSCALL_CLASS_UNIX      2       /* Unix/BSD */
 #define VG_DARWIN_SYSCALL_CLASS_MDEP      3       /* Machine-dependent */
 #define VG_DARWIN_SYSCALL_CLASS_DIAG      4       /* Diagnostics */
 
 // Macros for encoding syscall numbers in the 64-bit encoding scheme.
 #define VG_DARWIN_SYSCALL_CONSTRUCT_MACH(syscall_number) \
-    ((VG_DARWIN_SYSCALL_CLASS_MACH << VG_DARWIN_SYSCALL_CLASS_SHIFT) | \
-     (VG_DARWIN_SYSCALL_NUMBER_MASK & (syscall_number)))
+	((VG_DARWIN_SYSCALL_CLASS_MACH << VG_DARWIN_SYSCALL_CLASS_SHIFT) | \
+	 (VG_DARWIN_SYSCALL_NUMBER_MASK & (syscall_number)))
 
 #define VG_DARWIN_SYSCALL_CONSTRUCT_UNIX(syscall_number) \
-    ((VG_DARWIN_SYSCALL_CLASS_UNIX << VG_DARWIN_SYSCALL_CLASS_SHIFT) | \
-     (VG_DARWIN_SYSCALL_NUMBER_MASK & (syscall_number)))
+	((VG_DARWIN_SYSCALL_CLASS_UNIX << VG_DARWIN_SYSCALL_CLASS_SHIFT) | \
+	 (VG_DARWIN_SYSCALL_NUMBER_MASK & (syscall_number)))
 
 #define VG_DARWIN_SYSCALL_CONSTRUCT_MDEP(syscall_number) \
-    ((VG_DARWIN_SYSCALL_CLASS_MDEP << VG_DARWIN_SYSCALL_CLASS_SHIFT) | \
-     (VG_DARWIN_SYSCALL_NUMBER_MASK & (syscall_number)))
+	((VG_DARWIN_SYSCALL_CLASS_MDEP << VG_DARWIN_SYSCALL_CLASS_SHIFT) | \
+	 (VG_DARWIN_SYSCALL_NUMBER_MASK & (syscall_number)))
 
 #define VG_DARWIN_SYSCALL_CONSTRUCT_DIAG(syscall_number) \
-    ((VG_DARWIN_SYSCALL_CLASS_DIAG << VG_DARWIN_SYSCALL_CLASS_SHIFT) | \
-     (VG_DARWIN_SYSCALL_NUMBER_MASK & (syscall_number)))
+	((VG_DARWIN_SYSCALL_CLASS_DIAG << VG_DARWIN_SYSCALL_CLASS_SHIFT) | \
+	 (VG_DARWIN_SYSCALL_NUMBER_MASK & (syscall_number)))
 
 
 /* Macros for decoding syscall numbers from the 64-bit encoding scheme. */
@@ -100,10 +98,10 @@
    // throughout Valgrind, into the 32-bit syscall number encoding, which is
    // suitable for passing to the (32-bit) kernel.
 #  define VG_DARWIN_SYSNO_FOR_KERNEL(sysno) \
-    ((VG_DARWIN_SYSNO_CLASS(sysno) == VG_DARWIN_SYSCALL_CLASS_MACH) \
-    ? -VG_DARWIN_SYSNO_INDEX(sysno) \
-    :  VG_DARWIN_SYSNO_INDEX(sysno) \
-    )
+	((VG_DARWIN_SYSNO_CLASS(sysno) == VG_DARWIN_SYSCALL_CLASS_MACH) \
+	? -VG_DARWIN_SYSNO_INDEX(sysno) \
+	:  VG_DARWIN_SYSNO_INDEX(sysno) \
+	)
 
 #elif defined(VGA_amd64)
    // For 64-bit systems, we don't need to do anything to the syscall number.
@@ -226,7 +224,7 @@
 
 
 // bsd/sys/syscall.h
- 
+
 #define	__NR_syscall        VG_DARWIN_SYSCALL_CONSTRUCT_UNIX(0)
 #define	__NR_exit           VG_DARWIN_SYSCALL_CONSTRUCT_UNIX(1)
 #define	__NR_fork           VG_DARWIN_SYSCALL_CONSTRUCT_UNIX(2) // was UX64
@@ -455,8 +453,8 @@
 #define	__NR_ATPgetrsp      VG_DARWIN_SYSCALL_CONSTRUCT_UNIX(212)
 			/* 213  Reserved for AppleTalk */
 #if DARWIN_VERS >= DARWIN_10_6
-                        /* 214  old kqueue_from_portset_np*/
-                        /* 215  old kqueue_portset_np*/
+						/* 214  old kqueue_from_portset_np*/
+						/* 215  old kqueue_portset_np*/
 #else
 #define __NR_kqueue_from_portset_np VG_DARWIN_SYSCALL_CONSTRUCT_UNIX(214)
 #define __NR_kqueue_portset_np VG_DARWIN_SYSCALL_CONSTRUCT_UNIX(215)
@@ -773,6 +771,7 @@
 #endif /* DARWIN_VERS >= DARWIN_10_12 */
 
 #if DARWIN_VERS >= DARWIN_10_10
+#define __NR_openat                 VG_DARWIN_SYSCALL_CONSTRUCT_UNIX(463)
 #define __NR_faccessat              VG_DARWIN_SYSCALL_CONSTRUCT_UNIX(466)
 #define __NR_fstatat64              VG_DARWIN_SYSCALL_CONSTRUCT_UNIX(470)
 #define __NR_readlinkat             VG_DARWIN_SYSCALL_CONSTRUCT_UNIX(473)
@@ -853,6 +852,8 @@
 #elif DARWIN_VERS == DARWIN_10_12
 #define __NR_MAXSYSCALL             VG_DARWIN_SYSCALL_CONSTRUCT_UNIX(522)
 #elif DARWIN_VERS == DARWIN_10_13
+#define __NR_MAXSYSCALL             VG_DARWIN_SYSCALL_CONSTRUCT_UNIX(530)
+#elif DARWIN_VERS == DARWIN_10_14
 #define __NR_MAXSYSCALL             VG_DARWIN_SYSCALL_CONSTRUCT_UNIX(530)
 #else
 #error unknown darwin version

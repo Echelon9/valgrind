@@ -8,7 +8,7 @@
    framework.
 
    Copyright (C) 2000-2017 Julian Seward
-      jseward@acm.org
+	  jseward@acm.org
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -64,7 +62,7 @@ extern Addr VG_(am_startup) ( Addr sp_at_startup );
 /* Check whether ADDR is OK to be used as aspacem_minAddr. If not, *ERRMSG
    will be set to identify what's wrong. ERRMSG may be NULL. */
 extern Bool VG_(am_is_valid_for_aspacem_minAddr)( Addr addr,
-                                                  const HChar **errmsg );
+												  const HChar **errmsg );
 
 //--------------------------------------------------------------
 // Querying current status
@@ -76,11 +74,11 @@ extern NSegment const *VG_(am_find_anon_segment) ( Addr a );
 /* Find the next segment along from 'here', if it is a file/anon/resvn
    segment. */
 extern NSegment const* VG_(am_next_nsegment) ( const NSegment* here,
-                                               Bool fwds );
+											   Bool fwds );
 
 /* Is the area [start .. start+len-1] validly accessible by
    valgrind with at least the permissions 'prot' ?  To find out
-   simply if said area merely belongs to valgrind, pass 
+   simply if said area merely belongs to valgrind, pass
    VKI_PROT_NONE as 'prot'.  Will return False if any part of the
    area does not belong to valgrind or does not have at least
    the stated permissions. */
@@ -118,8 +116,8 @@ extern void VG_(am_show_nsegments) ( Int logLevel, const HChar* who );
    a discrepancy is detected, but does not abort the system.  Returned
    Bool is False if a discrepancy was found. */
 
-extern Bool VG_(am_do_sync_check) ( const HChar* fn, 
-                                    const HChar* file, Int line );
+extern Bool VG_(am_do_sync_check) ( const HChar* fn,
+									const HChar* file, Int line );
 
 //--------------------------------------------------------------
 // Functions pertaining to the central query-notify mechanism
@@ -129,11 +127,11 @@ extern Bool VG_(am_do_sync_check) ( const HChar* fn,
 /* Describes a request for VG_(am_get_advisory). */
 typedef
    struct {
-      /* Note: if rkind == MAlign then start specifies alignment. This is
-         Solaris specific. */
-      enum { MFixed, MHint, MAny, MAlign } rkind;
-      Addr start;
-      Addr len;
+	  /* Note: if rkind == MAlign then start specifies alignment. This is
+		 Solaris specific. */
+	  enum { MFixed, MHint, MAny, MAlign } rkind;
+	  Addr start;
+	  Addr len;
    }
    MapRequest;
 
@@ -151,7 +149,7 @@ extern Addr VG_(am_get_advisory)
    fixed requests.  If start is zero, a floating request is issued; if
    nonzero, a fixed request at that address is issued.  Same comments
    about return values apply. */
-extern Addr VG_(am_get_advisory_client_simple) 
+extern Addr VG_(am_get_advisory_client_simple)
    ( Addr start, SizeT len, /*OUT*/Bool* ok );
 
 /* Returns True if [start, start + len - 1] is covered by a single
@@ -222,10 +220,10 @@ extern SysRes VG_(am_mmap_file_fixed_client_flags)
    ( Addr start, SizeT length, UInt prot, UInt flags, Int fd, Off64T offset );
 extern SysRes VG_(am_mmap_named_file_fixed_client)
    ( Addr start, SizeT length, UInt prot, Int fd,
-     Off64T offset, const HChar *name );
+	 Off64T offset, const HChar *name );
 extern SysRes VG_(am_mmap_named_file_fixed_client_flags)
    ( Addr start, SizeT length, UInt prot, UInt flags, Int fd,
-     Off64T offset, const HChar *name );
+	 Off64T offset, const HChar *name );
 
 /* Map anonymously at a fixed address for the client, and update
    the segment array accordingly. */
@@ -264,7 +262,7 @@ extern SysRes VG_(am_mmap_client_heap) ( SizeT length, Int prot );
    should immediately discard translations from the specified address
    range. */
 extern SysRes VG_(am_munmap_client)( /*OUT*/Bool* need_discard,
-                                     Addr start, SizeT length );
+									 Addr start, SizeT length );
 
 /* Let (start,len) denote an area within a single Valgrind-owned
   segment (anon or file).  Change the ownership of [start, start+len)
@@ -287,7 +285,7 @@ extern void VG_(am_set_segment_hasT)( Addr addr );
    The reservation will only be created if it, plus the extra-zone,
    falls entirely within a single free segment.  The returned Bool
    indicates whether the creation succeeded. */
-extern Bool VG_(am_create_reservation) 
+extern Bool VG_(am_create_reservation)
    ( Addr start, SizeT length, ShrinkMode smode, SSizeT extra );
 
 /* ADDR is the start address of an anonymous client mapping.  This fn extends
@@ -300,7 +298,7 @@ extern Bool VG_(am_create_reservation)
    exceed the size of the reservation segment minus one page, that is,
    the reservation segment after the operation must be at least one
    page long. The function returns a pointer to the resized segment. */
-extern const NSegment *VG_(am_extend_into_adjacent_reservation_client) 
+extern const NSegment *VG_(am_extend_into_adjacent_reservation_client)
    ( Addr addr, SSizeT delta, /*OUT*/Bool *overflow );
 
 /* --- --- --- resizing/move a mapping --- --- --- */
@@ -320,8 +318,8 @@ extern const NSegment *VG_(am_extend_map_client)( Addr addr, SizeT delta );
    caller should immediately discard translations from both specified
    address ranges.  */
 extern Bool VG_(am_relocate_nooverlap_client)( /*OUT*/Bool* need_discard,
-                                               Addr old_addr, SizeT old_len,
-                                               Addr new_addr, SizeT new_len );
+											   Addr old_addr, SizeT old_len,
+											   Addr new_addr, SizeT new_len );
 
 //--------------------------------------------------------------
 // Valgrind (non-client) thread stacks.  V itself runs on such
@@ -335,14 +333,14 @@ extern Bool VG_(am_relocate_nooverlap_client)( /*OUT*/Bool* need_discard,
 // any command line option can be processed. This interim stack
 // (declared in m_main.c) will use the size VG_DEFAULT_STACK_ACTIVE_SZB.
 #if defined(VGP_ppc32_linux) \
-    || defined(VGP_ppc64be_linux) || defined(VGP_ppc64le_linux)	\
-    || defined(VGP_mips32_linux) || defined(VGP_mips64_linux) \
-    || defined(VGP_arm64_linux)
+	|| defined(VGP_ppc64be_linux) || defined(VGP_ppc64le_linux)	\
+	|| defined(VGP_mips32_linux) || defined(VGP_mips64_linux) \
+	|| defined(VGP_arm64_linux) || defined(VGP_nanomips_linux)
 # define VG_STACK_GUARD_SZB  65536  // 1 or 16 pages
 #else
 # define VG_STACK_GUARD_SZB  8192   // 2 pages
 #endif
-# define VG_DEFAULT_STACK_ACTIVE_SZB 1048576 // (4096 * 256) = 1Mb 
+# define VG_DEFAULT_STACK_ACTIVE_SZB 1048576 // (4096 * 256) = 1Mb
 
 typedef struct _VgStack VgStack;
 
@@ -359,31 +357,31 @@ extern VgStack* VG_(am_alloc_VgStack)( /*OUT*/Addr* initial_sp );
    used.  Used for estimating if we are close to overflowing it.  If
    the free area is larger than 'limit', just return 'limit'. */
 extern SizeT VG_(am_get_VgStack_unused_szB)( const VgStack* stack,
-                                             SizeT limit ); 
+											 SizeT limit );
 
 /* Returns the Addr of the lowest usable byte of stack. */
 extern Addr VG_(am_valgrind_stack_low_addr)( const VgStack* stack);
 
 // DDD: this is ugly
 #if defined(VGO_darwin)
-typedef 
+typedef
    struct {
-      Bool   is_added;  // Added or removed seg?
-      Addr   start;
-      SizeT  end;
-      UInt   prot;      // Not used for removed segs.
-      Off64T offset;    // Not used for removed segs.
+	  Bool   is_added;  // Added or removed seg?
+	  Addr   start;
+	  SizeT  end;
+	  UInt   prot;      // Not used for removed segs.
+	  Off64T offset;    // Not used for removed segs.
    }
    ChangedSeg;
 
 extern Bool VG_(get_changed_segments)(
-      const HChar* when, const HChar* where, /*OUT*/ChangedSeg* css,
-      Int css_size, /*OUT*/Int* css_used);
+	  const HChar* when, const HChar* where, /*OUT*/ChangedSeg* css,
+	  Int css_size, /*OUT*/Int* css_used);
 #endif
 
 #if defined(VGO_solaris)
 extern Bool VG_(am_search_for_new_segment)(Addr *start, SizeT *size,
-                                           UInt *prot);
+										   UInt *prot);
 #endif
 
 #endif   // __PUB_CORE_ASPACEMGR_H

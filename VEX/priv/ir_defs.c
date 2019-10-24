@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-   02110-1301, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 
@@ -709,7 +707,8 @@ void ppIROp ( IROp op )
       case Iop_Scale2_64Fx2: vex_printf("Scale2_64Fx2"); return;
       case Iop_Log2_32Fx4: vex_printf("Log2_32Fx4"); return;
       case Iop_Log2_64Fx2: vex_printf("Log2_64Fx2"); return;
- 
+      case Iop_Exp2_32Fx4: vex_printf("Iop_Exp2_32Fx4"); return;
+
       case Iop_Sub32Fx4:  vex_printf("Sub32Fx4"); return;
       case Iop_Sub32Fx2:  vex_printf("Sub32Fx2"); return;
       case Iop_Sub32F0x4: vex_printf("Sub32F0x4"); return;
@@ -3014,6 +3013,7 @@ void typeOfPrimop ( IROp op,
          TERNARY(ity_RMode,Ity_V128,Ity_V128, Ity_V128);
       case Iop_Log2_32Fx4:
       case Iop_Log2_64Fx2:
+      case Iop_Exp2_32Fx4:
          UNARY(Ity_V128, Ity_V128);
 
       case Iop_V128to64: case Iop_V128HIto64:

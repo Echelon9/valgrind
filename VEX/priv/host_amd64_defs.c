@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-   02110-1301, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 
@@ -3954,8 +3952,6 @@ Int emit_AMD64Instr ( /*MB_MOD*/Bool* is_profInc,
       goto done;
 
    case Ain_SseShiftN: {
-      opc         = 0; // invalid
-      subopc_imm  = 0; // invalid
       UInt limit  = 0;
       UInt shiftImm = i->Ain.SseShiftN.shiftBits;
       switch (i->Ain.SseShiftN.op) {

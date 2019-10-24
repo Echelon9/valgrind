@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -819,9 +817,9 @@ static SyscallTableEntry syscall_main_table[] = {
    //   (__NR_userfaultfd,       sys_ni_syscall),        // 282
    LINX_(__NR_membarrier,        sys_membarrier),        // 283
    //   (__NR_mlock2,            sys_ni_syscall),        // 284
-   //   (__NR_copy_file_range,   sys_ni_syscall),        // 285
-   //   (__NR_preadv2,           sys_ni_syscall),        // 286
-   //   (__NR_pwritev2,          sys_ni_syscall),        // 287
+   LINX_(__NR_copy_file_range,   sys_copy_file_range),   // 285
+   LINXY(__NR_preadv2,           sys_preadv2),           // 286
+   LINX_(__NR_pwritev2,          sys_pwritev2),          // 287
    //   (__NR_pkey_mprotect,     sys_ni_syscall),        // 288
    //   (__NR_pkey_alloc,        sys_ni_syscall),        // 289
    //   (__NR_pkey_free,         sys_ni_syscall),        // 290

@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-   02110-1301, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 
@@ -5781,6 +5779,8 @@ static HReg iselVecExpr_wrk ( ISelEnv* env, const IRExpr* e,
 
       case Iop_RecipEst32Fx4: fpop = Pavfp_RCPF;    goto do_32Fx4_unary;
       case Iop_RSqrtEst32Fx4: fpop = Pavfp_RSQRTF;  goto do_32Fx4_unary;
+      case Iop_Log2_32Fx4:    fpop = Pavfp_Log2;    goto do_32Fx4_unary;
+      case Iop_Exp2_32Fx4:    fpop = Pavfp_Exp2;    goto do_32Fx4_unary;
       case Iop_I32UtoF32x4_DEP: fpop = Pavfp_CVTU2F;  goto do_32Fx4_unary;
       case Iop_I32StoF32x4_DEP: fpop = Pavfp_CVTS2F;  goto do_32Fx4_unary;
       case Iop_QF32toI32Ux4_RZ: fpop = Pavfp_QCVTF2U; goto do_32Fx4_unary;
@@ -6539,7 +6539,10 @@ static void iselStmt ( ISelEnv* env, IRStmt* stmt, IREndness IEndianess )
          return;
       }
       if (!mode64 && ty == Ity_I128) {
-         HReg r_srcHi, r_srcMedHi, r_srcMedLo, r_srcLo;
+         HReg r_srcHi    = INVALID_HREG;
+         HReg r_srcMedHi = INVALID_HREG;
+         HReg r_srcMedLo = INVALID_HREG;
+         HReg r_srcLo    = INVALID_HREG;
          HReg r_dstHi, r_dstMedHi, r_dstMedLo, r_dstLo;
 
          iselInt128Expr_to_32x4(&r_srcHi, &r_srcMedHi,

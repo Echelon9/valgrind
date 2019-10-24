@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -20241,6 +20239,7 @@ static UInt disInstr_MIPS_WRK_00(UInt cins, const VexArchInfo* archinfo,
 #elif defined(__mips__) && ((defined(__mips_isa_rev) && __mips_isa_rev >= 6))
 
       case 0x08: { /* BEQZALC, BEQC, BOVC */
+         IRTemp t1, t2, t3, t4;
          if (rs == 0) { /* BEQZALC */
             DIP("beqzalc r%u, %u", rt, imm);
 

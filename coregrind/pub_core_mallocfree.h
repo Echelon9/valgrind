@@ -8,7 +8,7 @@
    framework.
 
    Copyright (C) 2000-2017 Julian Seward
-      jseward@acm.org
+	  jseward@acm.org
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -38,17 +36,17 @@
 // tools.
 //--------------------------------------------------------------------
 
-/* Allocation arenas.  
+/* Allocation arenas.
 
-      CORE      for the core's and tools' general use.
-      DINFO     for debug info (symbols, line #s, CFI, etc) storage.
-      CLIENT    for the client's mallocs/frees, if the tool replaces glibc's
-                    malloc() et al -- redzone size is chosen by the tool.
-      DEMANGLE  for the C++ demangler.
-      TTAUX     for storing TT/TC auxiliary structures (address range
-                equivalence classes).
+	  CORE      for the core's and tools' general use.
+	  DINFO     for debug info (symbols, line #s, CFI, etc) storage.
+	  CLIENT    for the client's mallocs/frees, if the tool replaces glibc's
+					malloc() et al -- redzone size is chosen by the tool.
+	  DEMANGLE  for the C++ demangler.
+	  TTAUX     for storing TT/TC auxiliary structures (address range
+				equivalence classes).
 
-   When adding a new arena, remember also to add it to ensure_mm_init(). 
+   When adding a new arena, remember also to add it to ensure_mm_init().
 */
 typedef Int ArenaId;
 
@@ -64,25 +62,26 @@ typedef Int ArenaId;
 // minimum alignment.  Must be a power of 2 greater than 4, and should be
 // greater than 8.
 #if   defined(VGP_x86_linux)    || \
-      defined(VGP_arm_linux)    || \
-      defined(VGP_mips32_linux) || \
-      (defined(VGP_mips64_linux) && defined(VGABI_N32)) || \
-      defined(VGP_x86_solaris)
+	  defined(VGP_arm_linux)    || \
+	  defined(VGP_mips32_linux) || \
+	  (defined(VGP_mips64_linux) && defined(VGABI_N32)) || \
+	  defined(VGP_nanomips_linux) || \
+	  defined(VGP_x86_solaris)
 #  define VG_MIN_MALLOC_SZB        8
 // Nb: We always use 16 bytes for Darwin, even on 32-bits, so it can be used
 // for any AltiVec- or SSE-related type.  This matches the Darwin libc.
 // Also, use 16 bytes for any PPC variant, since 16 is required to make
 // Altiveccery work right.
 #elif defined(VGP_amd64_linux)    || \
-      defined(VGP_ppc32_linux)    || \
-      defined(VGP_ppc64be_linux)  || \
-      defined(VGP_ppc64le_linux)  || \
-      defined(VGP_s390x_linux)    || \
-      (defined(VGP_mips64_linux) && !defined(VGABI_N32)) || \
-      defined(VGP_x86_darwin)     || \
-      defined(VGP_amd64_darwin)   || \
-      defined(VGP_arm64_linux)    || \
-      defined(VGP_amd64_solaris)
+	  defined(VGP_ppc32_linux)    || \
+	  defined(VGP_ppc64be_linux)  || \
+	  defined(VGP_ppc64le_linux)  || \
+	  defined(VGP_s390x_linux)    || \
+	  (defined(VGP_mips64_linux) && !defined(VGABI_N32)) || \
+	  defined(VGP_x86_darwin)     || \
+	  defined(VGP_amd64_darwin)   || \
+	  defined(VGP_arm64_linux)    || \
+	  defined(VGP_amd64_solaris)
 #  define VG_MIN_MALLOC_SZB       16
 #else
 #  error Unknown platform
@@ -106,23 +105,23 @@ struct vg_mallinfo {
 extern void* VG_(arena_malloc)  ( ArenaId arena, const HChar* cc, SizeT nbytes );
 extern void  VG_(arena_free)    ( ArenaId arena, void* ptr );
 extern void* VG_(arena_calloc)  ( ArenaId arena, const HChar* cc,
-                                  SizeT nmemb, SizeT bytes_per_memb );
+								  SizeT nmemb, SizeT bytes_per_memb );
 extern void* VG_(arena_realloc) ( ArenaId arena, const HChar* cc,
-                                  void* ptr, SizeT size );
+								  void* ptr, SizeT size );
 extern void* VG_(arena_memalign)( ArenaId aid, const HChar* cc,
-                                  SizeT req_alignB, SizeT req_pszB );
-extern HChar* VG_(arena_strdup)  ( ArenaId aid, const HChar* cc, 
-                                   const HChar* s);
+								  SizeT req_alignB, SizeT req_pszB );
+extern HChar* VG_(arena_strdup)  ( ArenaId aid, const HChar* cc,
+								   const HChar* s);
 
 /* Specialised version of realloc, that shrinks the size of the block ptr from
    its current size to req_pszB.
    req_pszB must be <= to the current size of ptr (otherwise it will assert).
    Compared to VG_(arena_realloc):
-     * VG_(arena_realloc_shrink) cannot increase the size of ptr.
-     * If large enough, the unused memory is made usable for other allocation.
-     * ptr is shrunk in place, so as to avoid temporary allocation and memcpy. */
+	 * VG_(arena_realloc_shrink) cannot increase the size of ptr.
+	 * If large enough, the unused memory is made usable for other allocation.
+	 * ptr is shrunk in place, so as to avoid temporary allocation and memcpy. */
 extern void VG_(arena_realloc_shrink) ( ArenaId aid,
-                                        void* ptr, SizeT req_pszB);
+										void* ptr, SizeT req_pszB);
 
 extern SizeT VG_(arena_malloc_usable_size) ( ArenaId aid, void* payload );
 
@@ -141,7 +140,7 @@ extern void  VG_(print_all_arena_stats) ( void );
 
 extern void  VG_(print_arena_cc_analysis) ( void );
 
-typedef 
+typedef
    struct _AddrArenaInfo
    AddrArenaInfo;
 

@@ -8,7 +8,7 @@
    framework.
 
    Copyright (C) 2000-2017 Julian Seward
-      jseward@acm.org
+	  jseward@acm.org
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -83,8 +81,8 @@
 // Log2(sizeof(FastCacheSet)).  This is needed in the handwritten assembly.
 
 #if defined(VGA_amd64) || defined(VGA_arm64) \
-    || defined(VGA_ppc64be) || defined(VGA_ppc64le) || defined(VGA_mips64) \
-    || defined(VGA_s390x)
+	|| defined(VGA_ppc64be) || defined(VGA_ppc64le) || defined(VGA_mips64) \
+	|| defined(VGA_s390x)
   // And all other 64-bit hosts
 # define VG_FAST_CACHE_SET_BITS 6
   // These FCS_{g,h}{0,1,2,3} are the values of
@@ -99,7 +97,7 @@
 # define FCS_h3 56
 
 #elif defined(VGA_x86) || defined(VGA_arm) || defined(VGA_ppc32) \
-      || defined(VGA_mips32)
+	  || defined(VGA_mips32) || defined(VGP_nanomips_linux)
   // And all other 32-bit hosts
 # define VG_FAST_CACHE_SET_BITS 5
 # define FCS_g0 0

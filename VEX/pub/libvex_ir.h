@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-   02110-1301, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 
@@ -1387,6 +1385,8 @@ typedef
       /* Vector floating-point base 2 logarithm */
       Iop_Log2_32Fx4,
 
+      /* Vector floating-point exponential 2^x */
+      Iop_Exp2_32Fx4,
 
       /* Vector Reciprocal Square Root Step computes (3.0 - arg1 * arg2) / 2.0.
          Note, that of one of the arguments is zero and another one is infiinty

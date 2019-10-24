@@ -20,9 +20,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -46,7 +44,7 @@
 
 
 // Function to be used by tool or coregrind to allow a gdb to connect
-// to this process. 
+// to this process.
 // Calling VG_(gdbserver) with tid > 0 means to let a debugger attach
 // to the valgrind process. gdbserver will report to gdb that the
 // process stopped in thread tid.
@@ -54,16 +52,6 @@
 // the connection with GDB (if still open) and stop gdbserver.
 //--------------------------------------------------------------------
 extern void VG_(gdbserver) ( ThreadId tid );
-
-/* VG_(dyn_vgdb_error) gets its initial value from
-   VG_(clo_vgdb_error).  It can be changed after initial command
-   processing in order to enable/disable the call to VG_(gdbserver) in
-   m_errormgr.c.  The main reasons to change the below is either
-   because the user updates it via a monitor command or to
-   (temporarily) avoid calling gdbserver for error reporting during
-   monitor command handling.
-*/
-extern Int VG_(dyn_vgdb_error);
 
 /* defines the various kinds of breakpoints that gdbserver
    might ask to insert/remove. Note that the below matches
@@ -88,11 +76,11 @@ extern Int VG_(dyn_vgdb_error);
 */
 typedef
    enum {
-      software_breakpoint,
-      hardware_breakpoint,
-      write_watchpoint,
-      read_watchpoint,
-      access_watchpoint } PointKind;
+	  software_breakpoint,
+	  hardware_breakpoint,
+	  write_watchpoint,
+	  read_watchpoint,
+	  access_watchpoint } PointKind;
 extern const HChar* VG_(ppPointKind) (PointKind kind);
 
 
@@ -102,10 +90,10 @@ extern const HChar* VG_(ppPointKind) (PointKind kind);
    In addition, VG_(is_watched) will invoke gdbserver if
    the access provided by the tool matches the watchpoint kind.
    For this, the tool must pass the kind of access it has detected:
-      write_watchpoint indicates the tool has detected a write
-      read_watchpoint indicates the tool has detected a read
-      access_watchpoint indicates the tool has detected an access but does
-      not know if this is a read or a write
+	  write_watchpoint indicates the tool has detected a write
+	  read_watchpoint indicates the tool has detected a read
+	  access_watchpoint indicates the tool has detected an access but does
+	  not know if this is a read or a write
 */
 extern Bool VG_(is_watched)(PointKind kind, Addr addr, Int szB);
 
@@ -127,7 +115,7 @@ extern void VG_(needs_watchpoint) (
 );
 
 
-// can be used during the processing of the VG_USERREQ__GDB_MONITOR_COMMAND 
+// can be used during the processing of the VG_USERREQ__GDB_MONITOR_COMMAND
 // tool client request to output information to gdb or vgdb.
 // The output of VG_(gdb_printf) is not subject to 'output control'
 // by the user: e.g. the monitor command 'v.set log_output' has no effect.
@@ -151,7 +139,7 @@ extern UInt VG_(gdb_printf) ( const HChar *format, ... ) PRINTF_CHECK(1, 2);
    and return its position.
    It returns -1 if no keyword matches.
    It returns -2 if two or more keywords are starting with input_word
-                 and none of these matches exactly input_word
+				 and none of these matches exactly input_word
    Example with keywords = "hello world here is hell" :
    input_word    result
    ----------    ------
@@ -165,28 +153,28 @@ extern UInt VG_(gdb_printf) ( const HChar *format, ... ) PRINTF_CHECK(1, 2);
    kwd_report_none : no error is reported.
    kwd_report_all : the error msg will show all possible keywords
    kwd_report_duplicated_matches : the error msg will show only the
-     ambiguous matches.
+	 ambiguous matches.
 */
 typedef
    enum {
-      kwd_report_none,
-      kwd_report_all,
-      kwd_report_duplicated_matches } kwd_report_error;
-extern Int VG_(keyword_id) (const HChar* keywords, const HChar* input_word, 
-                            kwd_report_error report);
+	  kwd_report_none,
+	  kwd_report_all,
+	  kwd_report_duplicated_matches } kwd_report_error;
+extern Int VG_(keyword_id) (const HChar* keywords, const HChar* input_word,
+							kwd_report_error report);
 
 /* Extract an address and (optionally) a size from the string
    currently being parsed by strtok_r (see pub_tool_libcbase.h).
    If no size in the string, keeps the current value of szB.
    If parsing is ok,
-     returns True.
+	 returns True.
    If parsing is not ok;
-     set *address and *szB to 0,
-     reports problem to the user using VG_(gdb_printf)
-     returns False. */
-extern Bool VG_(strtok_get_address_and_size) (Addr* address, 
-                                              SizeT* szB, 
-                                              HChar **ssaveptr);
+	 set *address and *szB to 0,
+	 reports problem to the user using VG_(gdb_printf)
+	 returns False. */
+extern Bool VG_(strtok_get_address_and_size) (Addr* address,
+											  SizeT* szB,
+											  HChar **ssaveptr);
 
 /* Print various statistics about Valgrind core,
    and optionally tool and memory statistics. */
