@@ -7,7 +7,7 @@
    framework.
 
    Copyright (C) 2004-2017 Josef Weidendorfer
-      josef.weidendorfer@gmx.de
+	  josef.weidendorfer@gmx.de
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -58,7 +58,7 @@
 /* Enable experimental features? */
 #define CLG_EXPERIMENTAL 0
 
-/* Syscall Timing in microseconds? 
+/* Syscall Timing in microseconds?
  * (define to 0 if you get compile errors) */
 #define CLG_MICROSYSTIME 0
 
@@ -69,6 +69,19 @@
 /*------------------------------------------------------------*/
 
 #define DEFAULT_OUTFORMAT   "callgrind.out.%p"
+
+/* If and how to collect syscall time.
+   systime_no : do not collect systime
+   systime_msec : collect syscount, systime elapsed, milli second precision.
+   systime_usec : collect syscount, systime elapsed, micro second precision.
+   systime_nsec : collect syscount, systime elapsed, systime cpu, nano second
+				  precision.  */
+typedef enum {
+   systime_no,
+   systime_msec,
+   systime_usec,
+   systime_nsec
+} Collect_Systime;
 
 typedef struct _CommandLineOptions CommandLineOptions;
 struct _CommandLineOptions {
@@ -85,10 +98,10 @@ struct _CommandLineOptions {
   Bool dump_instr;
   Bool dump_bb;
   Bool dump_bbs;         /* Dump basic block information? */
-  
+
   /* Dump generation options */
   ULong dump_every_bb;     /* Dump every xxx BBs. */
-  
+
   /* Collection options */
   Bool separate_threads; /* Separate threads in dump? */
   Int  separate_callers; /* Separate dependent on how many callers? */
@@ -100,7 +113,7 @@ struct _CommandLineOptions {
   Bool collect_jumps;    /* Collect (cond.) jumps in functions ? */
 
   Bool collect_alloc;    /* Collect size of allocated memory */
-  Bool collect_systime;  /* Collect time for system calls */
+  Collect_Systime collect_systime;  /* Collect time for system calls */
 
   Bool collect_bus;      /* Collect global bus events */
 
@@ -140,7 +153,7 @@ struct _Statistics {
   ULong bb_executions;
 
   Int  context_counter;
-  Int  bb_retranslations;  
+  Int  bb_retranslations;
 
   Int  distinct_objs;
   Int  distinct_files;
@@ -239,7 +252,7 @@ struct _jCC {
 };
 
 
-/* 
+/*
  * Info for one instruction of a basic block.
  */
 typedef struct _InstrInfo InstrInfo;
@@ -285,12 +298,12 @@ struct _BB {
 
   VgSectKind sect_kind;  /* section of this BB, e.g. PLT */
   UInt       instr_count;
-  
+
   /* filled by CLG_(get_fn_node) if debug info is available */
   fn_node*   fn;          /* debug info for this BB */
   UInt       line;
   Bool       is_entry;    /* True if this BB is a function entry */
-        
+
   BBCC*      bbcc_list;  /* BBCCs for same BB (see next_bbcc in BBCC) */
   BBCC*      last_bbcc;  /* Temporary: Cached for faster access (LRU) */
 
@@ -323,11 +336,11 @@ struct _BB {
  * For each Context, recursion index and BB, there can be a BBCC.
  */
 struct _Context {
-    UInt size;        // number of function dependencies
-    UInt base_number; // for context compression & dump array
-    Context* next;    // entry chaining for hash
-    UWord hash;       // for faster lookup...
-    fn_node* fn[0];
+	UInt size;        // number of function dependencies
+	UInt base_number; // for context compression & dump array
+	Context* next;    // entry chaining for hash
+	UWord hash;       // for faster lookup...
+	fn_node* fn[0];
 };
 
 
@@ -336,8 +349,8 @@ struct _Context {
  */
 typedef struct _JmpData JmpData;
 struct _JmpData {
-    ULong ecounter; /* number of times the BB was left at this exit */
-    jCC*  jcc_list; /* JCCs used for this exit */
+	ULong ecounter; /* number of times the BB was left at this exit */
+	jCC*  jcc_list; /* JCCs used for this exit */
 };
 
 
@@ -357,28 +370,28 @@ struct _JmpData {
  * They are distinguishable by their tag field.
  */
 struct _BBCC {
-    BB*      bb;           /* BB for this cost center */
+	BB*      bb;           /* BB for this cost center */
 
-    Context* cxt;          /* execution context of this BBCC */
-    ThreadId tid;          /* only for assertion check purpose */
-    UInt     rec_index;    /* Recursion index in rec->bbcc for this bbcc */
-    BBCC**   rec_array;    /* Variable sized array of pointers to 
-			    * recursion BBCCs. Shared. */
-    ULong    ret_counter;  /* how often returned from jccs of this bbcc;
-			    * used to check if a dump for this BBCC is needed */
-    
-    BBCC*    next_bbcc;    /* Chain of BBCCs for same BB */
-    BBCC*    lru_next_bbcc; /* BBCC executed next the last time */
-    
-    jCC*     lru_from_jcc; /* Temporary: Cached for faster access (LRU) */
-    jCC*     lru_to_jcc;   /* Temporary: Cached for faster access (LRU) */
-    FullCost skipped;      /* cost for skipped functions called from 
-			    * jmp_addr. Allocated lazy */
-    
-    BBCC*    next;         /* entry chain in hash */
-    ULong*   cost;         /* start of 64bit costs for this BBCC */
-    ULong    ecounter_sum; /* execution counter for first instruction of BB */
-    JmpData  jmp[0];
+	Context* cxt;          /* execution context of this BBCC */
+	ThreadId tid;          /* only for assertion check purpose */
+	UInt     rec_index;    /* Recursion index in rec->bbcc for this bbcc */
+	BBCC**   rec_array;    /* Variable sized array of pointers to
+				* recursion BBCCs. Shared. */
+	ULong    ret_counter;  /* how often returned from jccs of this bbcc;
+				* used to check if a dump for this BBCC is needed */
+
+	BBCC*    next_bbcc;    /* Chain of BBCCs for same BB */
+	BBCC*    lru_next_bbcc; /* BBCC executed next the last time */
+
+	jCC*     lru_from_jcc; /* Temporary: Cached for faster access (LRU) */
+	jCC*     lru_to_jcc;   /* Temporary: Cached for faster access (LRU) */
+	FullCost skipped;      /* cost for skipped functions called from
+				* jmp_addr. Allocated lazy */
+
+	BBCC*    next;         /* entry chain in hash */
+	ULong*   cost;         /* start of 64bit costs for this BBCC */
+	ULong    ecounter_sum; /* execution counter for first instruction of BB */
+	JmpData  jmp[0];
 };
 
 
@@ -448,18 +461,18 @@ struct _obj_node {
  *
  * <nonskipped> is 0 if the function called is not skipped (usual case).
  * Otherwise, it is the last non-skipped BBCC. This one gets all
- * the calls to non-skipped functions and all costs in skipped 
+ * the calls to non-skipped functions and all costs in skipped
  * instructions.
  */
 struct _call_entry {
-    jCC* jcc;           /* jCC for this call */
-    FullCost enter_cost; /* cost event counters at entering frame */
-    Addr sp;            /* stack pointer directly after call */
-    Addr ret_addr;      /* address to which to return to
+	jCC* jcc;           /* jCC for this call */
+	FullCost enter_cost; /* cost event counters at entering frame */
+	Addr sp;            /* stack pointer directly after call */
+	Addr ret_addr;      /* address to which to return to
 			 * is 0 on a simulated call */
-    BBCC* nonskipped;   /* see above */
-    Context* cxt;       /* context before call */
-    Int fn_sp;          /* function stack index before call */
+	BBCC* nonskipped;   /* see above */
+	Context* cxt;       /* context before call */
+	Int fn_sp;          /* function stack index before call */
 };
 
 
@@ -480,14 +493,14 @@ struct _exec_state {
   /* the signum of the handler, 0 for main thread context
    */
   Int sig;
-  
+
   /* the old call stack pointer at entering the signal handler */
   Int orig_sp;
-  
+
   FullCost cost;
   Bool     collect;
   Context* cxt;
-  
+
   /* number of conditional jumps passed in last BB */
   Int   jmps_passed;
   BBCC* bbcc;      /* last BB executed */
@@ -507,7 +520,7 @@ typedef struct _cxt_hash cxt_hash;
 struct _cxt_hash {
   UInt size, entries;
   Context** table;
-};  
+};
 
 /* Thread specific state structures, i.e. parts of a thread state.
  * There are variables for the current state of each part,
@@ -556,7 +569,7 @@ struct _exec_stack {
   exec_state* entry[MAX_SIGHANDLERS];
 };
 
-/* Thread State 
+/* Thread State
  *
  * This structure stores thread specific info while a thread is *not*
  * running. See function switch_thread() for save/restore on thread switch.
@@ -591,28 +604,28 @@ struct _thread_info {
  */
 typedef struct _AddrPos AddrPos;
 struct _AddrPos {
-    Addr addr;
-    Addr bb_addr;
-    file_node* file;
-    UInt line;
+	Addr addr;
+	Addr bb_addr;
+	file_node* file;
+	UInt line;
 };
 
 /* a simulator cost entity that can be written out in one line */
 typedef struct _AddrCost AddrCost;
 struct _AddrCost {
-    AddrPos p;
-    SimCost cost;
+	AddrPos p;
+	SimCost cost;
 };
 
 /* A function in an execution context */
 typedef struct _FnPos FnPos;
 struct _FnPos {
-    file_node* file;
-    fn_node* fn;
-    obj_node* obj;
-    Context* cxt;
-    int rec_index;
-    UInt line;
+	file_node* file;
+	fn_node* fn;
+	obj_node* obj;
+	Context* cxt;
+	int rec_index;
+	UInt line;
 };
 
 /*------------------------------------------------------------*/
@@ -621,29 +634,29 @@ struct _FnPos {
 
 struct cachesim_if
 {
-    void (*print_opts)(void);
-    Bool (*parse_opt)(const HChar* arg);
-    void (*post_clo_init)(void);
-    void (*clear)(void);
-    void (*dump_desc)(VgFile *fp);
-    void (*printstat)(Int,Int,Int);
-    void (*add_icost)(SimCost, BBCC*, InstrInfo*, ULong);
-    void (*finish)(void);
-    
-    void (*log_1I0D)(InstrInfo*) VG_REGPARM(1);
-    void (*log_2I0D)(InstrInfo*, InstrInfo*) VG_REGPARM(2);
-    void (*log_3I0D)(InstrInfo*, InstrInfo*, InstrInfo*) VG_REGPARM(3);
+	void (*print_opts)(void);
+	Bool (*parse_opt)(const HChar* arg);
+	void (*post_clo_init)(void);
+	void (*clear)(void);
+	void (*dump_desc)(VgFile *fp);
+	void (*printstat)(Int,Int,Int);
+	void (*add_icost)(SimCost, BBCC*, InstrInfo*, ULong);
+	void (*finish)(void);
 
-    void (*log_1I1Dr)(InstrInfo*, Addr, Word) VG_REGPARM(3);
-    void (*log_1I1Dw)(InstrInfo*, Addr, Word) VG_REGPARM(3);
+	void (*log_1I0D)(InstrInfo*) VG_REGPARM(1);
+	void (*log_2I0D)(InstrInfo*, InstrInfo*) VG_REGPARM(2);
+	void (*log_3I0D)(InstrInfo*, InstrInfo*, InstrInfo*) VG_REGPARM(3);
 
-    void (*log_0I1Dr)(InstrInfo*, Addr, Word) VG_REGPARM(3);
-    void (*log_0I1Dw)(InstrInfo*, Addr, Word) VG_REGPARM(3);
+	void (*log_1I1Dr)(InstrInfo*, Addr, Word) VG_REGPARM(3);
+	void (*log_1I1Dw)(InstrInfo*, Addr, Word) VG_REGPARM(3);
 
-    // function names of helpers (for debugging generated code)
-    const HChar *log_1I0D_name, *log_2I0D_name, *log_3I0D_name;
-    const HChar *log_1I1Dr_name, *log_1I1Dw_name;
-    const HChar *log_0I1Dr_name, *log_0I1Dw_name;
+	void (*log_0I1Dr)(InstrInfo*, Addr, Word) VG_REGPARM(3);
+	void (*log_0I1Dw)(InstrInfo*, Addr, Word) VG_REGPARM(3);
+
+	// function names of helpers (for debugging generated code)
+	const HChar *log_1I0D_name, *log_2I0D_name, *log_3I0D_name;
+	const HChar *log_1I1Dr_name, *log_1I1Dw_name;
+	const HChar *log_0I1Dr_name, *log_0I1Dw_name;
 };
 
 // Event groups
@@ -658,7 +671,7 @@ struct cachesim_if
 #define EG_SYS   8
 
 struct event_sets {
-    EventSet *base, *full;
+	EventSet *base, *full;
 };
 
 #define fullOffset(group) (CLG_(sets).full->offset[group])
@@ -681,8 +694,8 @@ void CLG_(init_eventsets)(void);
 
 /* from main.c */
 Bool CLG_(get_debug_info)(Addr, const HChar **dirname,
-                          const HChar **filename,
-                          const HChar **fn_name, UInt*, DebugInfo**);
+						  const HChar **filename,
+						  const HChar **fn_name, UInt*, DebugInfo**);
 void CLG_(collectBlockInfo)(IRSB* bbIn, UInt*, UInt*, Bool*);
 void CLG_(set_instrument_state)(const HChar*,Bool);
 void CLG_(dump_profile)(const HChar* trigger,Bool only_current_thread);
@@ -712,7 +725,7 @@ UInt* CLG_(get_fn_entry)(Int n);
 void      CLG_(init_obj_table)(void);
 obj_node* CLG_(get_obj_node)(DebugInfo* si);
 file_node* CLG_(get_file_node)(obj_node*, const HChar *dirname,
-                               const HChar* filename);
+							   const HChar* filename);
 fn_node*  CLG_(get_fn_node)(BB* bb);
 
 /* from bbcc.c */
@@ -805,20 +818,20 @@ extern ULong* CLG_(cost_base);
 
 #define CLG_DEBUGIF(x) \
   if (UNLIKELY( (CLG_(clo).verbose >x) && \
-                (CLG_(stat).bb_executions >= CLG_(clo).verbose_start)))
+				(CLG_(stat).bb_executions >= CLG_(clo).verbose_start)))
 
 #define CLG_DEBUG(x,format,args...)   \
-    CLG_DEBUGIF(x) {                  \
-      CLG_(print_bbno)();	      \
-      VG_(printf)(format,##args);     \
-    }
+	CLG_DEBUGIF(x) {                  \
+	  CLG_(print_bbno)();	      \
+	  VG_(printf)(format,##args);     \
+	}
 
 #define CLG_ASSERT(cond)              \
-    if (UNLIKELY(!(cond))) {          \
-      CLG_(print_context)();          \
-      CLG_(print_bbno)();	      \
-      tl_assert(cond);                \
-     }
+	if (UNLIKELY(!(cond))) {          \
+	  CLG_(print_context)();          \
+	  CLG_(print_bbno)();	      \
+	  tl_assert(cond);                \
+	 }
 
 #else
 #define CLG_DEBUGIF(x) if (0)
