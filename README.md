@@ -4,7 +4,7 @@ This repository contains a version of Valgrind including a few patches to improv
 
 ## Status
 
-Valgrind now builds on macOS Mojave (tested on 10.14.6).
+Valgrind now builds on macOS Mojave (tested on 10.14.6) & Catalina (tested 10.15.1 & 10.15.4).
 
 ## Usage
 

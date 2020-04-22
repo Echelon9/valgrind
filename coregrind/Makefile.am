@@ -157,10 +157,10 @@ mach_hdrs += \
         m_mach/thread_act.h \
         m_mach/vm_map.h
 mach_defs += \
-	/usr/include/mach/mach_vm.defs \
-		/usr/include/mach/task.defs \
-		/usr/include/mach/thread_act.defs \
-		/usr/include/mach/vm_map.defs
+	@XCODE_DIR@/mach/mach_vm.defs \
+        @XCODE_DIR@/mach/task.defs \
+        @XCODE_DIR@/mach/thread_act.defs \
+        @XCODE_DIR@/mach/vm_map.defs
 endif
 
 # Be careful w.r.t. parallel builds.  See section 27.9 of the automake info
@@ -404,6 +404,7 @@ COREGRIND_SOURCES_COMMON = \
 	m_initimg/initimg-darwin.c \
 	m_initimg/initimg-solaris.c \
 	m_initimg/initimg-pathscan.c \
+	m_mach/mach_strncpy.c \
 	m_mach/mach_basics.c \
 	m_mach/mach_msg.c \
 	m_mach/mach_traps-x86-darwin.S \

@@ -28149,7 +28149,7 @@ static struct vsx_insn vsx_xx2[] = {
       { 0x14A, "xxextractuw" },
       { 0x150, "xvcvuxwsp" },
       { 0x152, "xvrspip" },
-      { 0x154, "xvtsqrtsp" },
+//    { 0x154, "xvtsqrtsp" },
       { 0x156, "xvrspic" },
       { 0x16A, "xxinsertw" },
       { 0x170, "xvcvsxwsp" },
