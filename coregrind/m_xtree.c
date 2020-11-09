@@ -29,9 +29,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -377,7 +375,7 @@ static VgFile* xt_open (const HChar* outfilename)
    VgFile* fp;
 
    fp = VG_(fopen)(outfilename, VKI_O_CREAT|VKI_O_WRONLY|VKI_O_TRUNC,
-                   VKI_S_IRUSR|VKI_S_IWUSR);
+                   VKI_S_IRUSR|VKI_S_IWUSR|VKI_S_IRGRP|VKI_S_IROTH);
    if (fp == NULL) {
       VG_(message)(Vg_UserMsg,
                    "Error: can not open xtree output file `%s'\n",
@@ -417,9 +415,9 @@ static void FP_pos_str(VgFile* fp, const HChar* name, UInt pos,
    if (!VG_(clo_xtree_compress_strings))
       FP("%s=%s\n", name, value);
    else if (value_new)
-      FP("%s=(%d) %s\n", name, pos, value);
+      FP("%s=(%u) %s\n", name, pos, value);
    else
-      FP("%s=(%d)\n", name, pos);
+      FP("%s=(%u)\n", name, pos);
 }
 
 void VG_(XT_callgrind_print)
@@ -501,7 +499,7 @@ void VG_(XT_callgrind_print)
       // the strings  called_filename/called_fnname.
 #define CALLED_FLF(n)                                                   \
       if ((n) < 0                                                       \
-          || !VG_(get_filename_linenum)(ips[(n)],                       \
+          || !VG_(get_filename_linenum)(ep, ips[(n)],                   \
                                         &filename_name,                 \
                                         &filename_dir,                  \
                                         &called_linenum)) {             \
@@ -509,7 +507,7 @@ void VG_(XT_callgrind_print)
          called_linenum = 0;                                            \
       }                                                                 \
       if ((n) < 0                                                       \
-          || !VG_(get_fnname)(ips[(n)], &called_fnname)) {              \
+          || !VG_(get_fnname)(ep, ips[(n)], &called_fnname)) {          \
          called_fnname = "UnknownFn???";                                \
       }                                                                 \
       {                                                                 \
@@ -550,6 +548,8 @@ void VG_(XT_callgrind_print)
          UInt prev_linenum;
 
          const Addr* ips = VG_(get_ExeContext_StackTrace)(xe->ec) + xe->top;
+         const DiEpoch ep = VG_(get_ExeContext_epoch)(xe->ec);
+
          Int ips_idx = xe->n_ips_sel - 1;
 
          if (0) {
@@ -567,9 +567,9 @@ void VG_(XT_callgrind_print)
             FP_pos_str(fp, "fn", called_fnname_nr,
                        called_fnname, called_fnname_new);
             if (ips_idx == 0)
-               FP("%d %s\n", called_linenum, img);
+               FP("%u %s\n", called_linenum, img);
             else
-               FP("%d\n", called_linenum); //no self cost.
+               FP("%u\n", called_linenum); //no self cost.
             prev_linenum = called_linenum;
             if (ips_idx >= 1) {
                CALLED_FLF(ips_idx-1);
@@ -584,8 +584,8 @@ void VG_(XT_callgrind_print)
                   calls column the nr of stacktrace containing this arc, which
                   is very confusing. So, the less bad is to give a 0 call
                   count. */
-               FP("calls=0 %d\n", called_linenum);
-               FP("%d %s\n", prev_linenum, img);
+               FP("calls=0 %u\n", called_linenum);
+               FP("%u %s\n", prev_linenum, img);
             }
          }
          FP("\n");
@@ -742,8 +742,14 @@ static void ms_make_groups (UInt depth, Ms_Ec* ms_ec, UInt n_ec, SizeT sig_sz,
    VG_(ssort)(*groups, *n_groups, sizeof(Ms_Group), ms_group_revcmp_total);
 }
 
-static void ms_output_group (VgFile* fp, UInt depth, Ms_Group* group,
-                             SizeT sig_sz, double sig_pct_threshold)
+/* Output the given group (located in an xtree at the given depth).
+   indent tells by how much to indent the information output for the group.
+   indent can be bigger than depth when outputting a group that is made
+   of one or more inlined calls: all inlined calls are output with the
+   same depth but with one more indent for each inlined call.  */
+static void ms_output_group (VgFile* fp, UInt depth, UInt indent,
+                             Ms_Group* group, SizeT sig_sz,
+                             double sig_pct_threshold)
 {
    UInt i;
    Ms_Group* groups;
@@ -753,8 +759,8 @@ static void ms_output_group (VgFile* fp, UInt depth, Ms_Group* group,
    if (group->ms_ec == NULL) {
       const HChar* s = ( 1 ==  group->n_ec? "," : "s, all" );
       vg_assert(group->group_ip == 0);
-      FP("%*sn0: %lu in %d place%s below massif's threshold (%.2f%%)\n",
-         depth+1, "", group->total, group->n_ec, s, sig_pct_threshold);
+      FP("%*sn0: %lu in %u place%s below massif's threshold (%.2f%%)\n",
+         (Int)(indent+1), "", group->total, group->n_ec, s, sig_pct_threshold);
       return;
    }
 
@@ -762,21 +768,46 @@ static void ms_output_group (VgFile* fp, UInt depth, Ms_Group* group,
    ms_make_groups(depth+1, group->ms_ec, group->n_ec, sig_sz,
                   &n_groups, &groups);
 
-   FP("%*s" "n%u: %ld %s\n", 
-      depth + 1, "",
-      n_groups, 
-      group->total,
-      VG_(describe_IP)(group->ms_ec->ips[depth] - 1, NULL));
-   /* XTREE??? Massif original code removes 1 to get the IP description. I am
-      wondering if this is not something that predates revision r8818,
-      which introduced a -1 in the stack unwind (see m_stacktrace.c)
-      Kept for the moment to allow exact comparison with massif output, but
-      probably we should remove this, as we very probably end up 2 bytes before
-      the RA Return Address. */
+   // FIXME JRS EPOCH 28 July 2017: HACK!  Is this correct?
+   const DiEpoch cur_ep = VG_(current_DiEpoch)();
+   // // FIXME PW EPOCH : No, the above is not correct.
+   // Xtree Massif output regroups execontext in the layout of a 'tree'.
+   // So, possibly, the same IP address value can be in 2 different ec, but
+   // the epoch to symbolise this address must be retrieved from the ec it
+   // originates from.
+   // So, to fix this, it is not enough to make a group based on identical
+   // IP addr value, one must also find the di used to symbolise this address,
+   // A group will then be defined as 'same IP and same di'.
+   // Fix not trivial to do, so for the moment, --keep-debuginfo=yes will
+   // have no impact on xtree massif output.
+
+   Addr cur_ip = group->ms_ec->ips[depth];
+
+   InlIPCursor *iipc = VG_(new_IIPC)(cur_ep, cur_ip);
+
+   while (True) {
+      const HChar* buf = VG_(describe_IP)(cur_ep, cur_ip, iipc);
+      Bool is_inlined = VG_(next_IIPC)(iipc);
+
+      FP("%*s" "n%u: %lu %s\n",
+         (Int)(indent + 1), "",
+         is_inlined ? 1 : n_groups, // Inlined frames always have one child.
+         group->total,
+         buf);
+
+      if (!is_inlined) {
+         break;
+      }
+
+      indent++;
+   }
+
+   VG_(delete_IIPC)(iipc);
 
    /* Output sub groups of this group. */
    for (i = 0; i < n_groups; i++)
-      ms_output_group(fp, depth+1, &groups[i], sig_sz, sig_pct_threshold);
+      ms_output_group(fp, depth+1, indent+1, &groups[i], sig_sz,
+                      sig_pct_threshold);
 
    VG_(free)(groups);
 }
@@ -946,16 +977,16 @@ void VG_(XT_massif_print)
       FP("n%u: %llu %s\n", n_groups, top_total, header->top_node_desc);
 
       /* Output depth 0 groups. */
-      DMSG(1, "XT_massif_print outputing %u depth 0 groups\n", n_groups);
+      DMSG(1, "XT_massif_print outputting %u depth 0 groups\n", n_groups);
       for (i = 0; i < n_groups; i++)
-         ms_output_group(fp, 0, &groups[i], sig_sz, header->sig_threshold);
+         ms_output_group(fp, 0, 0, &groups[i], sig_sz, header->sig_threshold);
 
       VG_(free)(groups);
       VG_(free)(ms_ec);
    }
 }
 
-Int VG_(XT_offset_main_or_below_main)(Addr* ips, Int n_ips)
+Int VG_(XT_offset_main_or_below_main)(DiEpoch ep, Addr* ips, Int n_ips)
 {
    /* Search for main or below main function.
       To limit the nr of ips to examine, we maintain the deepest
@@ -972,7 +1003,7 @@ Int VG_(XT_offset_main_or_below_main)(Addr* ips, Int n_ips)
    for (i = n_ips - 1 - deepest_main;
         i < n_ips;
         i++) {
-      mbmkind = VG_(get_fnname_kind_from_IP)(ips[i]);
+      mbmkind = VG_(get_fnname_kind_from_IP)(ep, ips[i]);
       if (mbmkind != Vg_FnNameNormal) {
          mbm = i;
          break;
@@ -983,7 +1014,7 @@ Int VG_(XT_offset_main_or_below_main)(Addr* ips, Int n_ips)
    for (i = mbm - 1;
         i >= 0 && mbmkind != Vg_FnNameMain;
         i--) {
-      kind = VG_(get_fnname_kind_from_IP)(ips[i]);
+      kind = VG_(get_fnname_kind_from_IP)(ep, ips[i]);
       if (kind != Vg_FnNameNormal) {
          mbm = i;
          mbmkind = kind;
@@ -1014,8 +1045,11 @@ void VG_(XT_filter_1top_and_maybe_below_main)
 
    if (VG_(clo_show_below_main))
       mbm = n_ips - 1;
-   else
-      mbm = VG_(XT_offset_main_or_below_main)(ips, n_ips);
+   else {
+      // FIXME PW EPOCH : use the real ips epoch
+      const DiEpoch cur_ep = VG_(current_DiEpoch)();
+      mbm = VG_(XT_offset_main_or_below_main)(cur_ep, ips, n_ips);
+   }
 
    *n_ips_sel = mbm - *top + 1;
 }
@@ -1033,9 +1067,11 @@ void VG_(XT_filter_maybe_below_main)
 
    if (VG_(clo_show_below_main))
       mbm = n_ips - 1;
-   else
-      mbm = VG_(XT_offset_main_or_below_main)(ips, n_ips);
-
+   else {
+      // FIXME PW EPOCH : use the real ips epoch
+      const DiEpoch cur_ep = VG_(current_DiEpoch)();
+      mbm = VG_(XT_offset_main_or_below_main)(cur_ep, ips, n_ips);
+   }
    *n_ips_sel = mbm - *top + 1;
 }
 

@@ -22,9 +22,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -74,6 +72,13 @@ Bool  HG_(clo_track_lockorders) = True;
 Bool  HG_(clo_cmp_race_err_addrs) = False;
 
 UWord HG_(clo_history_level) = 2;
+
+#if (defined(VGA_x86) || defined(VGA_amd64)) && defined(VGO_linux)
+// Set to true on setup where it was (reasonably) validated.
+Bool  HG_(clo_delta_stacktrace) = True;
+#else
+Bool  HG_(clo_delta_stacktrace) = False;
+#endif
 
 UWord HG_(clo_conflict_cache_size) = 2000000;
 

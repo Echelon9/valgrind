@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-   02110-1301, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -51,6 +49,10 @@
 #undef  ENC6
 #define ENC6(a,b,c,d,e,f) ((P(DONE) << 24) | (P(f) << 20) | (P(e) << 16) | \
                            (P(d) << 12) | (P(c) << 8) | (P(b) << 4) | P(a))
+#undef  ENC7
+#define ENC7(a,b,c,d,e,f,g) ((P(DONE) << 28) | (P(g) << 24) | (P(f) << 20) | \
+                             (P(e) << 16) | (P(d) << 12) | (P(c) << 8) | \
+                             (P(b) << 4) | P(a))
 
 /* The different kinds of operands in an asm insn */
 enum {
@@ -66,7 +68,9 @@ enum {
    S390_ARG_UDLB = 9,
    S390_ARG_CABM = 10,
    S390_ARG_MNM = 11,
-   S390_ARG_XMNM = 12
+   S390_ARG_XMNM = 12,
+   S390_ARG_VR = 13,
+   S390_ARG_UDVB = 14,
 };
 
 /* The different kinds of extended mnemonics */
@@ -81,7 +85,14 @@ enum {
    S390_XMNM_LOC = 7,
    S390_XMNM_LOCG = 8,
    S390_XMNM_STOC = 9,
-   S390_XMNM_STOCG = 10
+   S390_XMNM_STOCG = 10,
+   S390_XMNM_STOCFH = 11,
+   S390_XMNM_LOCFH = 12,
+   S390_XMNM_LOCFHR = 13,
+   S390_XMNM_LOCHI = 14,
+   S390_XMNM_LOCGHI = 15,
+   S390_XMNM_LOCHHI = 16,
+   S390_XMNM_BIC = 17
 };
 
 void s390_disasm(UInt command, ...);

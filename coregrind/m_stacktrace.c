@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -446,6 +444,7 @@ UInt VG_(get_StackTrace_wrk) ( ThreadId tid_if_known,
       /* And, similarly, try for MSVC FPO unwind info. */
       if (FPO_info_present
           && VG_(use_FPO_info)( &uregs.xip, &uregs.xsp, &uregs.xbp,
+                                VG_(current_DiEpoch)(),
                                 fp_min, fp_max ) ) {
          if (debug) unwind_case = "MS";
          if (do_stats) stats.MS++;
@@ -730,6 +729,7 @@ UInt VG_(get_StackTrace_wrk) ( ThreadId tid_if_known,
    Word redirs_used      = 0;
 #  endif
    const Int cmrf = VG_(clo_merge_recursive_frames);
+   const DiEpoch cur_ep = VG_(current_DiEpoch)();
 
    Bool  debug = False;
    Int   i;
@@ -813,10 +813,10 @@ UInt VG_(get_StackTrace_wrk) ( ThreadId tid_if_known,
       const HChar *buf_lr, *buf_ip;
       /* The following conditional looks grossly inefficient and
          surely could be majorly improved, with not much effort. */
-      if (VG_(get_fnname_raw) (lr, &buf_lr)) {
+      if (VG_(get_fnname_raw) (cur_ep, lr, &buf_lr)) {
          HChar buf_lr_copy[VG_(strlen)(buf_lr) + 1];
          VG_(strcpy)(buf_lr_copy, buf_lr);
-         if (VG_(get_fnname_raw) (ip, &buf_ip))
+         if (VG_(get_fnname_raw) (cur_ep, ip, &buf_ip))
             if (VG_(strcmp)(buf_lr_copy, buf_ip))
                lr_is_first_RA = True;
       }
@@ -913,10 +913,11 @@ static Bool in_same_fn ( Addr a1, Addr a2 )
    const HChar *buf_a1, *buf_a2;
    /* The following conditional looks grossly inefficient and
       surely could be majorly improved, with not much effort. */
-   if (VG_(get_fnname_raw) (a1, &buf_a1)) {
+   const DiEpoch cur_ep = VG_(current_DiEpoch)();
+   if (VG_(get_fnname_raw) (cur_ep, a1, &buf_a1)) {
       HChar buf_a1_copy[VG_(strlen)(buf_a1) + 1];
       VG_(strcpy)(buf_a1_copy, buf_a1);
-      if (VG_(get_fnname_raw) (a2, &buf_a2))
+      if (VG_(get_fnname_raw) (cur_ep, a2, &buf_a2))
          if (VG_(strcmp)(buf_a1_copy, buf_a2))
             return True;
    }
@@ -1253,6 +1254,14 @@ UInt VG_(get_StackTrace_wrk) ( ThreadId tid_if_known,
    Addr fp_min = uregs.sp - VG_STACK_REDZONE_SZB;
    uregs.fp = startRegs->misc.S390X.r_fp;
    uregs.lr = startRegs->misc.S390X.r_lr;
+   uregs.f0 = startRegs->misc.S390X.r_f0;
+   uregs.f1 = startRegs->misc.S390X.r_f1;
+   uregs.f2 = startRegs->misc.S390X.r_f2;
+   uregs.f3 = startRegs->misc.S390X.r_f3;
+   uregs.f4 = startRegs->misc.S390X.r_f4;
+   uregs.f5 = startRegs->misc.S390X.r_f5;
+   uregs.f6 = startRegs->misc.S390X.r_f6;
+   uregs.f7 = startRegs->misc.S390X.r_f7;
 
    fp_max = VG_PGROUNDUP(fp_max_orig);
    if (fp_max >= sizeof(Addr))
@@ -1314,7 +1323,8 @@ UInt VG_(get_StackTrace_wrk) ( ThreadId tid_if_known,
 #endif
 
 /* ------------------------ mips 32/64 ------------------------- */
-#if defined(VGP_mips32_linux) || defined(VGP_mips64_linux)
+#if defined(VGP_mips32_linux) || defined(VGP_mips64_linux) \
+ || defined(VGP_nanomips_linux)
 UInt VG_(get_StackTrace_wrk) ( ThreadId tid_if_known,
                                /*OUT*/Addr* ips, UInt max_n_ips,
                                /*OUT*/Addr* sps, /*OUT*/Addr* fps,
@@ -1335,7 +1345,7 @@ UInt VG_(get_StackTrace_wrk) ( ThreadId tid_if_known,
    uregs.sp = startRegs->r_sp;
    Addr fp_min = uregs.sp - VG_STACK_REDZONE_SZB;
 
-#if defined(VGP_mips32_linux)
+#if defined(VGP_mips32_linux) || defined(VGP_nanomips_linux)
    uregs.fp = startRegs->misc.MIPS32.r30;
    uregs.ra = startRegs->misc.MIPS32.r31;
 #elif defined(VGP_mips64_linux)
@@ -1391,7 +1401,8 @@ UInt VG_(get_StackTrace_wrk) ( ThreadId tid_if_known,
       int seen_sp_adjust = 0;
       long frame_offset = 0;
       PtrdiffT offset;
-      if (VG_(get_inst_offset_in_function)(uregs.pc, &offset)) {
+      const DiEpoch cur_ep = VG_(current_DiEpoch)();
+      if (VG_(get_inst_offset_in_function)(cur_ep, uregs.pc, &offset)) {
          Addr start_pc = uregs.pc - offset;
          Addr limit_pc = uregs.pc;
          Addr cur_pc;
@@ -1422,7 +1433,7 @@ UInt VG_(get_StackTrace_wrk) ( ThreadId tid_if_known,
             }
          }
          if(debug)
-            VG_(printf)("offset: 0x%lx\n", frame_offset);
+            VG_(printf)("offset: 0x%ld\n", frame_offset);
       }
       if (seen_sp_adjust) {
          if (0 == uregs.pc || 1 == uregs.pc) break;
@@ -1478,11 +1489,14 @@ UInt VG_(get_StackTrace_wrk) ( ThreadId tid_if_known,
 /*--- Exported functions.                                  ---*/
 /*------------------------------------------------------------*/
 
-UInt VG_(get_StackTrace) ( ThreadId tid, 
-                           /*OUT*/StackTrace ips, UInt max_n_ips,
-                           /*OUT*/StackTrace sps,
-                           /*OUT*/StackTrace fps,
-                           Word first_ip_delta )
+UInt VG_(get_StackTrace_with_deltas)(
+         ThreadId tid, 
+         /*OUT*/StackTrace ips, UInt n_ips,
+         /*OUT*/StackTrace sps,
+         /*OUT*/StackTrace fps,
+         Word first_ip_delta,
+         Word first_sp_delta
+      )
 {
    /* Get the register values with which to start the unwind. */
    UnwindStartRegs startRegs;
@@ -1524,8 +1538,9 @@ UInt VG_(get_StackTrace) ( ThreadId tid,
    VG_(stack_limits)( (Addr)startRegs.r_sp,
                       &stack_lowest_byte, &stack_highest_byte );
 
-   /* Take into account the first_ip_delta. */
-   startRegs.r_pc += (Long)(Word)first_ip_delta;
+   /* Take into account the first_ip_delta and first_sp_delta. */
+   startRegs.r_pc += (Long)first_ip_delta;
+   startRegs.r_sp += (Long)first_sp_delta;
 
    if (0)
       VG_(printf)("tid %u: stack_highest=0x%08lx ip=0x%010llx "
@@ -1533,18 +1548,33 @@ UInt VG_(get_StackTrace) ( ThreadId tid,
                   tid, stack_highest_byte,
                   startRegs.r_pc, startRegs.r_sp);
 
-   return VG_(get_StackTrace_wrk)(tid, ips, max_n_ips, 
+   return VG_(get_StackTrace_wrk)(tid, ips, n_ips, 
                                        sps, fps,
                                        &startRegs,
                                        stack_highest_byte);
 }
 
-static void printIpDesc(UInt n, Addr ip, void* uu_opaque)
+UInt VG_(get_StackTrace) ( ThreadId tid, 
+                           /*OUT*/StackTrace ips, UInt max_n_ips,
+                           /*OUT*/StackTrace sps,
+                           /*OUT*/StackTrace fps,
+                           Word first_ip_delta )
 {
-   InlIPCursor *iipc = VG_(new_IIPC)(ip);
+   return VG_(get_StackTrace_with_deltas) (tid,
+                                           ips, max_n_ips,
+                                           sps,
+                                           fps,
+                                           first_ip_delta,
+                                           0 /* first_sp_delta */
+                                           );
+}
+
+static void printIpDesc(UInt n, DiEpoch ep, Addr ip, void* uu_opaque)
+{
+   InlIPCursor *iipc = VG_(new_IIPC)(ep, ip);
 
    do {
-      const HChar *buf = VG_(describe_IP)(ip, iipc);
+      const HChar *buf = VG_(describe_IP)(ep, ip, iipc);
       if (VG_(clo_xml)) {
          VG_(printf_xml)("    %s\n", buf);
       } else {
@@ -1558,14 +1588,14 @@ static void printIpDesc(UInt n, Addr ip, void* uu_opaque)
 }
 
 /* Print a StackTrace. */
-void VG_(pp_StackTrace) ( StackTrace ips, UInt n_ips )
+void VG_(pp_StackTrace) ( DiEpoch ep, StackTrace ips, UInt n_ips )
 {
    vg_assert( n_ips > 0 );
 
    if (VG_(clo_xml))
       VG_(printf_xml)("  <stack>\n");
 
-   VG_(apply_StackTrace)( printIpDesc, NULL, ips, n_ips );
+   VG_(apply_StackTrace)( printIpDesc, NULL, ep, ips, n_ips );
 
    if (VG_(clo_xml))
       VG_(printf_xml)("  </stack>\n");
@@ -1580,13 +1610,13 @@ void VG_(get_and_pp_StackTrace) ( ThreadId tid, UInt max_n_ips )
                             NULL/*array to dump SP values in*/,
                             NULL/*array to dump FP values in*/,
                             0/*first_ip_delta*/);
-   VG_(pp_StackTrace)(ips, n_ips);
+   VG_(pp_StackTrace)(VG_(current_DiEpoch)(), ips, n_ips);
 }
 
 void VG_(apply_StackTrace)(
-        void(*action)(UInt n, Addr ip, void* opaque),
+        void(*action)(UInt n, DiEpoch ep, Addr ip, void* opaque),
         void* opaque,
-        StackTrace ips, UInt n_ips
+        DiEpoch ep, StackTrace ips, UInt n_ips
      )
 {
    Int i;
@@ -1597,7 +1627,7 @@ void VG_(apply_StackTrace)(
       // or the last appearance of a below main function.
       // Then decrease n_ips so as to not call action for the below main
       for (i = n_ips - 1; i >= 0; i--) {
-         Vg_FnNameKind kind = VG_(get_fnname_kind_from_IP)(ips[i]);
+         Vg_FnNameKind kind = VG_(get_fnname_kind_from_IP)(ep, ips[i]);
          if (Vg_FnNameMain == kind || Vg_FnNameBelowMain == kind)
             n_ips = i + 1;
          if (Vg_FnNameMain == kind)
@@ -1607,7 +1637,7 @@ void VG_(apply_StackTrace)(
 
    for (i = 0; i < n_ips; i++)
       // Act on the ip
-      action(i, ips[i], opaque);
+      action(i, ep, ips[i], opaque);
 }
 
 

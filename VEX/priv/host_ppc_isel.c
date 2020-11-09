@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-   02110-1301, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 
@@ -1528,7 +1526,6 @@ static HReg iselWordExpr_R_wrk ( ISelEnv* env, const IRExpr* e,
                                            True/*32bit shift*/,
                                            tmp, tmp,    amt));
                r_srcL = tmp;
-               vassert(0); /* AWAITING TEST CASE */
             }
          }
          /* Only 64 expressions need 64bit shifts,
@@ -2065,12 +2062,15 @@ static HReg iselWordExpr_R_wrk ( ISelEnv* env, const IRExpr* e,
             return r_dst;
          }
          break;
-      case Iop_Clz32:
-      case Iop_Clz64: {
+
+      case Iop_Clz32: case Iop_ClzNat32:
+      case Iop_Clz64: case Iop_ClzNat64: {
+         // cntlz is available even in the most basic (earliest) ppc
+         // variants, so it's safe to generate it unconditionally.
          HReg r_src, r_dst;
-         PPCUnaryOp op_clz = (op_unop == Iop_Clz32) ? Pun_CLZ32 :
-                                                      Pun_CLZ64;
-         if (op_unop == Iop_Clz64 && !mode64)
+         PPCUnaryOp op_clz = (op_unop == Iop_Clz32 || op_unop == Iop_ClzNat32)
+                                ? Pun_CLZ32 : Pun_CLZ64;
+         if ((op_unop == Iop_Clz64 || op_unop == Iop_ClzNat64) && !mode64)
             goto irreducible;
          /* Count leading zeroes. */
          r_dst = newVRegI(env);
@@ -2079,18 +2079,190 @@ static HReg iselWordExpr_R_wrk ( ISelEnv* env, const IRExpr* e,
          return r_dst;
       }
 
-      case Iop_Ctz32:
-      case Iop_Ctz64: {
-         HReg r_src, r_dst;
-         PPCUnaryOp op_clz = (op_unop == Iop_Ctz32) ? Pun_CTZ32 :
-                                                      Pun_CTZ64;
-         if (op_unop == Iop_Ctz64 && !mode64)
-            goto irreducible;
-         /* Count trailing zeroes. */
-         r_dst = newVRegI(env);
-         r_src = iselWordExpr_R(env, e->Iex.Unop.arg, IEndianess);
-         addInstr(env, PPCInstr_Unary(op_clz,r_dst,r_src));
-         return r_dst;
+      //case Iop_Ctz32:
+      case Iop_CtzNat32:
+      //case Iop_Ctz64:
+      case Iop_CtzNat64:
+      {
+         // Generate code using Clz, because we can't assume the host has
+         // Ctz.  In particular, part of the fix for bug 386945 involves
+         // creating a Ctz in ir_opt.c from smaller fragments.
+         PPCUnaryOp op_clz = Pun_CLZ64;
+         Int WS = 64;
+         if (op_unop == Iop_Ctz32 || op_unop == Iop_CtzNat32) {
+            op_clz = Pun_CLZ32;
+            WS = 32;
+         }
+         /* Compute ctz(arg) = wordsize - clz(~arg & (arg - 1)), thusly:
+            t1 = arg - 1
+            t2 = not arg
+            t2 = t2 & t1
+            t2 = clz t2
+            t1 = WS
+            t2 = t1 - t2
+            // result in t2
+         */
+         HReg arg = iselWordExpr_R(env, e->Iex.Unop.arg, IEndianess);
+         HReg t1 = newVRegI(env);
+         HReg t2 = newVRegI(env);
+         addInstr(env, PPCInstr_Alu(Palu_SUB, t1, arg, PPCRH_Imm(True, 1)));
+         addInstr(env, PPCInstr_Unary(Pun_NOT, t2, arg));
+         addInstr(env, PPCInstr_Alu(Palu_AND, t2, t2, PPCRH_Reg(t1)));
+         addInstr(env, PPCInstr_Unary(op_clz, t2, t2));
+         addInstr(env, PPCInstr_LI(t1, WS, False/*!64-bit imm*/));
+         addInstr(env, PPCInstr_Alu(Palu_SUB, t2, t1, PPCRH_Reg(t2)));
+         return t2;
+      }
+
+      case Iop_PopCount64: {
+         // popcnt{x,d} is only available in later arch revs (ISA 3.0,
+         // maybe) so it's not really correct to emit it here without a caps
+         // check for the host.
+         if (mode64) {
+            HReg r_dst = newVRegI(env);
+            HReg r_src = iselWordExpr_R(env, e->Iex.Unop.arg, IEndianess);
+            addInstr(env, PPCInstr_Unary(Pun_POP64, r_dst, r_src));
+            return r_dst;
+         }
+         // We don't expect to be required to handle this in 32-bit mode.
+         break;
+      }
+
+      case Iop_PopCount32: {
+         // Similar comment as for Ctz just above applies -- we really
+         // should have a caps check here.
+
+        HReg r_dst = newVRegI(env);
+        // This actually generates popcntw, which in 64 bit mode does a
+        // 32-bit count individually for both low and high halves of the
+        // word.  Per the comment at the top of iselIntExpr_R, in the 64
+        // bit mode case, the user of this result is required to ignore
+        // the upper 32 bits of the result.  In 32 bit mode this is all
+        // moot.  It is however unclear from the PowerISA 3.0 docs that
+        // the instruction exists in 32 bit mode; however our own front
+        // end (guest_ppc_toIR.c) accepts it, so I guess it does exist.
+        HReg r_src = iselWordExpr_R(env, e->Iex.Unop.arg, IEndianess);
+        addInstr(env, PPCInstr_Unary(Pun_POP32, r_dst, r_src));
+        return r_dst;
+      }
+
+      case Iop_Reverse8sIn32_x1: {
+         // A bit of a mouthful, but simply .. 32-bit byte swap.
+         // This is pretty rubbish code.  We could do vastly better if
+         // rotates, and better, rotate-inserts, were allowed.  Note that
+         // even on a 64 bit target, the right shifts must be done as 32-bit
+         // so as to introduce zero bits in the right places.  So it seems
+         // simplest to do the whole sequence in 32-bit insns.
+         /*
+            r     = <argument>  // working temporary, initial byte order ABCD
+            Mask  = 00FF00FF
+            nMask = not Mask
+            tHi   = and r, Mask
+            tHi   = shl tHi, 8
+            tLo   = and r, nMask
+            tLo   = shr tLo, 8
+            r     = or tHi, tLo  // now r has order BADC
+            and repeat for 16 bit chunks ..
+            Mask  = 0000FFFF
+            nMask = not Mask
+            tHi   = and r, Mask
+            tHi   = shl tHi, 16
+            tLo   = and r, nMask
+            tLo   = shr tLo, 16
+            r     = or tHi, tLo  // now r has order DCBA
+         */
+         HReg r_src  = iselWordExpr_R(env, e->Iex.Unop.arg, IEndianess);
+         HReg rr     = newVRegI(env);
+         HReg rMask  = newVRegI(env);
+         HReg rnMask = newVRegI(env);
+         HReg rtHi   = newVRegI(env);
+         HReg rtLo   = newVRegI(env);
+         // Copy r_src since we need to modify it
+         addInstr(env, mk_iMOVds_RR(rr, r_src));
+         // Swap within 16-bit lanes
+         addInstr(env, PPCInstr_LI(rMask, 0x00FF00FFULL,
+                                   False/* !64bit imm*/));
+         addInstr(env, PPCInstr_Unary(Pun_NOT, rnMask, rMask));
+         addInstr(env, PPCInstr_Alu(Palu_AND, rtHi, rr, PPCRH_Reg(rMask)));
+         addInstr(env, PPCInstr_Shft(Pshft_SHL, True/*32 bit shift*/,
+                                     rtHi, rtHi,
+                                     PPCRH_Imm(False/*!signed imm*/, 8)));
+         addInstr(env, PPCInstr_Alu(Palu_AND, rtLo, rr, PPCRH_Reg(rnMask)));
+         addInstr(env, PPCInstr_Shft(Pshft_SHR, True/*32 bit shift*/,
+                                     rtLo, rtLo,
+                                     PPCRH_Imm(False/*!signed imm*/, 8)));
+         addInstr(env, PPCInstr_Alu(Palu_OR, rr, rtHi, PPCRH_Reg(rtLo)));
+         // And now swap the two 16-bit chunks
+         addInstr(env, PPCInstr_LI(rMask, 0x0000FFFFULL,
+                                   False/* !64bit imm*/));
+         addInstr(env, PPCInstr_Unary(Pun_NOT, rnMask, rMask));
+         addInstr(env, PPCInstr_Alu(Palu_AND, rtHi, rr, PPCRH_Reg(rMask)));
+         addInstr(env, PPCInstr_Shft(Pshft_SHL, True/*32 bit shift*/,
+                                     rtHi, rtHi,
+                                     PPCRH_Imm(False/*!signed imm*/, 16)));
+         addInstr(env, PPCInstr_Alu(Palu_AND, rtLo, rr, PPCRH_Reg(rnMask)));
+         addInstr(env, PPCInstr_Shft(Pshft_SHR, True/*32 bit shift*/,
+                                     rtLo, rtLo,
+                                     PPCRH_Imm(False/*!signed imm*/, 16)));
+         addInstr(env, PPCInstr_Alu(Palu_OR, rr, rtHi, PPCRH_Reg(rtLo)));
+         return rr;
+      }
+
+      case Iop_Reverse8sIn64_x1: {
+	 /* See Iop_Reverse8sIn32_x1, but extended to 64bit.
+            Can only be used in 64bit mode.  */
+         vassert (mode64);
+
+         HReg r_src  = iselWordExpr_R(env, e->Iex.Unop.arg, IEndianess);
+         HReg rr     = newVRegI(env);
+         HReg rMask  = newVRegI(env);
+         HReg rnMask = newVRegI(env);
+         HReg rtHi   = newVRegI(env);
+         HReg rtLo   = newVRegI(env);
+
+         // Copy r_src since we need to modify it
+         addInstr(env, mk_iMOVds_RR(rr, r_src));
+
+         // r = (r & 0x00FF00FF00FF00FF) << 8 | (r & 0xFF00FF00FF00FF00) >> 8
+         addInstr(env, PPCInstr_LI(rMask, 0x00FF00FF00FF00FFULL,
+                                   True/* 64bit imm*/));
+         addInstr(env, PPCInstr_Unary(Pun_NOT, rnMask, rMask));
+         addInstr(env, PPCInstr_Alu(Palu_AND, rtHi, rr, PPCRH_Reg(rMask)));
+         addInstr(env, PPCInstr_Shft(Pshft_SHL, False/*64 bit shift*/,
+                                     rtHi, rtHi,
+                                     PPCRH_Imm(False/*!signed imm*/, 8)));
+         addInstr(env, PPCInstr_Alu(Palu_AND, rtLo, rr, PPCRH_Reg(rnMask)));
+         addInstr(env, PPCInstr_Shft(Pshft_SHR, False/*64 bit shift*/,
+                                     rtLo, rtLo,
+                                     PPCRH_Imm(False/*!signed imm*/, 8)));
+         addInstr(env, PPCInstr_Alu(Palu_OR, rr, rtHi, PPCRH_Reg(rtLo)));
+
+         // r = (r & 0x0000FFFF0000FFFF) << 16 | (r & 0xFFFF0000FFFF0000) >> 16
+         addInstr(env, PPCInstr_LI(rMask, 0x0000FFFF0000FFFFULL,
+                                   True/* !64bit imm*/));
+         addInstr(env, PPCInstr_Unary(Pun_NOT, rnMask, rMask));
+         addInstr(env, PPCInstr_Alu(Palu_AND, rtHi, rr, PPCRH_Reg(rMask)));
+         addInstr(env, PPCInstr_Shft(Pshft_SHL, False/*64 bit shift*/,
+                                     rtHi, rtHi,
+                                     PPCRH_Imm(False/*!signed imm*/, 16)));
+         addInstr(env, PPCInstr_Alu(Palu_AND, rtLo, rr, PPCRH_Reg(rnMask)));
+         addInstr(env, PPCInstr_Shft(Pshft_SHR, False/*64 bit shift*/,
+                                     rtLo, rtLo,
+                                     PPCRH_Imm(False/*!signed imm*/, 16)));
+         addInstr(env, PPCInstr_Alu(Palu_OR, rr, rtHi, PPCRH_Reg(rtLo)));
+
+         // r = (r & 0x00000000FFFFFFFF) << 32 | (r & 0xFFFFFFFF00000000) >> 32
+         /* We don't need to mask anymore, just two more shifts and an or.  */
+         addInstr(env, mk_iMOVds_RR(rtLo, rr));
+         addInstr(env, PPCInstr_Shft(Pshft_SHL, False/*64 bit shift*/,
+                                     rtLo, rtLo,
+                                     PPCRH_Imm(False/*!signed imm*/, 32)));
+         addInstr(env, PPCInstr_Shft(Pshft_SHR, False/*64 bit shift*/,
+                                     rr, rr,
+                                     PPCRH_Imm(False/*!signed imm*/, 32)));
+         addInstr(env, PPCInstr_Alu(Palu_OR, rr, rr, PPCRH_Reg(rtLo)));
+
+         return rr;
       }
 
       case Iop_Left8:
@@ -2344,7 +2516,7 @@ static HReg iselWordExpr_R_wrk ( ISelEnv* env, const IRExpr* e,
          addInstr(env, mk_iMOVds_RR(r_dst, argregs[0]));
          return r_dst;
       }
-      case Iop_F32toF16x4: {
+      case Iop_F32toF16x4_DEP: {
          HReg vdst = newVRegV(env);    /* V128 */
          HReg dst  = newVRegI(env);    /* I64*/
          HReg r0 = newVRegI(env);    /* I16*/
@@ -2923,13 +3095,15 @@ static PPCCondCode iselCondCode_wrk ( ISelEnv* env, const IRExpr* e,
    vassert(typeOfIRExpr(env->type_env,e) == Ity_I1);
 
    /* Constant 1:Bit */
-   if (e->tag == Iex_Const && e->Iex.Const.con->Ico.U1 == True) {
-      // Make a compare that will always be true:
+   if (e->tag == Iex_Const) {
+      // Make a compare that will always be true (or always false):
+      vassert(e->Iex.Const.con->Ico.U1 == True || e->Iex.Const.con->Ico.U1 == False);
       HReg r_zero = newVRegI(env);
       addInstr(env, PPCInstr_LI(r_zero, 0, env->mode64));
       addInstr(env, PPCInstr_Cmp(False/*unsigned*/, True/*32bit cmp*/,
                                  7/*cr*/, r_zero, PPCRH_Reg(r_zero)));
-      return mk_PPCCondCode( Pct_TRUE, Pcf_7EQ );
+      return mk_PPCCondCode( e->Iex.Const.con->Ico.U1 ? Pct_TRUE : Pct_FALSE,
+                             Pcf_7EQ );
    }
 
    /* Not1(...) */
@@ -3052,8 +3226,10 @@ static PPCCondCode iselCondCode_wrk ( ISelEnv* env, const IRExpr* e,
       switch (e->Iex.Binop.op) {
       case Iop_CmpEQ64:  return mk_PPCCondCode( Pct_TRUE,  Pcf_7EQ );
       case Iop_CmpNE64:  return mk_PPCCondCode( Pct_FALSE, Pcf_7EQ );
-      case Iop_CmpLT64U: return mk_PPCCondCode( Pct_TRUE,  Pcf_7LT );
-      case Iop_CmpLE64U: return mk_PPCCondCode( Pct_FALSE, Pcf_7GT );
+      case Iop_CmpLT64U:  case Iop_CmpLT64S:
+         return mk_PPCCondCode( Pct_TRUE,  Pcf_7LT );
+      case Iop_CmpLE64U: case Iop_CmpLE64S:
+         return mk_PPCCondCode( Pct_FALSE, Pcf_7GT );
       default: vpanic("iselCondCode(ppc): CmpXX64");
       }
    }
@@ -3085,6 +3261,29 @@ static PPCCondCode iselCondCode_wrk ( ISelEnv* env, const IRExpr* e,
       addInstr(env,
                PPCInstr_Cmp(False/*unsigned*/, True/*32bit cmp*/,
                             7/*cr*/, src_masked, PPCRH_Imm(False,1)));
+      return mk_PPCCondCode( Pct_TRUE, Pcf_7EQ );
+   }
+
+   /* --- And1(x,y), Or1(x,y) --- */
+   /* FIXME: We could (and probably should) do a lot better here, by using the
+      iselCondCode_C/_R scheme used in the amd64 insn selector. */
+   if (e->tag == Iex_Binop
+        && (e->Iex.Binop.op == Iop_And1 || e->Iex.Binop.op == Iop_Or1)) {
+      HReg x_as_int = newVRegI(env);
+      PPCCondCode cc_x = iselCondCode(env, e->Iex.Binop.arg1, IEndianess);
+      addInstr(env, PPCInstr_Set(cc_x, x_as_int));
+
+      HReg y_as_int = newVRegI(env);
+      PPCCondCode cc_y = iselCondCode(env, e->Iex.Binop.arg2, IEndianess);
+      addInstr(env, PPCInstr_Set(cc_y, y_as_int));
+
+      HReg tmp = newVRegI(env);
+      PPCAluOp op = e->Iex.Binop.op == Iop_And1 ? Palu_AND : Palu_OR;
+      addInstr(env, PPCInstr_Alu(op, tmp, x_as_int, PPCRH_Reg(y_as_int)));
+
+      addInstr(env, PPCInstr_Alu(Palu_AND, tmp, tmp, PPCRH_Imm(False,1)));
+      addInstr(env, PPCInstr_Cmp(False/*unsigned*/, True/*32bit cmp*/,
+                                 7/*cr*/, tmp, PPCRH_Imm(False,1)));
       return mk_PPCCondCode( Pct_TRUE, Pcf_7EQ );
    }
 
@@ -5390,6 +5589,18 @@ static HReg iselVecExpr_wrk ( ISelEnv* env, const IRExpr* e,
    vassert(e);
    vassert(ty == Ity_V128);
 
+   if (e->tag == Iex_ITE) {
+      HReg r1 = iselVecExpr( env, e->Iex.ITE.iftrue, IEndianess );
+      HReg r0 = iselVecExpr( env, e->Iex.ITE.iffalse, IEndianess );
+      HReg r_dst = newVRegV(env);
+
+      // Use OR operator to do move r1 to r_dst
+      addInstr(env, PPCInstr_AvBinary( Pav_OR, r_dst, r0, r0));
+      PPCCondCode cc = iselCondCode(env, e->Iex.ITE.cond, IEndianess);
+      addInstr(env, PPCInstr_AvCMov(cc, r_dst, r1));
+      return r_dst;
+   }
+
    if (e->tag == Iex_RdTmp) {
       return lookupIRTemp(env, e->Iex.RdTmp.tmp);
    }
@@ -5475,7 +5686,7 @@ static HReg iselVecExpr_wrk ( ISelEnv* env, const IRExpr* e,
             return dst;
          }
 
-      case Iop_F64toF16x2:
+      case Iop_F64toF16x2_DEP:
          {
             HReg dst = newVRegV(env);
             HReg arg  = iselVecExpr(env, e->Iex.Unop.arg, IEndianess);
@@ -5523,7 +5734,7 @@ static HReg iselVecExpr_wrk ( ISelEnv* env, const IRExpr* e,
             return dst;
          }
 
-      case Iop_F32toF16x4:
+      case Iop_F32toF16x4_DEP:
          {
             HReg dst = newVRegI(env);
             HReg tmp = newVRegV(env);
@@ -5607,10 +5818,12 @@ static HReg iselVecExpr_wrk ( ISelEnv* env, const IRExpr* e,
 
       case Iop_RecipEst32Fx4: fpop = Pavfp_RCPF;    goto do_32Fx4_unary;
       case Iop_RSqrtEst32Fx4: fpop = Pavfp_RSQRTF;  goto do_32Fx4_unary;
-      case Iop_I32UtoFx4:     fpop = Pavfp_CVTU2F;  goto do_32Fx4_unary;
-      case Iop_I32StoFx4:     fpop = Pavfp_CVTS2F;  goto do_32Fx4_unary;
-      case Iop_QFtoI32Ux4_RZ: fpop = Pavfp_QCVTF2U; goto do_32Fx4_unary;
-      case Iop_QFtoI32Sx4_RZ: fpop = Pavfp_QCVTF2S; goto do_32Fx4_unary;
+      case Iop_Log2_32Fx4:    fpop = Pavfp_Log2;    goto do_32Fx4_unary;
+      case Iop_Exp2_32Fx4:    fpop = Pavfp_Exp2;    goto do_32Fx4_unary;
+      case Iop_I32UtoF32x4_DEP: fpop = Pavfp_CVTU2F;  goto do_32Fx4_unary;
+      case Iop_I32StoF32x4_DEP: fpop = Pavfp_CVTS2F;  goto do_32Fx4_unary;
+      case Iop_QF32toI32Ux4_RZ: fpop = Pavfp_QCVTF2U; goto do_32Fx4_unary;
+      case Iop_QF32toI32Sx4_RZ: fpop = Pavfp_QCVTF2S; goto do_32Fx4_unary;
       case Iop_RoundF32x4_RM: fpop = Pavfp_ROUNDM;  goto do_32Fx4_unary;
       case Iop_RoundF32x4_RP: fpop = Pavfp_ROUNDP;  goto do_32Fx4_unary;
       case Iop_RoundF32x4_RN: fpop = Pavfp_ROUNDN;  goto do_32Fx4_unary;
@@ -6365,7 +6578,10 @@ static void iselStmt ( ISelEnv* env, IRStmt* stmt, IREndness IEndianess )
          return;
       }
       if (!mode64 && ty == Ity_I128) {
-         HReg r_srcHi, r_srcMedHi, r_srcMedLo, r_srcLo;
+         HReg r_srcHi    = INVALID_HREG;
+         HReg r_srcMedHi = INVALID_HREG;
+         HReg r_srcMedLo = INVALID_HREG;
+         HReg r_srcLo    = INVALID_HREG;
          HReg r_dstHi, r_dstMedHi, r_dstMedLo, r_dstLo;
 
          iselInt128Expr_to_32x4(&r_srcHi, &r_srcMedHi,
@@ -6839,7 +7055,7 @@ HInstrArray* iselSB_PPC ( const IRSB* bb,
    mode64 = arch_host == VexArchPPC64;
 
    /* do some sanity checks,
-    * Note: no 32-bit support for ISA 3.0
+    * Note: no 32-bit support for ISA 3.0, ISA 3.1
     */
    mask32 = VEX_HWCAPS_PPC32_F | VEX_HWCAPS_PPC32_V
             | VEX_HWCAPS_PPC32_FX | VEX_HWCAPS_PPC32_GX | VEX_HWCAPS_PPC32_VX
@@ -6847,7 +7063,8 @@ HInstrArray* iselSB_PPC ( const IRSB* bb,
 
    mask64 = VEX_HWCAPS_PPC64_V | VEX_HWCAPS_PPC64_FX
             | VEX_HWCAPS_PPC64_GX | VEX_HWCAPS_PPC64_VX | VEX_HWCAPS_PPC64_DFP
-            | VEX_HWCAPS_PPC64_ISA2_07 | VEX_HWCAPS_PPC64_ISA3_0;
+            | VEX_HWCAPS_PPC64_ISA2_07 | VEX_HWCAPS_PPC64_ISA3_0
+            | VEX_HWCAPS_PPC64_ISA3_1;
 
    if (mode64) {
       vassert((hwcaps_host & mask32) == 0);

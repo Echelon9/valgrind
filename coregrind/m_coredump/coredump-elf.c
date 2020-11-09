@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -99,7 +97,11 @@ static void fill_ehdr(ESZ(Ehdr) *ehdr, Int num_phdrs)
    ehdr->e_entry = 0;
    ehdr->e_phoff = sizeof(ESZ(Ehdr));
    ehdr->e_shoff = 0;
+#if defined(VGP_nanomips_linux)
+   ehdr->e_flags = VKI_EF_NANOMIPS_ABI_P32;
+#else
    ehdr->e_flags = 0;
+#endif
    ehdr->e_ehsize = sizeof(ESZ(Ehdr));
    ehdr->e_phentsize = sizeof(ESZ(Phdr));
    ehdr->e_phnum = num_phdrs;
@@ -226,7 +228,8 @@ static void fill_prstatus(const ThreadState *tst,
 			  /*OUT*/struct vki_elf_prstatus *prs, 
 			  const vki_siginfo_t *si)
 {
-#if defined(VGP_mips32_linux) || defined(VGP_mips64_linux)
+#if defined(VGP_mips32_linux) || defined(VGP_mips64_linux) \
+    || defined(VGP_nanomips_linux)
    vki_elf_greg_t *regs;
 #else
    struct vki_user_regs_struct *regs;
@@ -249,7 +252,8 @@ static void fill_prstatus(const ThreadState *tst,
 #if defined(VGP_s390x_linux)
    /* prs->pr_reg has struct type. Need to take address. */
    regs = (struct vki_user_regs_struct *)&(prs->pr_reg);
-#elif defined(VGP_mips32_linux) || defined(VGP_mips64_linux)
+#elif defined(VGP_mips32_linux) || defined(VGP_mips64_linux) \
+   || defined(VGP_nanomips_linux)
    regs = (vki_elf_greg_t *)prs->pr_reg;
 #else
    regs = (struct vki_user_regs_struct *)prs->pr_reg;
@@ -380,8 +384,40 @@ static void fill_prstatus(const ThreadState *tst,
    regs->ARM_cpsr = LibVEX_GuestARM_get_cpsr( &arch->vex );
 
 #elif defined(VGP_arm64_linux)
-   (void)arch;
-   I_die_here;
+   regs->regs[0]  = arch->vex.guest_X0;
+   regs->regs[1]  = arch->vex.guest_X1;
+   regs->regs[2]  = arch->vex.guest_X2;
+   regs->regs[3]  = arch->vex.guest_X3;
+   regs->regs[4]  = arch->vex.guest_X4;
+   regs->regs[5]  = arch->vex.guest_X5;
+   regs->regs[6]  = arch->vex.guest_X6;
+   regs->regs[7]  = arch->vex.guest_X7;
+   regs->regs[8]  = arch->vex.guest_X8;
+   regs->regs[9]  = arch->vex.guest_X9;
+   regs->regs[10] = arch->vex.guest_X10;
+   regs->regs[11] = arch->vex.guest_X11;
+   regs->regs[12] = arch->vex.guest_X12;
+   regs->regs[13] = arch->vex.guest_X13;
+   regs->regs[14] = arch->vex.guest_X14;
+   regs->regs[15] = arch->vex.guest_X15;
+   regs->regs[16] = arch->vex.guest_X16;
+   regs->regs[17] = arch->vex.guest_X17;
+   regs->regs[18] = arch->vex.guest_X18;
+   regs->regs[19] = arch->vex.guest_X19;
+   regs->regs[20] = arch->vex.guest_X20;
+   regs->regs[21] = arch->vex.guest_X21;
+   regs->regs[22] = arch->vex.guest_X22;
+   regs->regs[23] = arch->vex.guest_X23;
+   regs->regs[24] = arch->vex.guest_X24;
+   regs->regs[25] = arch->vex.guest_X25;
+   regs->regs[26] = arch->vex.guest_X26;
+   regs->regs[27] = arch->vex.guest_X27;
+   regs->regs[28] = arch->vex.guest_X28;
+   regs->regs[29] = arch->vex.guest_X29;
+   regs->regs[30] = arch->vex.guest_X30;
+   regs->sp       = arch->vex.guest_XSP;
+   regs->pc       = arch->vex.guest_PC;
+   regs->pstate  = LibVEX_GuestARM64_get_nzcv( &arch->vex ); /* is this correct? */
 
 #elif defined(VGP_s390x_linux)
 #  define DO(n)  regs->gprs[n] = arch->vex.guest_r##n
@@ -416,6 +452,15 @@ static void fill_prstatus(const ThreadState *tst,
    regs[VKI_MIPS64_EF_HI]         = arch->vex.guest_HI;
    regs[VKI_MIPS64_EF_CP0_STATUS] = arch->vex.guest_CP0_status;
    regs[VKI_MIPS64_EF_CP0_EPC]    = arch->vex.guest_PC;
+#elif defined(VGP_nanomips_linux)
+#  define DO(n)  regs[VKI_MIPS32_EF_R##n] = arch->vex.guest_r##n
+   DO(1);  DO(2);  DO(3);  DO(4);  DO(5);  DO(6);  DO(7);  DO(8);
+   DO(9);  DO(10); DO(11); DO(12); DO(13); DO(14); DO(15); DO(16);
+   DO(17); DO(18); DO(19); DO(20); DO(21); DO(22); DO(23); DO(24);
+   DO(25); DO(28); DO(29); DO(30); DO(31);
+   regs[VKI_MIPS32_EF_CP0_STATUS] = arch->vex.guest_CP0_status;
+   regs[VKI_MIPS32_EF_CP0_EPC]    = arch->vex.guest_PC;
+#  undef DO
 #else
 #  error Unknown ELF platform
 #endif
@@ -492,10 +537,44 @@ static void fill_fpu(const ThreadState *tst, vki_elf_fpregset_t *fpu)
    // umm ...
 
 #elif defined(VGP_arm64_linux)
-   I_die_here;
+    fpu->vregs[0]  = *(const __uint128_t*)arch->vex.guest_Q0;
+    fpu->vregs[1]  = *(const __uint128_t*)arch->vex.guest_Q1;
+    fpu->vregs[2]  = *(const __uint128_t*)arch->vex.guest_Q2;
+    fpu->vregs[3]  = *(const __uint128_t*)arch->vex.guest_Q3;
+    fpu->vregs[4]  = *(const __uint128_t*)arch->vex.guest_Q4;
+    fpu->vregs[5]  = *(const __uint128_t*)arch->vex.guest_Q5;
+    fpu->vregs[6]  = *(const __uint128_t*)arch->vex.guest_Q6;
+    fpu->vregs[7]  = *(const __uint128_t*)arch->vex.guest_Q7;
+    fpu->vregs[8]  = *(const __uint128_t*)arch->vex.guest_Q8;
+    fpu->vregs[9]  = *(const __uint128_t*)arch->vex.guest_Q9;
+    fpu->vregs[10] = *(const __uint128_t*)arch->vex.guest_Q10;
+    fpu->vregs[11] = *(const __uint128_t*)arch->vex.guest_Q11;
+    fpu->vregs[12] = *(const __uint128_t*)arch->vex.guest_Q12;
+    fpu->vregs[13] = *(const __uint128_t*)arch->vex.guest_Q13;
+    fpu->vregs[14] = *(const __uint128_t*)arch->vex.guest_Q14;
+    fpu->vregs[15] = *(const __uint128_t*)arch->vex.guest_Q15;
+    fpu->vregs[16] = *(const __uint128_t*)arch->vex.guest_Q16;
+    fpu->vregs[17] = *(const __uint128_t*)arch->vex.guest_Q17;
+    fpu->vregs[18] = *(const __uint128_t*)arch->vex.guest_Q18;
+    fpu->vregs[19] = *(const __uint128_t*)arch->vex.guest_Q19;
+    fpu->vregs[20] = *(const __uint128_t*)arch->vex.guest_Q20;
+    fpu->vregs[21] = *(const __uint128_t*)arch->vex.guest_Q21;
+    fpu->vregs[22] = *(const __uint128_t*)arch->vex.guest_Q22;
+    fpu->vregs[23] = *(const __uint128_t*)arch->vex.guest_Q23;
+    fpu->vregs[24] = *(const __uint128_t*)arch->vex.guest_Q24;
+    fpu->vregs[25] = *(const __uint128_t*)arch->vex.guest_Q25;
+    fpu->vregs[26] = *(const __uint128_t*)arch->vex.guest_Q26;
+    fpu->vregs[27] = *(const __uint128_t*)arch->vex.guest_Q27;
+    fpu->vregs[28] = *(const __uint128_t*)arch->vex.guest_Q28;
+    fpu->vregs[29] = *(const __uint128_t*)arch->vex.guest_Q29;
+    fpu->vregs[30] = *(const __uint128_t*)arch->vex.guest_Q30;
+    fpu->vregs[31] = *(const __uint128_t*)arch->vex.guest_Q31;
+    fpu->fpsr      = *(const __vki_u32*)arch->vex.guest_QCFLAG;
+    fpu->fpcr      = arch->vex.guest_FPCR;
 
 #elif defined(VGP_s390x_linux)
-#  define DO(n)  fpu->fprs[n].ui = arch->vex.guest_f##n
+   /* NOTE: The 16 FP registers map to the first 16 VSX registers. */
+#  define DO(n)  fpu->fprs[n].ui = *(const Double*)(&arch->vex.guest_v##n.w64[0])
    DO(0);  DO(1);  DO(2);  DO(3);  DO(4);  DO(5);  DO(6);  DO(7);
    DO(8);  DO(9);  DO(10); DO(11); DO(12); DO(13); DO(14); DO(15);
 # undef DO
@@ -506,6 +585,8 @@ static void fill_fpu(const ThreadState *tst, vki_elf_fpregset_t *fpu)
    DO(16); DO(17); DO(18); DO(19); DO(20); DO(21); DO(22); DO(23);
    DO(24); DO(25); DO(26); DO(27); DO(28); DO(29); DO(30); DO(31);
 #  undef DO
+#elif defined(VGP_nanomips_linux)
+
 #else
 #  error Unknown ELF platform
 #endif
@@ -541,9 +622,12 @@ void dump_one_thread(struct note **notelist, const vki_siginfo_t *si, ThreadId t
 {
    vki_elf_fpregset_t  fpu;
    struct vki_elf_prstatus prstatus;
+   VG_(memset)(&fpu, 0, sizeof(fpu));
+   VG_(memset)(&prstatus, 0, sizeof(prstatus));
 #     if defined(VGP_x86_linux) && !defined(VGPV_x86_linux_android)
       {
          vki_elf_fpxregset_t xfpu;
+         VG_(memset)(&xfpu, 0, sizeof(xfpu));
          fill_xfpu(&VG_(threads)[tid], &xfpu);
          add_note(notelist, "LINUX", NT_PRXFPREG, &xfpu, sizeof(xfpu));
       }
@@ -553,7 +637,8 @@ void dump_one_thread(struct note **notelist, const vki_siginfo_t *si, ThreadId t
 #     if !defined(VGPV_arm_linux_android) \
          && !defined(VGPV_x86_linux_android) \
          && !defined(VGPV_mips32_linux_android) \
-         && !defined(VGPV_arm64_linux_android)
+         && !defined(VGPV_arm64_linux_android) \
+         && !defined(VGP_nanomips_linux)
       add_note(notelist, "CORE", NT_FPREGSET, &fpu, sizeof(fpu));
 #     endif
 
@@ -570,31 +655,32 @@ static
 void make_elf_coredump(ThreadId tid, const vki_siginfo_t *si, ULong max_size)
 {
    HChar* buf = NULL;
-   const HChar *basename = "vgcore";
+   HChar *basename;
    const HChar *coreext = "";
    Int seq = 0;
    Int core_fd;
    NSegment const * seg;
    ESZ(Ehdr) ehdr;
-   ESZ(Phdr) *phdrs;
+   ESZ(Phdr) *phdrs = NULL;
    Int num_phdrs;
    Int i, idx;
    UInt off;
    struct note *notelist, *note;
    UInt notesz;
    struct vki_elf_prpsinfo prpsinfo;
-   Addr *seg_starts;
+   Addr *seg_starts = NULL;
    Int n_seg_starts;
 
    if (VG_(clo_log_fname_unexpanded) != NULL) {
       coreext = ".core";
       basename = VG_(expand_file_name)("--log-file",
                                        VG_(clo_log_fname_unexpanded));
-   }
+   } else
+      basename = VG_(strdup)("coredump-elf.mec.1", "vgcore");
 
    vg_assert(coreext);
    vg_assert(basename);
-   buf = VG_(malloc)( "coredump-elf.mec.1", 
+   buf = VG_(malloc)( "coredump-elf.mec.1",
                       VG_(strlen)(coreext) + VG_(strlen)(basename)
                          + 100/*for the two %ds. */ );
 
@@ -621,7 +707,7 @@ void make_elf_coredump(ThreadId tid, const vki_siginfo_t *si, ULong max_size)
       }
 
       if (sr_isError(sres) && sr_Err(sres) != VKI_EEXIST)
-	 return;		/* can't create file */
+	 goto cleanup; /* can't create file */
    }
 
    /* Get the client segments */
@@ -696,7 +782,7 @@ void make_elf_coredump(ThreadId tid, const vki_siginfo_t *si, ULong max_size)
 
       fill_phdr(&phdrs[idx], seg, off,
                 (seg->end - seg->start + 1 + off) < max_size);
-      
+
       off += phdrs[idx].p_filesz;
 
       idx++;
@@ -708,7 +794,7 @@ void make_elf_coredump(ThreadId tid, const vki_siginfo_t *si, ULong max_size)
 
    for(note = notelist; note != NULL; note = note->next)
       write_note(core_fd, note);
-   
+
    VG_(lseek)(core_fd, phdrs[1].p_offset, VKI_SEEK_SET);
 
    for(i = 0, idx = 1; i < n_seg_starts; i++) {
@@ -718,7 +804,7 @@ void make_elf_coredump(ThreadId tid, const vki_siginfo_t *si, ULong max_size)
 	 continue;
 
       if (phdrs[idx].p_filesz > 0) {
-	 vg_assert(VG_(lseek)(core_fd, phdrs[idx].p_offset, VKI_SEEK_SET) 
+	 vg_assert(VG_(lseek)(core_fd, phdrs[idx].p_offset, VKI_SEEK_SET)
                    == phdrs[idx].p_offset);
 	 vg_assert(seg->end - seg->start + 1 >= phdrs[idx].p_filesz);
 
@@ -727,9 +813,13 @@ void make_elf_coredump(ThreadId tid, const vki_siginfo_t *si, ULong max_size)
       idx++;
    }
 
-   VG_(free)(seg_starts);
-
    VG_(close)(core_fd);
+
+ cleanup:
+   VG_(free)(basename);
+   VG_(free)(buf);
+   VG_(free)(seg_starts);
+   VG_(free)(phdrs);
 }
 
 void VG_(make_coredump)(ThreadId tid, const vki_siginfo_t *si, ULong max_size)

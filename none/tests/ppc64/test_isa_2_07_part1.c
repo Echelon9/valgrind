@@ -29,8 +29,7 @@
  *   GNU General Public License for more details.
  *
  *   You should have received a copy of the GNU General Public License
- *   along with this program; if not, write to the Free Software
- *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *   along with this program; if not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -385,28 +384,47 @@ static void test_fmrgow (void)
 // VSX move instructions
 static void test_mfvsrd (void)
 {
-   __asm__ __volatile__ ("mfvsrd %0,%x1" : "=r" (r14) : "ws" (vec_inA));
+   __asm__ __volatile__ ("mfvsrd %0,%x1" : "=r" (r14) : "wa" (vec_inA));
 };
 
 static void test_mfvsrwz (void)
 {
-   __asm__ __volatile__ ("mfvsrwz %0,%x1" : "=r" (r14) : "ws" (vec_inA));
+   __asm__ __volatile__ ("mfvsrwz %0,%x1" : "=r" (r14) : "wa" (vec_inA));
 };
 
 static void test_mtvsrd (void)
 {
-   __asm__ __volatile__ ("mtvsrd %x0,%1" : "=ws" (vec_out) : "r" (r14));
+   __asm__ __volatile__ ("mtvsrd %x0,%1" : "=wa" (vec_out) : "r" (r14));
 };
 
 static void test_mtvsrwz (void)
 {
-   __asm__ __volatile__ ("mtvsrwz %x0,%1" : "=ws" (vec_out) : "r" (r14));
+   __asm__ __volatile__ ("mtvsrwz %x0,%1" : "=wa" (vec_out) : "r" (r14));
 };
 
+static void test_mtvsrwa (void)
+{
+   __asm__ __volatile__ ("mtvsrwa %x0,%1" : "=wa" (vec_out) : "r" (r14));
+};
 
 static void test_mtfprwa (void)
 {
-   __asm__ __volatile__ ("mtfprwa %x0,%1" : "=ws" (vec_out) : "r" (r14));
+   __asm__ __volatile__ ("mtfprwa %x0,%1" : "=d" (vec_out) : "r" (r14));
+};
+
+static void test_mtvrwa (void)
+{
+   __asm__ __volatile__ ("mtvrwa %0,%1" : "=v" (vec_out) : "r" (r14));
+};
+
+static void test_mtvrd (void)
+{
+   __asm__ __volatile__ ("mtvrd %0,%1" : "=v" (vec_out) : "r" (r14));
+};
+
+static void test_mtfprd (void)
+{
+   __asm__ __volatile__ ("mtfprd %0,%1" : "=d" (vec_out) : "r" (r14));
 };
 
 static test_t tests_move_ops_spe[] = {
@@ -415,6 +433,10 @@ static test_t tests_move_ops_spe[] = {
   { &test_mtvsrd          , "mtvsrd" },
   { &test_mtvsrwz         , "mtvsrwz" },
   { &test_mtfprwa         , "mtfprwa" },
+  { &test_mtvsrwa         , "mtvsrwa" },
+  { &test_mtfprd          , "mtfprd" },
+  { &test_mtvrwa          , "mtvrwa" },
+  { &test_mtvrd           , "mtvrd" },
   { NULL,                   NULL }
 };
 
@@ -1255,7 +1277,12 @@ static special_t special_move_ops[] = {
       &mtvs,
    },
    {
-      "mtfprwa", /* (extended mnemonic for mtvsrwa) move from scalar to vector reg with two’s-complement */
+      "mtvsrwa", /* mtvsrwa move from scalar to vector reg  */
+      &mtvs2s,
+   },
+   {
+      "mtfprwa", /* (extended mnemonic for mtvsrwa) move from scalar to vector
+		    reg */
       &mtvs2s,
    },
    {
@@ -1265,6 +1292,18 @@ static special_t special_move_ops[] = {
    {
       "mtvsrwz", /* move from scalar to vector reg word */
       &mtvs2s,
+   },
+   {
+      "mtvrwa", /* (extended mnemonic for mtvsrwa) move to vsr word */
+      &mtvs2s,
+   },
+   {
+      "mtvrd", /* (extended mnemonic for mtvsrd) move to vsr double word */
+      &mtvs,
+   },
+   {
+      "mtfprd", /* (extended mnemonic for mtvsrd) move to float word */
+      &mtvs,
    }
 };
 

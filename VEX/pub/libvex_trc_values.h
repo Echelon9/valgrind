@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-   02110-1301, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 
@@ -58,6 +56,7 @@
 #define VEX_TRC_JMP_SIGSEGV    87  /* deliver segv (SIGSEGV) before
                                       continuing */
 #define VEX_TRC_JMP_SIGBUS     93  /* deliver SIGBUS before continuing */
+#define VEX_TRC_JMP_SIGFPE    105  /* deliver SIGFPE before continuing */
 
 #define VEX_TRC_JMP_SIGFPE_INTDIV     97  /* deliver SIGFPE (integer divide
                                              by zero) before continuing */

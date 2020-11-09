@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-   02110-1301, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 
@@ -292,11 +290,12 @@ typedef
       /* 1686 */ ULong guest_PPR;       // Program Priority register
       /* 1694 */ UInt  guest_TEXASRU;   // Transaction EXception And Summary Register Upper
       /* 1698 */ UInt  guest_PSPB;      // Problem State Priority Boost register
+      /* 1702 */ ULong guest_DSCR;      // Data Stream Control register
 
       /* Padding to make it have an 16-aligned size */
-      /* 1698 */   UInt  padding1;
-   /* 1702    UInt  padding2; */
-   /* 1706    UInt  padding3; */
+      /* 1710 */   UInt  padding1;
+      /* 1714 */   UInt  padding2;
+      /* 1718 */   UInt  padding3;
 
    }
    VexGuestPPC64State;

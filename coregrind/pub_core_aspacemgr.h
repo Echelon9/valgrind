@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -337,7 +335,7 @@ extern Bool VG_(am_relocate_nooverlap_client)( /*OUT*/Bool* need_discard,
 #if defined(VGP_ppc32_linux) \
     || defined(VGP_ppc64be_linux) || defined(VGP_ppc64le_linux)	\
     || defined(VGP_mips32_linux) || defined(VGP_mips64_linux) \
-    || defined(VGP_arm64_linux)
+    || defined(VGP_arm64_linux) || defined(VGP_nanomips_linux)
 # define VG_STACK_GUARD_SZB  65536  // 1 or 16 pages
 #else
 # define VG_STACK_GUARD_SZB  8192   // 2 pages
@@ -360,6 +358,9 @@ extern VgStack* VG_(am_alloc_VgStack)( /*OUT*/Addr* initial_sp );
    the free area is larger than 'limit', just return 'limit'. */
 extern SizeT VG_(am_get_VgStack_unused_szB)( const VgStack* stack,
                                              SizeT limit ); 
+
+/* Returns the Addr of the lowest usable byte of stack. */
+extern Addr VG_(am_valgrind_stack_low_addr)( const VgStack* stack);
 
 // DDD: this is ugly
 #if defined(VGO_darwin)

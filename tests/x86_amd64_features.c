@@ -7,8 +7,8 @@
 // This file determines x86/AMD64 features a processor supports.
 //
 // We return:
-// - 0 if the machine matches the asked-for feature.
-// - 1 if the machine does not.
+// - 0 if the machine has the asked-for feature.
+// - 1 if the machine doesn't have the asked-for feature.
 // - 2 if the asked-for feature isn't recognised (this will be the case for
 //     any feature if run on a non-x86/AMD64 machine).
 // - 3 if there was a usage error (it also prints an error message).
@@ -25,14 +25,14 @@ typedef int    Bool;
 
 
 #if defined(VGA_x86) || defined(VGA_amd64)
-static void cpuid ( unsigned int n,
+static void cpuid ( unsigned int n, unsigned int m,
                     unsigned int* a, unsigned int* b,
                     unsigned int* c, unsigned int* d )
 {
    __asm__ __volatile__ (
       "cpuid"
       : "=a" (*a), "=b" (*b), "=c" (*c), "=d" (*d)      /* output */
-      : "0" (n)         /* input */
+      : "0" (n), "2" (m)         /* input */
    );
 }
 
@@ -40,7 +40,7 @@ static Bool vendorStringEquals ( char* str )
 {
    char vstr[13];
    unsigned int a, b, c, d;
-   cpuid(0, &a, &b, &c, &d);
+   cpuid(0, 0, &a, &b, &c, &d);
    memcpy(&vstr[0], &b, 4);
    memcpy(&vstr[4], &d, 4);
    memcpy(&vstr[8], &c, 4);
@@ -70,7 +70,9 @@ static Bool have_xgetbv ( void )
 
 static Bool go(char* cpu)
 { 
-   unsigned int level = 0, cmask = 0, dmask = 0, a, b, c, d;
+   unsigned int level = 0, sublevel = 0;
+   unsigned int amask = 0, bmask = 0, cmask = 0, dmask = 0;
+   unsigned int a, b, c, d;
    Bool require_amd = False;
    Bool require_xgetbv = False;
    if        ( strcmp( cpu, "x86-fpu" ) == 0 ) {
@@ -129,22 +131,37 @@ static Bool go(char* cpu)
      level = 0x80000001;
      cmask = 1 << 16;
      require_amd = True;
+   } else if (strcmp (cpu,  "amd64-f16c" ) == 0) {
+      level = 1;
+      cmask = 1 << 29;
+   } else if (strcmp (cpu,  "amd64-rdrand" ) == 0) {
+      level = 1;
+      cmask = 1 << 30;
+   } else if (strcmp (cpu,  "amd64-rdseed" ) == 0) {
+      level = 7;
+      bmask = 1 << 18;
 #endif
    } else {
      return UNRECOGNISED_FEATURE;
    }
 
-   assert( !(cmask != 0 && dmask != 0) );
-   assert( !(cmask == 0 && dmask == 0) );
+   assert( !(cmask != 0 && dmask != 0 && bmask != 0) );
+   assert( !(cmask == 0 && dmask == 0 && bmask == 0) );
 
    if (require_amd && !vendorStringEquals("AuthenticAMD"))
       return FEATURE_NOT_PRESENT;
       // regardless of what that feature actually is
 
-   cpuid( level & 0x80000000, &a, &b, &c, &d );
+   cpuid( level & 0x80000000, 0, &a, &b, &c, &d );
 
    if ( a >= level ) {
-      cpuid( level, &a, &b, &c, &d );
+      cpuid( level, sublevel, &a, &b, &c, &d );
+
+      if (amask > 0 && (a & amask) == amask)
+         return FEATURE_PRESENT;
+
+      if (bmask > 0 && (b & bmask) == bmask)
+         return FEATURE_PRESENT;
 
       if (dmask > 0 && (d & dmask) == dmask) {
          if (require_xgetbv && !have_xgetbv())

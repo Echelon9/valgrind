@@ -22,9 +22,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -92,6 +90,16 @@ extern Bool HG_(clo_cmp_race_err_addrs);
       we might need to show them later, and so is expensive (although
       very useful). */
 extern UWord HG_(clo_history_level);
+
+/* For full history level, determines how the stack trace is computed.
+   no : a stacktrace is always computed from scratch, typically
+        using the unwind information.
+   yes : a stacktrace might be derived from a previous captured stacktrace,
+      by applying a delta to the inner frame. This can significantly
+      speed up --history-level=full. Typically, a delta can be applied
+      if there was no 'flow call control' instruction (call, return, ...) 
+      executed since the previous captured stacktrace. */
+extern Bool  HG_(clo_delta_stacktrace);
 
 /* When doing "full" history collection, this determines the size of
    the conflicting-access cache, measured in terms of maximum possible

@@ -22,9 +22,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -65,6 +63,18 @@
 #define EM_PPC64 21  // ditto
 #endif
 
+#ifndef EM_NANOMIPS
+#define EM_NANOMIPS 249
+#endif
+
+#ifndef E_MIPS_ABI_O32
+#define E_MIPS_ABI_O32 0x00001000
+#endif
+
+#ifndef E_MIPS_ABI2
+#define E_MIPS_ABI2    0x00000020
+#endif
+
 /* Report fatal errors */
 __attribute__((noreturn))
 static void barf ( const char *format, ... )
@@ -83,7 +93,7 @@ static void barf ( const char *format, ... )
 }
 
 /* Search the path for the client program */
-static const char *find_client(const char *clientname)
+static char *find_client(const char *clientname)
 {
    char *fullname;
    const char *path = getenv("PATH");
@@ -91,7 +101,7 @@ static const char *find_client(const char *clientname)
 
    assert(clientname != NULL);
 
-   if (path == NULL) return clientname;
+   if (path == NULL) return strdup(clientname);
 
    /* Make the size of the FULLNAME buffer large enough. */
    unsigned need = strlen(path) + strlen("/") + strlen(clientname) + 1;
@@ -122,7 +132,7 @@ static const char *find_client(const char *clientname)
    }
    free(fullname);
 
-   return clientname;
+   return strdup(clientname);
 }
 
 /* Examine the client and work out which platform it is for */
@@ -136,28 +146,35 @@ static const char *select_platform(const char *clientname)
    } header;
    ssize_t n_bytes;
    const char *platform = NULL;
+   char *client;
 
    VG_(debugLog)(2, "launcher", "selecting platform for '%s'\n", clientname);
 
    if (strchr(clientname, '/') == NULL)
-      clientname = find_client(clientname);
+      client = find_client(clientname);
+   else
+      client = strdup(clientname);
 
-   VG_(debugLog)(2, "launcher", "selecting platform for '%s'\n", clientname);
+   if (strcmp (client, clientname) != 0)
+      VG_(debugLog)(2, "launcher", "selecting platform for '%s'\n", client);
 
-   if ((fd = open(clientname, O_RDONLY)) < 0)
+   if ((fd = open(clientname, O_RDONLY)) < 0) {
+     return_null:
+      free (client);
       return NULL;
+   }
    //   barf("open(%s): %s", clientname, strerror(errno));
 
-   VG_(debugLog)(2, "launcher", "opened '%s'\n", clientname);
+   VG_(debugLog)(2, "launcher", "opened '%s'\n", client);
 
    n_bytes = read(fd, header.c, sizeof(header));
    close(fd);
    if (n_bytes < 2) {
-      return NULL;
+      goto return_null;
    }
 
    VG_(debugLog)(2, "launcher", "read %ld bytes from '%s'\n",
-                    (long int)n_bytes, clientname);
+                    (long int)n_bytes, client);
 
    if (header.c[0] == '#' && header.c[1] == '!') {
       int i = 2;
@@ -224,8 +241,22 @@ static const char *select_platform(const char *clientname)
             else
             if (header.ehdr32.e_machine == EM_MIPS &&
                 (header.ehdr32.e_ident[EI_OSABI] == ELFOSABI_SYSV ||
-                 header.ehdr32.e_ident[EI_OSABI] == ELFOSABI_LINUX)) {
+                 header.ehdr32.e_ident[EI_OSABI] == ELFOSABI_LINUX) &&
+                 (header.ehdr32.e_flags & E_MIPS_ABI_O32)) {
                platform = "mips32-linux";
+            }
+            else
+            if (header.ehdr32.e_machine == EM_MIPS &&
+                (header.ehdr32.e_ident[EI_OSABI] == ELFOSABI_SYSV ||
+                 header.ehdr32.e_ident[EI_OSABI] == ELFOSABI_LINUX) &&
+                 (header.ehdr32.e_flags & E_MIPS_ABI2)) {
+               platform = "mips64-linux";
+            }
+            else
+            if (header.ehdr32.e_machine == EM_NANOMIPS &&
+                (header.ehdr32.e_ident[EI_OSABI] == ELFOSABI_SYSV ||
+                 header.ehdr32.e_ident[EI_OSABI] == ELFOSABI_LINUX)) {
+               platform = "nanomips-linux";
             }
          }
          else if (header.c[EI_DATA] == ELFDATA2MSB) {
@@ -237,8 +268,22 @@ static const char *select_platform(const char *clientname)
             else 
             if (header.ehdr32.e_machine == EM_MIPS &&
                 (header.ehdr32.e_ident[EI_OSABI] == ELFOSABI_SYSV ||
-                 header.ehdr32.e_ident[EI_OSABI] == ELFOSABI_LINUX)) {
+                 header.ehdr32.e_ident[EI_OSABI] == ELFOSABI_LINUX) &&
+                 (header.ehdr32.e_flags & E_MIPS_ABI_O32)) {
                platform = "mips32-linux";
+            }
+            else
+            if (header.ehdr32.e_machine == EM_MIPS &&
+                (header.ehdr32.e_ident[EI_OSABI] == ELFOSABI_SYSV ||
+                 header.ehdr32.e_ident[EI_OSABI] == ELFOSABI_LINUX) &&
+                 (header.ehdr32.e_flags & E_MIPS_ABI2)) {
+               platform = "mips64-linux";
+            }
+            else
+            if (header.ehdr32.e_machine == EM_NANOMIPS &&
+                (header.ehdr32.e_ident[EI_OSABI] == ELFOSABI_SYSV ||
+                 header.ehdr32.e_ident[EI_OSABI] == ELFOSABI_LINUX)) {
+               platform = "nanomips-linux";
             }
          }
 
@@ -297,6 +342,8 @@ static const char *select_platform(const char *clientname)
 
    VG_(debugLog)(2, "launcher", "selected platform '%s'\n",
                  platform ? platform : "unknown");
+
+   free (client);
 
    return platform;
 }
@@ -367,7 +414,8 @@ int main(int argc, char** argv, char** envp)
        (0==strcmp(VG_PLATFORM,"arm64-linux"))  ||
        (0==strcmp(VG_PLATFORM,"s390x-linux"))  ||
        (0==strcmp(VG_PLATFORM,"mips32-linux")) ||
-       (0==strcmp(VG_PLATFORM,"mips64-linux")))
+       (0==strcmp(VG_PLATFORM,"mips64-linux")) ||
+       (0==strcmp(VG_PLATFORM,"nanomips-linux")))
       default_platform = VG_PLATFORM;
 #  elif defined(VGO_solaris)
    if ((0==strcmp(VG_PLATFORM,"x86-solaris")) ||

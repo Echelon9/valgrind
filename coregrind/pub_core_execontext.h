@@ -22,9 +22,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -46,6 +44,12 @@
 // Print stats (informational only).
 // If with_stacktraces, outputs all the recorded stacktraces.
 extern void VG_(print_ExeContext_stats) ( Bool with_stacktraces );
+
+// All ExeContext that are valid in the current epoch and have one or more
+// ips in the given range are archived, i.e. their epoch is frozen to
+// the given last_epoch.
+extern void VG_(archive_ExeContext_in_range) (DiEpoch last_epoch,
+                                              Addr text_avma, SizeT length );
 
 // Extract the StackTrace from an ExeContext.
 // (Minor hack: we use Addr* as the return type instead of StackTrace so

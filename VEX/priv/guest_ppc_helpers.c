@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-   02110-1301, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 
@@ -213,6 +211,110 @@ IRExpr* guest_ppc64_spechelper ( const HChar* function_name,
                                  Int      n_precedingStmts )
 {
    return NULL;
+}
+
+
+/* 16-bit floating point number is stored in the lower 16-bits of 32-bit value */
+#define I16_EXP_MASK       0x7C00
+#define I16_FRACTION_MASK  0x03FF
+#define I32_EXP_MASK       0x7F800000
+#define I32_FRACTION_MASK  0x007FFFFF
+#define I64_EXP_MASK       0x7FF0000000000000ULL
+#define I64_FRACTION_MASK  0x000FFFFFFFFFFFFFULL
+#define V128_EXP_MASK      0x7FFF000000000000ULL
+#define V128_FRACTION_MASK 0x0000FFFFFFFFFFFFULL  /* upper 64-bit fractional mask */
+
+ULong generate_C_FPCC_helper( ULong irType, ULong src_hi, ULong src )
+{
+   UInt NaN, inf, zero, norm, dnorm, pos;
+   UInt bit0, bit1, bit2, bit3;
+   UInt sign_bit = 0;
+   ULong exp_mask = 0, exp_part = 0, frac_part = 0;
+   ULong fpcc, c;
+
+   if ( irType == Ity_I16 ) {
+      frac_part = I16_FRACTION_MASK & src;
+      exp_mask = I16_EXP_MASK;
+      exp_part = exp_mask & src;
+      sign_bit = src >> 15;
+
+   } else if ( irType == Ity_I32 ) {
+      frac_part = I32_FRACTION_MASK & src;
+      exp_mask = I32_EXP_MASK;
+      exp_part = exp_mask & src;
+      sign_bit = src >> 31;
+
+   } else  if ( irType == Ity_I64 ) {
+     frac_part = I64_FRACTION_MASK & src;
+     exp_mask = I64_EXP_MASK;
+     exp_part = exp_mask & src;
+     sign_bit = src >> 63;
+
+   } else  if ( irType == Ity_F128 ) {
+     /* only care if the frac part is zero or non-zero */
+     frac_part = (V128_FRACTION_MASK & src_hi) | src;
+     exp_mask = V128_EXP_MASK;
+     exp_part = exp_mask & src_hi;
+     sign_bit = src_hi >> 63;
+   } else {
+     vassert(0);  // Unknown value of irType
+   }
+
+   /* NaN: exponene is all ones, fractional part not zero */
+   if ((exp_part == exp_mask) && (frac_part != 0))
+     NaN = 1;
+   else
+     NaN = 0;
+
+   /* inf: exponent all 1's, fraction part is zero */
+   if ((exp_part == exp_mask) && (frac_part == 0))
+     inf = 1;
+   else
+     inf = 0;
+
+   /* zero: exponent is 0, fraction part is zero */
+   if ((exp_part == 0) && (frac_part == 0))
+     zero = 1;
+   else
+     zero = 0;
+
+   /* norm: exponent is not 0, exponent is not all 1's */
+   if ((exp_part != 0) && (exp_part != exp_mask))
+     norm = 1;
+   else
+     norm = 0;
+
+   /* dnorm: exponent is all 0's, fraction is not 0 */
+   if ((exp_part == 0) && (frac_part != 0))
+     dnorm = 1;
+   else
+     dnorm = 0;
+
+   /* pos: MSB is 1 */
+   if (sign_bit == 0)
+     pos = 1;
+   else
+     pos = 0;
+
+   /* calculate FPCC */
+   /* If the result is NaN then must force bits 1, 2 and 3 to zero
+    * to get correct result.
+    */
+   bit0 = NaN | inf;
+
+   bit1 = (!NaN) & zero;
+   bit2 =  (!NaN) & ((pos & dnorm) | (pos & norm) | (pos & inf))
+      & ((!zero) & (!NaN));
+   bit3 =  (!NaN) & (((!pos) & dnorm) |((!pos) & norm) | ((!pos) & inf))
+      & ((!zero) & (!NaN));
+
+   fpcc = (bit3 << 3) | (bit2 << 2) | (bit1 << 1) | bit0;
+
+   /* calculate C */
+   c = NaN | ((!pos) & dnorm) | ((!pos) & zero) | (pos & dnorm);
+
+   /* return C in the upper 32-bits and FPCC in the lower 32 bits */
+   return (c <<32) | fpcc;
 }
 
 
@@ -731,7 +833,15 @@ void LibVEX_GuestPPC32_initialise ( /*OUT*/VexGuestPPC32State* vex_state )
 
    vex_state->guest_VRSAVE = 0;
 
-   vex_state->guest_VSCR = 0x0;  // Non-Java mode = 0
+# if defined(VGP_ppc64be_linux)
+   /* By default, the HW for BE sets the VSCR[NJ] bit to 1.
+      VSR is a 128-bit register, NJ bit is bit 111 (IBM numbering).
+      However, VSCR is modeled as a 64-bit register. */
+   vex_state->guest_VSCR = 0x1 << (127 - 111);
+# else
+   /* LE API requires NJ be set to 0. */
+   vex_state->guest_VSCR = 0x0;
+#endif
 
    vex_state->guest_EMNOTE = EmNote_NONE;
 
@@ -898,7 +1008,15 @@ void LibVEX_GuestPPC64_initialise ( /*OUT*/VexGuestPPC64State* vex_state )
 
    vex_state->guest_VRSAVE = 0;
 
-   vex_state->guest_VSCR = 0x0;  // Non-Java mode = 0
+# if defined(VGP_ppc64be_linux)
+   /* By default, the HW for BE sets the VSCR[NJ] bit to 1.
+      VSR is a 128-bit register, NJ bit is bit 111 (IBM numbering).
+      However, VSCR is modeled as a 64-bit register. */
+   vex_state->guest_VSCR = 0x1 << (127 - 111);
+# else
+   /* LE API requires NJ be set to 0. */
+   vex_state->guest_VSCR = 0x0;
+#endif
 
    vex_state->guest_EMNOTE = EmNote_NONE;
 
@@ -921,6 +1039,7 @@ void LibVEX_GuestPPC64_initialise ( /*OUT*/VexGuestPPC64State* vex_state )
    vex_state->guest_TEXASR = 0;
    vex_state->guest_PPR = 0x4ULL << 50;  // medium priority
    vex_state->guest_PSPB = 0x100;  // an arbitrary non-zero value to start with
+   vex_state->guest_DSCR = 0;
 }
 
 

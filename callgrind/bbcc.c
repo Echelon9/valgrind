@@ -19,9 +19,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -100,8 +98,10 @@ void CLG_(zero_bbcc)(BBCC* bbcc)
     bbcc->cost[i] = 0;
   for(i=0;i <= bbcc->bb->cjmp_count;i++) {
     bbcc->jmp[i].ecounter = 0;
-    for(jcc=bbcc->jmp[i].jcc_list; jcc; jcc=jcc->next_from)
-	CLG_(init_cost)( CLG_(sets).full, jcc->cost );
+    for(jcc=bbcc->jmp[i].jcc_list; jcc; jcc=jcc->next_from) {
+      CLG_(init_cost)( CLG_(sets).full, jcc->cost );
+      jcc->call_counter = 0;
+    }
   }
   bbcc->ecounter_sum = 0;
   bbcc->ret_counter = 0;

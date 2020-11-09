@@ -14,9 +14,7 @@
  General Public License for more details.
 
  You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
- 02111-1307, USA.
+ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
  The GNU General Public License is contained in the file COPYING.
 
@@ -781,7 +779,7 @@ logic_tests[] = {
                  { &test_xxleqv,  "xxleqv", VSX_EQV },
                  { &test_xxlorc,  "xxlorc", VSX_ORC },
                  { &test_xxlnand, "xxlnand", VSX_NAND },
-                 { NULL, NULL}
+                 { NULL, NULL, 0}
 };
 
 Bool check_reciprocal_estimate(Bool is_rsqrte, int idx, int output_vec_idx)

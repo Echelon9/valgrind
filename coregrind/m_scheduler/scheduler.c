@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -130,16 +128,23 @@ static void mostly_clear_thread_record ( ThreadId tid );
 static ULong n_scheduling_events_MINOR = 0;
 static ULong n_scheduling_events_MAJOR = 0;
 
-/* Stats: number of XIndirs, and number that missed in the fast
-   cache. */
-static ULong stats__n_xindirs = 0;
-static ULong stats__n_xindir_misses = 0;
+/* Stats: number of XIndirs looked up in the fast cache, the number of hits in
+   ways 1, 2 and 3, and the number of misses.  The number of hits in way 0 isn't
+   recorded because it can be computed from these five numbers. */
+static ULong stats__n_xIndirs = 0;
+static ULong stats__n_xIndir_hits1 = 0;
+static ULong stats__n_xIndir_hits2 = 0;
+static ULong stats__n_xIndir_hits3 = 0;
+static ULong stats__n_xIndir_misses = 0;
 
 /* And 32-bit temp bins for the above, so that 32-bit platforms don't
    have to do 64 bit incs on the hot path through
-   VG_(cp_disp_xindir). */
-/*global*/ UInt VG_(stats__n_xindirs_32) = 0;
-/*global*/ UInt VG_(stats__n_xindir_misses_32) = 0;
+   VG_(disp_cp_xindir). */
+/*global*/ UInt VG_(stats__n_xIndirs_32) = 0;
+/*global*/ UInt VG_(stats__n_xIndir_hits1_32) = 0;
+/*global*/ UInt VG_(stats__n_xIndir_hits2_32) = 0;
+/*global*/ UInt VG_(stats__n_xIndir_hits3_32) = 0;
+/*global*/ UInt VG_(stats__n_xIndir_misses_32) = 0;
 
 /* Sanity checking counts. */
 static UInt sanity_fast_count = 0;
@@ -149,11 +154,25 @@ void VG_(print_scheduler_stats)(void)
 {
    VG_(message)(Vg_DebugMsg,
       "scheduler: %'llu event checks.\n", bbs_done );
+
+   const ULong hits0
+      = stats__n_xIndirs - stats__n_xIndir_hits1 - stats__n_xIndir_hits2
+        - stats__n_xIndir_hits3 - stats__n_xIndir_misses;
    VG_(message)(Vg_DebugMsg,
-                "scheduler: %'llu indir transfers, %'llu misses (1 in %llu)\n",
-                stats__n_xindirs, stats__n_xindir_misses,
-                stats__n_xindirs / (stats__n_xindir_misses 
-                                    ? stats__n_xindir_misses : 1));
+                "scheduler: %'llu indir transfers, "
+                "%'llu misses (1 in %llu) ..\n",
+                stats__n_xIndirs, stats__n_xIndir_misses,
+                stats__n_xIndirs / (stats__n_xIndir_misses
+                                   ? stats__n_xIndir_misses : 1));
+   VG_(message)(Vg_DebugMsg,
+                "scheduler: .. of which: %'llu hit0, %'llu hit1, "
+                "%'llu hit2, %'llu hit3, %'llu missed\n",
+                hits0,
+                stats__n_xIndir_hits1,
+                stats__n_xIndir_hits2,
+                stats__n_xIndir_hits3,
+                stats__n_xIndir_misses);
+
    VG_(message)(Vg_DebugMsg,
       "scheduler: %'llu/%'llu major/minor sched events.\n",
       n_scheduling_events_MAJOR, n_scheduling_events_MINOR);
@@ -171,6 +190,56 @@ static struct sched_lock *the_BigLock;
 /* ---------------------------------------------------------------------
    Helper functions for the scheduler.
    ------------------------------------------------------------------ */
+
+static void maybe_progress_report ( UInt reporting_interval_seconds )
+{
+   /* This is when the next report is due, in user cpu milliseconds since
+      process start.  This is a global variable so this won't be thread-safe
+      if Valgrind is ever made multithreaded.  For now it's fine. */
+   static UInt next_report_due_at = 0;
+
+   /* First of all, figure out whether another report is due.  It
+      probably isn't. */
+   UInt user_ms = VG_(get_user_milliseconds)();
+   if (LIKELY(user_ms < next_report_due_at))
+      return;
+
+   Bool first_ever_call = next_report_due_at == 0;
+
+   /* A report is due.  First, though, set the time for the next report. */
+   next_report_due_at += 1000 * reporting_interval_seconds;
+
+   /* If it's been an excessively long time since the last check, we
+      might have gone more than one reporting interval forward.  Guard
+      against that. */
+   while (next_report_due_at <= user_ms)
+      next_report_due_at += 1000 * reporting_interval_seconds;
+
+   /* Also we don't want to report anything on the first call, but we
+      have to wait till this point to leave, so that we set up the
+      next-call time correctly. */
+   if (first_ever_call)
+      return;
+
+   /* Print the report. */
+   UInt   user_cpu_seconds  = user_ms / 1000;
+   UInt   wallclock_seconds = VG_(read_millisecond_timer)() / 1000;
+   Double millionEvCs   = ((Double)bbs_done) / 1000000.0;
+   Double thousandTIns  = ((Double)VG_(get_bbs_translated)()) / 1000.0;
+   Double thousandTOuts = ((Double)VG_(get_bbs_discarded_or_dumped)()) / 1000.0;
+   UInt   nThreads      = VG_(count_living_threads)();
+
+   if (VG_(clo_verbosity) > 0) {
+      VG_(dmsg)("PROGRESS: U %'us, W %'us, %.1f%% CPU, EvC %.2fM, "
+                "TIn %.1fk, TOut %.1fk, #thr %u\n",
+                user_cpu_seconds, wallclock_seconds,
+                100.0
+                   * (Double)(user_cpu_seconds)
+                   / (Double)(wallclock_seconds == 0 ? 1 : wallclock_seconds),
+                millionEvCs,
+                thousandTIns, thousandTOuts, nThreads);
+   }
+}
 
 static
 void print_sched_event ( ThreadId tid, const HChar* what )
@@ -878,8 +947,11 @@ void run_thread_for_a_while ( /*OUT*/HWord* two_words,
    /* end Paranoia */
 
    /* Futz with the XIndir stats counters. */
-   vg_assert(VG_(stats__n_xindirs_32) == 0);
-   vg_assert(VG_(stats__n_xindir_misses_32) == 0);
+   vg_assert(VG_(stats__n_xIndirs_32) == 0);
+   vg_assert(VG_(stats__n_xIndir_hits1_32) == 0);
+   vg_assert(VG_(stats__n_xIndir_hits2_32) == 0);
+   vg_assert(VG_(stats__n_xIndir_hits3_32) == 0);
+   vg_assert(VG_(stats__n_xIndir_misses_32) == 0);
 
    /* Clear return area. */
    two_words[0] = two_words[1] = 0;
@@ -890,10 +962,13 @@ void run_thread_for_a_while ( /*OUT*/HWord* two_words,
       host_code_addr = alt_host_addr;
    } else {
       /* normal case -- redir translation */
-      UInt cno = (UInt)VG_TT_FAST_HASH((Addr)tst->arch.vex.VG_INSTR_PTR);
-      if (LIKELY(VG_(tt_fast)[cno].guest == (Addr)tst->arch.vex.VG_INSTR_PTR))
-         host_code_addr = VG_(tt_fast)[cno].host;
-      else {
+      Addr host_from_fast_cache = 0;
+      Bool found_in_fast_cache
+         = VG_(lookupInFastCache)( &host_from_fast_cache,
+                                   (Addr)tst->arch.vex.VG_INSTR_PTR );
+      if (found_in_fast_cache) {
+         host_code_addr = host_from_fast_cache;
+      } else {
          Addr res = 0;
          /* not found in VG_(tt_fast). Searching here the transtab
             improves the performance compared to returning directly
@@ -927,8 +1002,9 @@ void run_thread_for_a_while ( /*OUT*/HWord* two_words,
 
    /* Invalidate any in-flight LL/SC transactions, in the case that we're
       using the fallback LL/SC implementation.  See bugs 344524 and 369459. */
-#  if defined(VGP_mips32_linux) || defined(VGP_mips64_linux)
-   tst->arch.vex.guest_LLaddr = (HWord)(-1);
+#  if defined(VGP_mips32_linux) || defined(VGP_mips64_linux) \
+      || defined(VGP_nanomips_linux)
+   tst->arch.vex.guest_LLaddr = (RegWord)(-1);
 #  elif defined(VGP_arm64_linux)
    tst->arch.vex.guest_LLSC_SIZE = 0;
 #  endif
@@ -977,10 +1053,16 @@ void run_thread_for_a_while ( /*OUT*/HWord* two_words,
    /* Merge the 32-bit XIndir/miss counters into the 64 bit versions,
       and zero out the 32-bit ones in preparation for the next run of
       generated code. */
-   stats__n_xindirs += (ULong)VG_(stats__n_xindirs_32);
-   VG_(stats__n_xindirs_32) = 0;
-   stats__n_xindir_misses += (ULong)VG_(stats__n_xindir_misses_32);
-   VG_(stats__n_xindir_misses_32) = 0;
+   stats__n_xIndirs += (ULong)VG_(stats__n_xIndirs_32);
+   VG_(stats__n_xIndirs_32) = 0;
+   stats__n_xIndir_hits1 += (ULong)VG_(stats__n_xIndir_hits1_32);
+   VG_(stats__n_xIndir_hits1_32) = 0;
+   stats__n_xIndir_hits2 += (ULong)VG_(stats__n_xIndir_hits2_32);
+   VG_(stats__n_xIndir_hits2_32) = 0;
+   stats__n_xIndir_hits3 += (ULong)VG_(stats__n_xIndir_hits3_32);
+   VG_(stats__n_xIndir_hits3_32) = 0;
+   stats__n_xIndir_misses += (ULong)VG_(stats__n_xIndir_misses_32);
+   VG_(stats__n_xIndir_misses_32) = 0;
 
    /* Inspect the event counter. */
    vg_assert((Int)tst->arch.vex.host_EvC_COUNTER >= -1);
@@ -1241,10 +1323,6 @@ VgSchedReturnCode VG_(scheduler) ( ThreadId tid )
          else
             VG_(disable_vgdb_poll) ();
 
-         vg_assert (VG_(dyn_vgdb_error) == VG_(clo_vgdb_error));
-         /* As we are initializing, VG_(dyn_vgdb_error) can't have been
-            changed yet. */
-
          VG_(gdbserver_prerun_action) (1);
       } else {
          VG_(disable_vgdb_poll) ();
@@ -1314,6 +1392,11 @@ VgSchedReturnCode VG_(scheduler) ( ThreadId tid )
 	 /* OK, do some relatively expensive housekeeping stuff */
 	 scheduler_sanity(tid);
 	 VG_(sanity_check_general)(False);
+
+         /* Possibly make a progress report */
+         if (UNLIKELY(VG_(clo_progress_interval) > 0)) {
+            maybe_progress_report( VG_(clo_progress_interval) );
+         }
 
 	 /* Look for any pending signals for this thread, and set them up
 	    for delivery */
@@ -1536,6 +1619,10 @@ VgSchedReturnCode VG_(scheduler) ( ThreadId tid )
          VG_(synth_sigbus)(tid);
          break;
 
+      case VEX_TRC_JMP_SIGFPE:
+         VG_(synth_sigfpe)(tid, 0);
+         break;
+
       case VEX_TRC_JMP_SIGFPE_INTDIV:
          VG_(synth_sigfpe)(tid, VKI_FPE_INTDIV);
          break;
@@ -1593,7 +1680,7 @@ VgSchedReturnCode VG_(scheduler) ( ThreadId tid )
          break;
 
       case VEX_TRC_JMP_FLUSHDCACHE: {
-         void* start = (void*)VG_(threads)[tid].arch.vex.guest_CMSTART;
+         void* start = (void*)(Addr)VG_(threads)[tid].arch.vex.guest_CMSTART;
          SizeT len   = VG_(threads)[tid].arch.vex.guest_CMLEN;
          VG_(debugLog)(2, "sched", "flush_dcache(%p, %lu)\n", start, len);
          VG_(flush_dcache)(start, len);
@@ -1705,7 +1792,7 @@ void VG_(nuke_all_threads_except) ( ThreadId me, VgSchedReturnCode src )
 #elif defined (VGA_s390x)
 #  define VG_CLREQ_ARGS       guest_r2
 #  define VG_CLREQ_RET        guest_r3
-#elif defined(VGA_mips32) || defined(VGA_mips64)
+#elif defined(VGA_mips32) || defined(VGA_mips64) || defined(VGA_nanomips)
 #  define VG_CLREQ_ARGS       guest_r12
 #  define VG_CLREQ_RET        guest_r11
 #else
@@ -1843,7 +1930,7 @@ Int print_client_message( ThreadId tid, const HChar *format,
 static
 void do_client_request ( ThreadId tid )
 {
-   UWord* arg = (UWord*)(CLREQ_ARGS(VG_(threads)[tid].arch));
+   UWord* arg = (UWord*)(Addr)(CLREQ_ARGS(VG_(threads)[tid].arch));
    UWord req_no = arg[0];
 
    if (0)
@@ -2025,6 +2112,11 @@ void do_client_request ( ThreadId tid )
          SET_CLREQ_RETVAL( tid, VG_(get_n_errs_found)() );
          break;
 
+      case VG_USERREQ__CLO_CHANGE:
+         VG_(process_dynamic_option) (cloD, (HChar *)arg[1]);
+         SET_CLREQ_RETVAL( tid, 0 );     /* return value is meaningless */
+         break;
+
       case VG_USERREQ__LOAD_PDB_DEBUGINFO:
          VG_(di_notify_pdb_debuginfo)( arg[1], arg[2], arg[3], arg[4] );
          SET_CLREQ_RETVAL( tid, 0 );     /* return value is meaningless */
@@ -2037,8 +2129,14 @@ void do_client_request ( ThreadId tid )
 
          VG_(memset)(buf64, 0, 64);
          UInt linenum = 0;
+
+         // Unless the guest would become epoch aware (and would need to
+         // describe IP addresses of dlclosed libs), using cur_ep is a
+         // reasonable choice.
+         const DiEpoch cur_ep = VG_(current_DiEpoch)();
+
          Bool ok = VG_(get_filename_linenum)(
-                      ip, &buf, NULL, &linenum
+                      cur_ep, ip, &buf, NULL, &linenum
                    );
          if (ok) {
             /* For backward compatibility truncate the filename to
@@ -2147,7 +2245,7 @@ void do_client_request ( ThreadId tid )
       "to recompile such code, using the header files from this version of\n"
       "Valgrind, and not any previous version.\n"
       "\n"
-      "If you see this mesage in any other circumstances, it is probably\n"
+      "If you see this message in any other circumstances, it is probably\n"
       "a bug in Valgrind.  In this case, please file a bug report at\n"
       "\n"
       "   http://www.valgrind.org/support/bug_reports.html\n"

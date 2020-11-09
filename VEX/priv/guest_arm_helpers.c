@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-   02110-1301, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -1334,11 +1332,10 @@ void LibVEX_GuestARM_initialise ( /*OUT*/VexGuestARMState* vex_state )
    vex_state->guest_FPSCR = 0;
 
    vex_state->guest_TPIDRURO = 0;
+   vex_state->guest_TPIDRURW = 0;
 
    /* Not in a Thumb IT block. */
    vex_state->guest_ITSTATE = 0;
-
-   vex_state->padding1 = 0;
 }
 
 

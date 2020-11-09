@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-   02110-1301, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 
@@ -63,15 +61,20 @@ const RRegUniverse* getRRegUniverse_AMD64 ( void )
    /* Add the registers.  The initial segment of this array must be
       those available for allocation by reg-alloc, and those that
       follow are not available for allocation. */
-   ru->regs[ru->size++] = hregAMD64_RSI();
-   ru->regs[ru->size++] = hregAMD64_RDI();
-   ru->regs[ru->size++] = hregAMD64_R8();
-   ru->regs[ru->size++] = hregAMD64_R9();
+   ru->allocable_start[HRcInt64] = ru->size;
    ru->regs[ru->size++] = hregAMD64_R12();
    ru->regs[ru->size++] = hregAMD64_R13();
    ru->regs[ru->size++] = hregAMD64_R14();
    ru->regs[ru->size++] = hregAMD64_R15();
    ru->regs[ru->size++] = hregAMD64_RBX();
+   ru->regs[ru->size++] = hregAMD64_RSI();
+   ru->regs[ru->size++] = hregAMD64_RDI();
+   ru->regs[ru->size++] = hregAMD64_R8();
+   ru->regs[ru->size++] = hregAMD64_R9();
+   ru->regs[ru->size++] = hregAMD64_R10();
+   ru->allocable_end[HRcInt64] = ru->size - 1;
+
+   ru->allocable_start[HRcVec128] = ru->size;
    ru->regs[ru->size++] = hregAMD64_XMM3();
    ru->regs[ru->size++] = hregAMD64_XMM4();
    ru->regs[ru->size++] = hregAMD64_XMM5();
@@ -82,8 +85,9 @@ const RRegUniverse* getRRegUniverse_AMD64 ( void )
    ru->regs[ru->size++] = hregAMD64_XMM10();
    ru->regs[ru->size++] = hregAMD64_XMM11();
    ru->regs[ru->size++] = hregAMD64_XMM12();
-   ru->regs[ru->size++] = hregAMD64_R10();
+   ru->allocable_end[HRcVec128] = ru->size - 1;
    ru->allocable = ru->size;
+
    /* And other regs, not available to the allocator. */
    ru->regs[ru->size++] = hregAMD64_RAX();
    ru->regs[ru->size++] = hregAMD64_RCX();
@@ -101,7 +105,7 @@ const RRegUniverse* getRRegUniverse_AMD64 ( void )
 }
 
 
-void ppHRegAMD64 ( HReg reg ) 
+UInt ppHRegAMD64 ( HReg reg )
 {
    Int r;
    static const HChar* ireg64_names[16] 
@@ -109,27 +113,24 @@ void ppHRegAMD64 ( HReg reg )
          "%r8",  "%r9",  "%r10", "%r11", "%r12", "%r13", "%r14", "%r15" };
    /* Be generic for all virtual regs. */
    if (hregIsVirtual(reg)) {
-      ppHReg(reg);
-      return;
+      return ppHReg(reg);
    }
    /* But specific for real regs. */
    switch (hregClass(reg)) {
       case HRcInt64:
          r = hregEncoding(reg);
          vassert(r >= 0 && r < 16);
-         vex_printf("%s", ireg64_names[r]);
-         return;
+         return vex_printf("%s", ireg64_names[r]);
       case HRcVec128:
          r = hregEncoding(reg);
          vassert(r >= 0 && r < 16);
-         vex_printf("%%xmm%d", r);
-         return;
+         return vex_printf("%%xmm%d", r);
       default:
          vpanic("ppHRegAMD64");
    }
 }
 
-static void ppHRegAMD64_lo32 ( HReg reg ) 
+static UInt ppHRegAMD64_lo32 ( HReg reg )
 {
    Int r;
    static const HChar* ireg32_names[16] 
@@ -137,17 +138,16 @@ static void ppHRegAMD64_lo32 ( HReg reg )
          "%r8d", "%r9d", "%r10d", "%r11d", "%r12d", "%r13d", "%r14d", "%r15d" };
    /* Be generic for all virtual regs. */
    if (hregIsVirtual(reg)) {
-      ppHReg(reg);
-      vex_printf("d");
-      return;
+      UInt written = ppHReg(reg);
+      written += vex_printf("d");
+      return written;
    }
    /* But specific for real regs. */
    switch (hregClass(reg)) {
       case HRcInt64:
          r = hregEncoding(reg);
          vassert(r >= 0 && r < 16);
-         vex_printf("%s", ireg32_names[r]);
-         return;
+         return vex_printf("%s", ireg32_names[r]);
       default:
          vpanic("ppHRegAMD64_lo32: invalid regclass");
    }
@@ -528,6 +528,8 @@ const HChar* showAMD64SseOp ( AMD64SseOp op ) {
       case Asse_RCPF:     return "rcp";
       case Asse_RSQRTF:   return "rsqrt";
       case Asse_SQRTF:    return "sqrt";
+      case Asse_I2F:      return "cvtdq2ps.";
+      case Asse_F2I:      return "cvtps2dq.";
       case Asse_AND:      return "and";
       case Asse_OR:       return "or";
       case Asse_XOR:      return "xor";
@@ -566,9 +568,11 @@ const HChar* showAMD64SseOp ( AMD64SseOp op ) {
       case Asse_SHL16:    return "psllw";
       case Asse_SHL32:    return "pslld";
       case Asse_SHL64:    return "psllq";
+      case Asse_SHL128:   return "pslldq";
       case Asse_SHR16:    return "psrlw";
       case Asse_SHR32:    return "psrld";
       case Asse_SHR64:    return "psrlq";
+      case Asse_SHR128:   return "psrldq";
       case Asse_SAR16:    return "psraw";
       case Asse_SAR32:    return "psrad";
       case Asse_PACKSSD:  return "packssdw";
@@ -582,6 +586,10 @@ const HChar* showAMD64SseOp ( AMD64SseOp op ) {
       case Asse_UNPCKLW:  return "punpcklw";
       case Asse_UNPCKLD:  return "punpckld";
       case Asse_UNPCKLQ:  return "punpcklq";
+      case Asse_PSHUFB:   return "pshufb";
+      case Asse_PMADDUBSW: return "pmaddubsw";
+      case Asse_F32toF16: return "vcvtps2ph(rm_field=$0x4).";
+      case Asse_F16toF32: return "vcvtph2ps.";
       default: vpanic("showAMD64SseOp");
    }
 }
@@ -616,6 +624,14 @@ AMD64Instr* AMD64Instr_Sh64 ( AMD64ShiftOp op, UInt src, HReg dst ) {
    i->Ain.Sh64.op  = op;
    i->Ain.Sh64.src = src;
    i->Ain.Sh64.dst = dst;
+   return i;
+}
+AMD64Instr* AMD64Instr_Sh32 ( AMD64ShiftOp op, UInt src, HReg dst ) {
+   AMD64Instr* i   = LibVEX_Alloc_inline(sizeof(AMD64Instr));
+   i->tag          = Ain_Sh32;
+   i->Ain.Sh32.op  = op;
+   i->Ain.Sh32.src = src;
+   i->Ain.Sh32.dst = dst;
    return i;
 }
 AMD64Instr* AMD64Instr_Test64 ( UInt imm32, HReg dst ) {
@@ -1004,6 +1020,25 @@ AMD64Instr* AMD64Instr_SseShuf ( Int order, HReg src, HReg dst ) {
    vassert(order >= 0 && order <= 0xFF);
    return i;
 }
+AMD64Instr* AMD64Instr_SseShiftN ( AMD64SseOp op,
+                                   UInt shiftBits, HReg dst ) {
+   AMD64Instr* i              = LibVEX_Alloc_inline(sizeof(AMD64Instr));
+   i->tag                     = Ain_SseShiftN;
+   i->Ain.SseShiftN.op        = op;
+   i->Ain.SseShiftN.shiftBits = shiftBits;
+   i->Ain.SseShiftN.dst       = dst;
+   return i;
+}
+AMD64Instr* AMD64Instr_SseMOVQ ( HReg gpr, HReg xmm, Bool toXMM ) {
+   AMD64Instr* i        = LibVEX_Alloc_inline(sizeof(AMD64Instr));
+   i->tag               = Ain_SseMOVQ;
+   i->Ain.SseMOVQ.gpr   = gpr;
+   i->Ain.SseMOVQ.xmm   = xmm;
+   i->Ain.SseMOVQ.toXMM = toXMM;
+   vassert(hregClass(gpr) == HRcInt64);
+   vassert(hregClass(xmm) == HRcVec128);
+   return i;
+}
 //uu AMD64Instr* AMD64Instr_AvxLdSt ( Bool isLoad,
 //uu                                  HReg reg, AMD64AMode* addr ) {
 //uu    AMD64Instr* i         = LibVEX_Alloc_inline(sizeof(AMD64Instr));
@@ -1062,6 +1097,14 @@ void ppAMD64Instr ( const AMD64Instr* i, Bool mode64 )
          else 
             vex_printf("$%d,", (Int)i->Ain.Sh64.src);
          ppHRegAMD64(i->Ain.Sh64.dst);
+         return;
+      case Ain_Sh32:
+         vex_printf("%sl ", showAMD64ShiftOp(i->Ain.Sh32.op));
+         if (i->Ain.Sh32.src == 0)
+            vex_printf("%%cl,");
+         else
+            vex_printf("$%d,", (Int)i->Ain.Sh32.src);
+         ppHRegAMD64_lo32(i->Ain.Sh32.dst);
          return;
       case Ain_Test64:
          vex_printf("testq $%d,", (Int)i->Ain.Test64.imm32);
@@ -1356,6 +1399,23 @@ void ppAMD64Instr ( const AMD64Instr* i, Bool mode64 )
          vex_printf(",");
          ppHRegAMD64(i->Ain.SseShuf.dst);
          return;
+      case Ain_SseShiftN:
+         vex_printf("%s $%u, ", showAMD64SseOp(i->Ain.SseShiftN.op),
+                                i->Ain.SseShiftN.shiftBits);
+         ppHRegAMD64(i->Ain.SseShiftN.dst);
+         return;
+      case Ain_SseMOVQ:
+         vex_printf("movq ");
+         if (i->Ain.SseMOVQ.toXMM) {
+            ppHRegAMD64(i->Ain.SseMOVQ.gpr);
+            vex_printf(",");
+            ppHRegAMD64(i->Ain.SseMOVQ.xmm);
+         } else {
+            ppHRegAMD64(i->Ain.SseMOVQ.xmm);
+            vex_printf(",");
+            ppHRegAMD64(i->Ain.SseMOVQ.gpr);
+         };
+         return;
       //uu case Ain_AvxLdSt:
       //uu    vex_printf("vmovups ");
       //uu    if (i->Ain.AvxLdSt.isLoad) {
@@ -1404,6 +1464,12 @@ void getRegUsage_AMD64Instr ( HRegUsage* u, const AMD64Instr* i, Bool mode64 )
          addRegUsage_AMD64RMI(u, i->Ain.Alu64R.src);
          if (i->Ain.Alu64R.op == Aalu_MOV) {
             addHRegUse(u, HRmWrite, i->Ain.Alu64R.dst);
+
+            if (i->Ain.Alu64R.src->tag == Armi_Reg) {
+               u->isRegRegMove = True;
+               u->regMoveSrc   = i->Ain.Alu64R.src->Armi.Reg.reg;
+               u->regMoveDst   = i->Ain.Alu64R.dst;
+            }
             return;
          }
          if (i->Ain.Alu64R.op == Aalu_CMP) { 
@@ -1419,6 +1485,11 @@ void getRegUsage_AMD64Instr ( HRegUsage* u, const AMD64Instr* i, Bool mode64 )
       case Ain_Sh64:
          addHRegUse(u, HRmModify, i->Ain.Sh64.dst);
          if (i->Ain.Sh64.src == 0)
+            addHRegUse(u, HRmRead, hregAMD64_RCX());
+         return;
+      case Ain_Sh32:
+         addHRegUse(u, HRmModify, i->Ain.Sh32.dst);
+         if (i->Ain.Sh32.src == 0)
             addHRegUse(u, HRmRead, hregAMD64_RCX());
          return;
       case Ain_Test64:
@@ -1458,18 +1529,16 @@ void getRegUsage_AMD64Instr ( HRegUsage* u, const AMD64Instr* i, Bool mode64 )
          /* This is a bit subtle. */
          /* First off, claim it trashes all the caller-saved regs
             which fall within the register allocator's jurisdiction.
-            These I believe to be: rax rcx rdx rsi rdi r8 r9 r10 r11 
-            and all the xmm registers.
-         */
+            These I believe to be: rax rcx rdx rdi rsi r8 r9 r10
+            and all the xmm registers. */
          addHRegUse(u, HRmWrite, hregAMD64_RAX());
          addHRegUse(u, HRmWrite, hregAMD64_RCX());
          addHRegUse(u, HRmWrite, hregAMD64_RDX());
-         addHRegUse(u, HRmWrite, hregAMD64_RSI());
          addHRegUse(u, HRmWrite, hregAMD64_RDI());
+         addHRegUse(u, HRmWrite, hregAMD64_RSI());
          addHRegUse(u, HRmWrite, hregAMD64_R8());
          addHRegUse(u, HRmWrite, hregAMD64_R9());
          addHRegUse(u, HRmWrite, hregAMD64_R10());
-         addHRegUse(u, HRmWrite, hregAMD64_R11());
          addHRegUse(u, HRmWrite, hregAMD64_XMM0());
          addHRegUse(u, HRmWrite, hregAMD64_XMM1());
          addHRegUse(u, HRmWrite, hregAMD64_XMM3());
@@ -1622,7 +1691,11 @@ void getRegUsage_AMD64Instr ( HRegUsage* u, const AMD64Instr* i, Bool mode64 )
          vassert(i->Ain.Sse32Fx4.op != Asse_MOV);
          unary = toBool( i->Ain.Sse32Fx4.op == Asse_RCPF
                          || i->Ain.Sse32Fx4.op == Asse_RSQRTF
-                         || i->Ain.Sse32Fx4.op == Asse_SQRTF );
+                         || i->Ain.Sse32Fx4.op == Asse_SQRTF
+                         || i->Ain.Sse32Fx4.op == Asse_I2F
+                         || i->Ain.Sse32Fx4.op == Asse_F2I
+                         || i->Ain.Sse32Fx4.op == Asse_F32toF16
+                         || i->Ain.Sse32Fx4.op == Asse_F16toF32 );
          addHRegUse(u, HRmRead, i->Ain.Sse32Fx4.src);
          addHRegUse(u, unary ? HRmWrite : HRmModify, 
                        i->Ain.Sse32Fx4.dst);
@@ -1668,6 +1741,12 @@ void getRegUsage_AMD64Instr ( HRegUsage* u, const AMD64Instr* i, Bool mode64 )
             addHRegUse(u, i->Ain.SseReRg.op == Asse_MOV 
                              ? HRmWrite : HRmModify, 
                           i->Ain.SseReRg.dst);
+
+            if (i->Ain.SseReRg.op == Asse_MOV) {
+               u->isRegRegMove = True;
+               u->regMoveSrc   = i->Ain.SseReRg.src;
+               u->regMoveDst   = i->Ain.SseReRg.dst;
+            }
          }
          return;
       case Ain_SseCMov:
@@ -1677,6 +1756,15 @@ void getRegUsage_AMD64Instr ( HRegUsage* u, const AMD64Instr* i, Bool mode64 )
       case Ain_SseShuf:
          addHRegUse(u, HRmRead,  i->Ain.SseShuf.src);
          addHRegUse(u, HRmWrite, i->Ain.SseShuf.dst);
+         return;
+      case Ain_SseShiftN:
+         addHRegUse(u, HRmModify, i->Ain.SseShiftN.dst);
+         return;
+      case Ain_SseMOVQ:
+         addHRegUse(u, i->Ain.SseMOVQ.toXMM ? HRmRead : HRmWrite,
+                    i->Ain.SseMOVQ.gpr);
+         addHRegUse(u, i->Ain.SseMOVQ.toXMM ? HRmWrite : HRmRead,
+                    i->Ain.SseMOVQ.xmm);
          return;
       //uu case Ain_AvxLdSt:
       //uu addRegUsage_AMD64AMode(u, i->Ain.AvxLdSt.addr);
@@ -1694,6 +1782,12 @@ void getRegUsage_AMD64Instr ( HRegUsage* u, const AMD64Instr* i, Bool mode64 )
       //uu       addHRegUse(u, i->Ain.AvxReRg.op == Asse_MOV 
       //uu                        ? HRmWrite : HRmModify, 
       //uu                     i->Ain.AvxReRg.dst);
+      //uu
+      //uu       if (i->Ain.AvxReRg.op == Asse_MOV) {
+      //uu          u->isRegRegMove = True;
+      //uu          u->regMoveSrc   = i->Ain.AvxReRg.src;
+      //uu          u->regMoveDst   = i->Ain.AvxReRg.dst;
+      //uu       }
       //uu    }
       //uu    return;
       case Ain_EvCheck:
@@ -1734,6 +1828,9 @@ void mapRegs_AMD64Instr ( HRegRemap* m, AMD64Instr* i, Bool mode64 )
          return;
       case Ain_Sh64:
          mapReg(m, &i->Ain.Sh64.dst);
+         return;
+      case Ain_Sh32:
+         mapReg(m, &i->Ain.Sh32.dst);
          return;
       case Ain_Test64:
          mapReg(m, &i->Ain.Test64.dst);
@@ -1887,6 +1984,13 @@ void mapRegs_AMD64Instr ( HRegRemap* m, AMD64Instr* i, Bool mode64 )
          mapReg(m, &i->Ain.SseShuf.src);
          mapReg(m, &i->Ain.SseShuf.dst);
          return;
+      case Ain_SseShiftN:
+         mapReg(m, &i->Ain.SseShiftN.dst);
+         return;
+      case Ain_SseMOVQ:
+         mapReg(m, &i->Ain.SseMOVQ.gpr);
+         mapReg(m, &i->Ain.SseMOVQ.xmm);
+         return;
       //uu case Ain_AvxLdSt:
       //uu    mapReg(m, &i->Ain.AvxLdSt.reg);
       //uu    mapRegs_AMD64AMode(m, i->Ain.AvxLdSt.addr);
@@ -1909,43 +2013,6 @@ void mapRegs_AMD64Instr ( HRegRemap* m, AMD64Instr* i, Bool mode64 )
          vpanic("mapRegs_AMD64Instr");
    }
 }
-
-/* Figure out if i represents a reg-reg move, and if so assign the
-   source and destination to *src and *dst.  If in doubt say No.  Used
-   by the register allocator to do move coalescing. 
-*/
-Bool isMove_AMD64Instr ( const AMD64Instr* i, HReg* src, HReg* dst )
-{
-   switch (i->tag) {
-      case Ain_Alu64R:
-         /* Moves between integer regs */
-         if (i->Ain.Alu64R.op != Aalu_MOV)
-            return False;
-         if (i->Ain.Alu64R.src->tag != Armi_Reg)
-            return False;
-         *src = i->Ain.Alu64R.src->Armi.Reg.reg;
-         *dst = i->Ain.Alu64R.dst;
-         return True;
-      case Ain_SseReRg:
-         /* Moves between SSE regs */
-         if (i->Ain.SseReRg.op != Asse_MOV)
-            return False;
-         *src = i->Ain.SseReRg.src;
-         *dst = i->Ain.SseReRg.dst;
-         return True;
-      //uu case Ain_AvxReRg:
-      //uu    /* Moves between AVX regs */
-      //uu    if (i->Ain.AvxReRg.op != Asse_MOV)
-      //uu       return False;
-      //uu    *src = i->Ain.AvxReRg.src;
-      //uu    *dst = i->Ain.AvxReRg.dst;
-      //uu    return True;
-      default:
-         return False;
-   }
-   /*NOTREACHED*/
-}
-
 
 /* Generate amd64 spill/reload instructions under the direction of the
    register allocator.  Note it's critical these don't write the
@@ -1992,6 +2059,19 @@ void genReload_AMD64 ( /*OUT*/HInstr** i1, /*OUT*/HInstr** i2,
       default: 
          ppHRegClass(hregClass(rreg));
          vpanic("genReload_AMD64: unimplemented regclass");
+   }
+}
+
+AMD64Instr* genMove_AMD64(HReg from, HReg to, Bool mode64)
+{
+   switch (hregClass(from)) {
+   case HRcInt64:
+      return AMD64Instr_Alu64R(Aalu_MOV, AMD64RMI_Reg(from), to);
+   case HRcVec128:
+      return AMD64Instr_SseReRg(Asse_MOV, from, to);
+   default:
+      ppHRegClass(hregClass(from));
+      vpanic("genMove_AMD64: unimplemented regclass");
    }
 }
 
@@ -2278,6 +2358,11 @@ static UChar* doAMode_R_enc_enc ( UChar* p, UInt gregEnc3210, UInt eregEnc3210 )
 static inline UChar clearWBit ( UChar rex )
 {
    return rex & ~(1<<3);
+}
+
+static inline UChar setWBit ( UChar rex )
+{
+   return rex | (1<<3);
 }
 
 
@@ -2697,6 +2782,30 @@ Int emit_AMD64Instr ( /*MB_MOD*/Bool* is_profInc,
          *p++ = toUChar(opc_imm);
          p = doAMode_R_enc_reg(p, subopc, i->Ain.Sh64.dst);
          *p++ = (UChar)(i->Ain.Sh64.src);
+         goto done;
+      }
+      break;
+
+   case Ain_Sh32:
+      opc_cl = opc_imm = subopc = 0;
+      switch (i->Ain.Sh32.op) {
+         case Ash_SHR: opc_cl = 0xD3; opc_imm = 0xC1; subopc = 5; break;
+         case Ash_SAR: opc_cl = 0xD3; opc_imm = 0xC1; subopc = 7; break;
+         case Ash_SHL: opc_cl = 0xD3; opc_imm = 0xC1; subopc = 4; break;
+         default: goto bad;
+      }
+      if (i->Ain.Sh32.src == 0) {
+         rex = clearWBit( rexAMode_R_enc_reg(0, i->Ain.Sh32.dst) );
+         if (rex != 0x40) *p++ = rex;
+         *p++ = toUChar(opc_cl);
+         p = doAMode_R_enc_reg(p, subopc, i->Ain.Sh32.dst);
+         goto done;
+      } else {
+         rex = clearWBit( rexAMode_R_enc_reg(0, i->Ain.Sh32.dst) );
+         if (rex != 0x40) *p++ = rex;
+         *p++ = toUChar(opc_imm);
+         p = doAMode_R_enc_reg(p, subopc, i->Ain.Sh32.dst);
+         *p++ = (UChar)(i->Ain.Sh32.src);
          goto done;
       }
       break;
@@ -3631,11 +3740,52 @@ Int emit_AMD64Instr ( /*MB_MOD*/Bool* is_profInc,
                            i->Ain.SseLdzLO.addr);
       goto done;
 
-   case Ain_Sse32Fx4:
+   case Ain_Sse32Fx4: {
+      UInt srcRegNo = vregEnc3210(i->Ain.Sse32Fx4.src);
+      UInt dstRegNo = vregEnc3210(i->Ain.Sse32Fx4.dst);
+      // VEX encoded cases
+      switch (i->Ain.Sse32Fx4.op) {
+         case Asse_F16toF32: { // vcvtph2ps %xmmS, %xmmD
+            UInt s = srcRegNo;
+            UInt d = dstRegNo;
+            // VCVTPH2PS %xmmS, %xmmD (s and d are both xmm regs, range 0 .. 15)
+            // 0xC4 : ~d3 1 ~s3 0 0 0 1 0 : 0x79 : 0x13 : 1 1 d2 d1 d0 s2 s1 s0
+            UInt byte2 = ((((~d)>>3)&1)<<7) | (1<<6)
+                         | ((((~s)>>3)&1)<<5) | (1<<1);
+            UInt byte5 = (1<<7) | (1<<6) | ((d&7) << 3) | ((s&7) << 0);
+            *p++ = 0xC4;
+            *p++ = byte2;
+            *p++ = 0x79;
+            *p++ = 0x13;
+            *p++ = byte5;
+            goto done;
+         }
+         case Asse_F32toF16: { // vcvtps2ph $4, %xmmS, %xmmD
+            UInt s = srcRegNo;
+            UInt d = dstRegNo;
+            // VCVTPS2PH $4, %xmmS, %xmmD (s and d both xmm regs, range 0 .. 15)
+            // 0xC4 : ~s3 1 ~d3 0 0 0 1 1 : 0x79
+            //      : 0x1D : 11 s2 s1 s0 d2 d1 d0 : 0x4
+            UInt byte2 = ((((~s)>>3)&1)<<7) | (1<<6)
+                         | ((((~d)>>3)&1)<<5) | (1<<1) | (1 << 0);
+            UInt byte5 = (1<<7) | (1<<6) | ((s&7) << 3) | ((d&7) << 0);
+            *p++ = 0xC4;
+            *p++ = byte2;
+            *p++ = 0x79;
+            *p++ = 0x1D;
+            *p++ = byte5;
+            *p++ = 0x04;
+            goto done;
+         }
+         default: break;
+      }
+      // After this point, REX encoded cases only
       xtra = 0;
-      *p++ = clearWBit(
-             rexAMode_R_enc_enc( vregEnc3210(i->Ain.Sse32Fx4.dst),
-                                 vregEnc3210(i->Ain.Sse32Fx4.src) ));
+      switch (i->Ain.Sse32Fx4.op) {
+         case Asse_F2I: *p++ = 0x66; break;
+         default: break;
+      }
+      *p++ = clearWBit(rexAMode_R_enc_enc(dstRegNo, srcRegNo));
       *p++ = 0x0F;
       switch (i->Ain.Sse32Fx4.op) {
          case Asse_ADDF:   *p++ = 0x58; break;
@@ -3646,6 +3796,8 @@ Int emit_AMD64Instr ( /*MB_MOD*/Bool* is_profInc,
          case Asse_RCPF:   *p++ = 0x53; break;
          case Asse_RSQRTF: *p++ = 0x52; break;
          case Asse_SQRTF:  *p++ = 0x51; break;
+         case Asse_I2F:    *p++ = 0x5B; break; // cvtdq2ps; no 0x66 pfx
+         case Asse_F2I:    *p++ = 0x5B; break; // cvtps2dq; with 0x66 pfx
          case Asse_SUBF:   *p++ = 0x5C; break;
          case Asse_CMPEQF: *p++ = 0xC2; xtra = 0x100; break;
          case Asse_CMPLTF: *p++ = 0xC2; xtra = 0x101; break;
@@ -3653,11 +3805,11 @@ Int emit_AMD64Instr ( /*MB_MOD*/Bool* is_profInc,
          case Asse_CMPUNF: *p++ = 0xC2; xtra = 0x103; break;
          default: goto bad;
       }
-      p = doAMode_R_enc_enc(p, vregEnc3210(i->Ain.Sse32Fx4.dst),
-                               vregEnc3210(i->Ain.Sse32Fx4.src) );
+      p = doAMode_R_enc_enc(p, dstRegNo, srcRegNo);
       if (xtra & 0x100)
          *p++ = toUChar(xtra & 0xFF);
       goto done;
+   }
 
    case Ain_Sse64Fx2:
       xtra = 0;
@@ -3805,6 +3957,10 @@ Int emit_AMD64Instr ( /*MB_MOD*/Bool* is_profInc,
          case Asse_UNPCKLW:  XX(0x66); XX(rex); XX(0x0F); XX(0x61); break;
          case Asse_UNPCKLD:  XX(0x66); XX(rex); XX(0x0F); XX(0x62); break;
          case Asse_UNPCKLQ:  XX(0x66); XX(rex); XX(0x0F); XX(0x6C); break;
+         case Asse_PSHUFB:   XX(0x66); XX(rex);
+                             XX(0x0F); XX(0x38); XX(0x00); break;
+         case Asse_PMADDUBSW:XX(0x66); XX(rex);
+                             XX(0x0F); XX(0x38); XX(0x04); break;
          default: goto bad;
       }
       p = doAMode_R_enc_enc(p, vregEnc3210(i->Ain.SseReRg.dst),
@@ -3842,6 +3998,58 @@ Int emit_AMD64Instr ( /*MB_MOD*/Bool* is_profInc,
                                vregEnc3210(i->Ain.SseShuf.src) );
       *p++ = (UChar)(i->Ain.SseShuf.order);
       goto done;
+
+   case Ain_SseShiftN: {
+      UInt limit  = 0;
+      UInt shiftImm = i->Ain.SseShiftN.shiftBits;
+      switch (i->Ain.SseShiftN.op) {
+         case Asse_SHL16: limit = 15; opc = 0x71; subopc_imm = 6; break;
+         case Asse_SHL32: limit = 31; opc = 0x72; subopc_imm = 6; break;
+         case Asse_SHL64: limit = 63; opc = 0x73; subopc_imm = 6; break;
+         case Asse_SAR16: limit = 15; opc = 0x71; subopc_imm = 4; break;
+         case Asse_SAR32: limit = 31; opc = 0x72; subopc_imm = 4; break;
+         case Asse_SHR16: limit = 15; opc = 0x71; subopc_imm = 2; break;
+         case Asse_SHR32: limit = 31; opc = 0x72; subopc_imm = 2; break;
+         case Asse_SHR64: limit = 63; opc = 0x73; subopc_imm = 2; break;
+         case Asse_SHL128:
+            if ((shiftImm & 7) != 0) goto bad;
+            shiftImm >>= 3;
+            limit = 15; opc = 0x73; subopc_imm = 7;
+            break;
+         case Asse_SHR128:
+            if ((shiftImm & 7) != 0) goto bad;
+            shiftImm >>= 3;
+            limit = 15; opc = 0x73; subopc_imm = 3;
+            break;
+         default:
+            // This should never happen .. SSE2 only offers the above 10 insns
+            // for the "shift with immediate" case
+            goto bad;
+      }
+      vassert(limit > 0 && opc > 0 && subopc_imm > 0);
+      if (shiftImm > limit) goto bad;
+      *p++ = 0x66;
+      *p++ = clearWBit(
+             rexAMode_R_enc_enc( subopc_imm,
+                                 vregEnc3210(i->Ain.SseShiftN.dst) ));
+      *p++ = 0x0F;
+      *p++ = opc;
+      p = doAMode_R_enc_enc(p, subopc_imm, vregEnc3210(i->Ain.SseShiftN.dst));
+      *p++ = shiftImm;
+      goto done;
+   }
+
+   case Ain_SseMOVQ: {
+      Bool toXMM = i->Ain.SseMOVQ.toXMM;
+      HReg gpr = i->Ain.SseMOVQ.gpr;
+      HReg xmm = i->Ain.SseMOVQ.xmm;
+      *p++ = 0x66;
+      *p++ = setWBit( rexAMode_R_enc_enc( vregEnc3210(xmm), iregEnc3210(gpr)) );
+      *p++ = 0x0F;
+      *p++ = toXMM ? 0x6E : 0x7E;
+      p = doAMode_R_enc_enc( p, vregEnc3210(xmm), iregEnc3210(gpr) );
+      goto done;
+   }
 
    //uu case Ain_AvxLdSt: {
    //uu    UInt vex = vexAMode_M( dvreg2ireg(i->Ain.AvxLdSt.reg),

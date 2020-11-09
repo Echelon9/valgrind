@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -129,6 +127,24 @@ typedef  struct { UWord uw1; UWord uw2; }  UWordPair;
 /* ThreadIds are simply indices into the VG_(threads)[] array. */
 typedef UInt ThreadId;
 
+
+/* You need a debuginfo epoch in order to convert an address into any source
+   level entity, since that conversion depends on what objects were mapped
+   in at the time.  An epoch is simply a monotonically increasing counter,
+   which we wrap up in a struct so as to enable the C type system to
+   distinguish it from other kinds of numbers.  m_debuginfo holds and
+   maintains the current epoch number. */
+typedef  struct { UInt n; }  DiEpoch;
+
+static inline DiEpoch DiEpoch_INVALID ( void ) {
+   DiEpoch dep; dep.n = 0; return dep;
+}
+
+static inline Bool is_DiEpoch_INVALID ( DiEpoch dep ) {
+   return dep.n == 0;
+}
+
+
 /* Many data structures need to allocate and release memory.
    The allocation/release functions must be provided by the caller.
    The Alloc_Fn_t function must allocate a chunk of memory of size szB.
@@ -179,7 +195,7 @@ typedef void  (*Free_Fn_t)        ( void* p );
 typedef
    struct {
       Bool  _isError;
-      UWord _val;
+      RegWord _val;
       UWord _valEx;
    }
    SysRes;
@@ -231,7 +247,7 @@ typedef
 static inline Bool sr_isError ( SysRes sr ) {
    return sr._isError;
 }
-static inline UWord sr_Res ( SysRes sr ) {
+static inline RegWord sr_Res ( SysRes sr ) {
    return sr._isError ? 0 : sr._val;
 }
 static inline UWord sr_ResEx ( SysRes sr ) {
@@ -253,6 +269,10 @@ static inline Bool sr_EQ ( UInt sysno, SysRes sr1, SysRes sr2 ) {
    const UInt __nr_Linux = 4000;
    const UInt __nr_pipe  = __nr_Linux + 42;
    const UInt __nr_pipe2 = __nr_Linux + 328;
+#  elif defined(VGP_mips64_linux) && defined(VGABI_N32)
+   const UInt __nr_Linux = 6000;
+   const UInt __nr_pipe  = __nr_Linux + 21;
+   const UInt __nr_pipe2 = __nr_Linux + 291;
 #  else
    const UInt __nr_Linux = 5000;
    const UInt __nr_pipe  = __nr_Linux + 21;
@@ -274,7 +294,11 @@ static inline UWord sr_Res ( SysRes sr ) {
    return sr._isError ? 0 : sr._val;
 }
 static inline UWord sr_Err ( SysRes sr ) {
+#if defined(VGP_nanomips_linux)
+   return sr._isError ? -sr._val : 0;
+#else
    return sr._isError ? sr._val : 0;
+#endif
 }
 static inline Bool sr_EQ ( UInt sysno, SysRes sr1, SysRes sr2 ) {
    /* sysno is ignored for Linux/not-MIPS */
@@ -381,11 +405,12 @@ static inline Bool sr_EQ ( UInt sysno, SysRes sr1, SysRes sr2 ) {
 #undef VG_LITTLEENDIAN
 
 #if defined(VGA_x86) || defined(VGA_amd64) || defined (VGA_arm) \
-    || ((defined(VGA_mips32) || defined(VGA_mips64)) && defined (_MIPSEL)) \
-    || defined(VGA_arm64)  || defined(VGA_ppc64le)
+    || ((defined(VGA_mips32) || defined(VGA_mips64) || defined(VGA_nanomips)) \
+    && defined (_MIPSEL)) || defined(VGA_arm64)  || defined(VGA_ppc64le)
 #  define VG_LITTLEENDIAN 1
 #elif defined(VGA_ppc32) || defined(VGA_ppc64be) || defined(VGA_s390x) \
-      || ((defined(VGA_mips32) || defined(VGA_mips64)) && defined (_MIPSEB))
+      || ((defined(VGA_mips32) || defined(VGA_mips64) || defined(VGA_nanomips)) \
+      && defined (_MIPSEB))
 #  define VG_BIGENDIAN 1
 #else
 #  error Unknown arch
@@ -429,7 +454,7 @@ static inline Bool sr_EQ ( UInt sysno, SysRes sr1, SysRes sr2 ) {
       || defined(VGA_ppc64be) || defined(VGA_ppc64le) \
       || defined(VGA_arm) || defined(VGA_s390x) \
       || defined(VGA_mips32) || defined(VGA_mips64) \
-      || defined(VGA_arm64)
+      || defined(VGA_arm64) || defined(VGA_nanomips)
 #  define VG_REGPARM(n)            /* */
 #else
 #  error Unknown arch

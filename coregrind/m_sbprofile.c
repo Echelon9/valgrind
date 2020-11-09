@@ -20,9 +20,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -74,6 +72,9 @@ void show_SB_profile ( const SBProfEntry tops[], UInt n_tops,
 
    VG_(printf)("Total score = %'llu\n\n", score_total);
 
+   // FIXME JRS EPOCH 28 July 2017: this is probably not right in general
+   DiEpoch cur_ep = VG_(current_DiEpoch)();
+
    /* Print an initial per-block summary. */
    VG_(printf)("rank  ---cumulative---      -----self-----\n");
    score_cumul = 0;
@@ -84,7 +85,7 @@ void show_SB_profile ( const SBProfEntry tops[], UInt n_tops,
          continue;
 
       const HChar *name;
-      VG_(get_fnname_w_offset)(tops[r].addr, &name);
+      VG_(get_fnname_w_offset)(cur_ep, tops[r].addr, &name);
 
       score_here = tops[r].score;
       score_cumul += score_here;
@@ -123,7 +124,7 @@ void show_SB_profile ( const SBProfEntry tops[], UInt n_tops,
             continue;
 
          const HChar *name;
-         VG_(get_fnname_w_offset)(tops[r].addr, &name);
+         VG_(get_fnname_w_offset)(cur_ep, tops[r].addr, &name);
 
          score_here = tops[r].score;
          score_cumul += score_here;
@@ -159,7 +160,7 @@ void show_SB_profile ( const SBProfEntry tops[], UInt n_tops,
             continue;
 
          const HChar *name;
-         VG_(get_fnname_w_offset)(tops[r].addr, &name);
+         VG_(get_fnname_w_offset)(cur_ep, tops[r].addr, &name);
 
          score_here = tops[r].score;
 

@@ -31,12 +31,14 @@ while (<>)
     s/(at.*)operator new\[\]\(unsigned(| int| long)\)/$1...operator new[].../;
 
     s/(at.*)__builtin_delete/$1...operator delete.../;
-    s/(at.*)operator delete\(void\*\)/$1...operator delete.../;
+    s/(at.*)operator delete\(void\*(, unsigned(| int| long))?\)/$1...operator delete.../;
 
     s/(at.*)__builtin_vec_delete/$1...operator delete[].../;
     s/(at.*)operator delete\[\]\(void\*\)/$1...operator delete[].../;
 
     # Some glibc versions complain about unexpected futex syscall errors.
+    # With or without newline (see sourceware PR20271).
+    next if /^The futex facility returned an unexpected error code.$/;
     s/The futex facility returned an unexpected error code.//;
 
     print;

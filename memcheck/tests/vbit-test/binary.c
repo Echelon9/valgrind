@@ -17,9 +17,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -40,6 +38,7 @@ and_combine(vbits_t v1, vbits_t v2, value_t val2, int invert_val2)
 
    if (invert_val2) {
       switch (v2.num_bits) {
+      case 1:  val2.u32 = ~val2.u32 & 1;      break;
       case 8:  val2.u8  = ~val2.u8  & 0xff;   break;
       case 16: val2.u16 = ~val2.u16 & 0xffff; break;
       case 32: val2.u32 = ~val2.u32;          break;
@@ -50,6 +49,9 @@ and_combine(vbits_t v1, vbits_t v2, value_t val2, int invert_val2)
    }
 
    switch (v2.num_bits) {
+   case 1:
+      new.bits.u32 = (v1.bits.u32 & ~v2.bits.u32 & val2.u32) & 1;
+      break;
    case 8:
       new.bits.u8  = (v1.bits.u8 & ~v2.bits.u8  & val2.u8)  & 0xff;
       break;
@@ -189,6 +191,23 @@ check_result_for_binary(const irop_t *op, const test_data_t *data)
        */
       expected_vbits = cmpord_vbits(opnd1->vbits.num_bits,
                                     opnd2->vbits.num_bits);
+      break;
+
+   case UNDEF_CMP_EQ_NE:
+      expected_vbits = cmp_eq_ne_vbits(opnd1->vbits, opnd2->vbits,
+                                       opnd1->value, opnd2->value);
+      break;
+
+   case UNDEF_INT_ADD:
+      expected_vbits = int_add_or_sub_vbits(1/*isAdd*/,
+                                            opnd1->vbits, opnd2->vbits,
+                                            opnd1->value, opnd2->value);
+      break;
+
+   case UNDEF_INT_SUB:
+      expected_vbits = int_add_or_sub_vbits(0/*!isAdd*/,
+                                            opnd1->vbits, opnd2->vbits,
+                                            opnd1->value, opnd2->value);
       break;
 
    case UNDEF_ALL_64x2:
@@ -410,6 +429,7 @@ all_bits_zero_value(unsigned num_bits)
    switch (num_bits) {
    case 8:  val.u8  = 0; break;
    case 16: val.u16 = 0; break;
+   case 1:
    case 32: val.u32 = 0; break;
    case 64: val.u64 = 0; break;
    default:
@@ -425,6 +445,7 @@ all_bits_one_value(unsigned num_bits)
    value_t val;
 
    switch (num_bits) {
+   case 1:  val.u32 = 1;      break;
    case 8:  val.u8  = 0xff;   break;
    case 16: val.u16 = 0xffff; break;
    case 32: val.u32 = ~0u;    break;

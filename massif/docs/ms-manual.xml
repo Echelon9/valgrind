@@ -1,6 +1,6 @@
 <?xml version="1.0"?> <!-- -*- sgml -*- -->
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
-          "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd"
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+          "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
 [ <!ENTITY % vg-entities SYSTEM "../../docs/xml/vg-entities.xml"> %vg-entities; ]>
 
 
@@ -46,7 +46,7 @@ program is using, it also gives very detailed information that indicates
 which parts of your program are responsible for allocating the heap memory.
 </para>
 
-<para>Massif also provides <xref linkend="manual-core.xtree"/> memory
+<para>Massif also provides <xref linkend="&vg-xtree-id;"/> memory
   profiling using the command line
   option <computeroutput>--xtree-memory</computeroutput> and the monitor command
    <computeroutput>xtmemory</computeroutput>.</para>
@@ -54,7 +54,7 @@ which parts of your program are responsible for allocating the heap memory.
 </sect1>
 
 
-<sect1 id="ms-manual.using" xreflabel="Using Massif and ms_print">
+<sect1 id="ms-manual.using-print" xreflabel="Using Massif and ms_print">
 <title>Using Massif and ms_print</title>
 
 <para>First off, as for the other Valgrind tools, you should compile with
@@ -391,7 +391,7 @@ a small amount of information is recorded for each one:</para>
   larger number, usually 8 or 16.  This is required to ensure that elements
   within the block are suitably aligned.  If N bytes are asked for, Massif
   rounds N up to the nearest multiple of the value specified by the
-  <option><xref linkend="opt.alignment"/></option> option.
+  <option><link linkend="opt.alignment">--alignment</link></option> option.
   </para></listitem>
 
   <listitem><para>The size of the stack(s).  By default, stack profiling is
@@ -611,7 +611,7 @@ says:
 (page allocation syscalls) mmap/mremap/brk, --alloc-fns, etc.
 ]]></screen>
 
-<para>instead of the usual</para>:
+<para>instead of the usual:</para>
 
 <screen><![CDATA[
 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
@@ -643,6 +643,19 @@ in a particular column, which makes following the allocation chains easier.
 </para>
 
 </sect2>
+
+</sect1>
+
+
+<sect1 id="ms-manual.using-visualizer" xreflabel="Using massif-visualizer">
+<title>Using massif-visualizer</title>
+
+<para>
+<ulink url="https://github.com/KDE/massif-visualizer">massif-visualizer</ulink>
+is a graphical viewer for Massif data that is often easier to use than
+ms_print. massif-visualizer is not shipped within Valgrind, but is available in
+various places online.
+</para>
 
 </sect1>
 
@@ -853,7 +866,7 @@ in a particular column, which makes following the allocation chains easier.
       <option>%p</option> and <option>%q</option> format specifiers can be
       used to embed the process ID and/or the contents of an environment
       variable in the name, as is the case for the core option
-      <option><xref linkend="opt.log-file"/></option>.
+      <option><link linkend="opt.log-file">--log-file</link></option>.
       </para>
     </listitem>
   </varlistentry>
@@ -891,7 +904,7 @@ gdbserver (see <xref linkend="manual-core-adv.gdbserver-commandhandling"/>).
   <listitem>
     <para><varname>xtmemory [&lt;filename&gt; default xtmemory.kcg.%p.%n]</varname>
       requests Massif tool to produce an xtree heap memory report.
-      See <xref linkend="manual-core.xtree"/> for
+      See <xref linkend="&vg-xtree-id;"/> for
       a detailed explanation about execution trees. </para>
   </listitem>
 </itemizedlist>

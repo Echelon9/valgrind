@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -664,6 +662,7 @@ IRSB* lk_instrument ( VgCallbackClosure* closure,
    Addr       iaddr = 0, dst;
    UInt       ilen = 0;
    Bool       condition_inverted = False;
+   DiEpoch    ep = VG_(current_DiEpoch)();
 
    if (gWordTy != hWordTy) {
       /* We don't currently support this case. */
@@ -740,7 +739,7 @@ IRSB* lk_instrument ( VgCallbackClosure* closure,
                 * instrument, by the VEX statements that are the
                 * translation of that known destination. This feature is
                 * called 'SB chasing' and can be influenced by command
-                * line option --vex-guest-chase-thresh.
+                * line option --vex-guest-chase=[yes|no].
                 *
                 * To get an accurate count of the calls to a specific
                 * function, taking SB chasing into account, we need to
@@ -750,7 +749,7 @@ IRSB* lk_instrument ( VgCallbackClosure* closure,
                tl_assert(clo_fnname);
                tl_assert(clo_fnname[0]);
                const HChar *fnname;
-               if (VG_(get_fnname_if_entry)(st->Ist.IMark.addr, 
+               if (VG_(get_fnname_if_entry)(ep, st->Ist.IMark.addr,
                                             &fnname)
                    && 0 == VG_(strcmp)(fnname, clo_fnname)) {
                   di = unsafeIRDirty_0_N( 

@@ -22,9 +22,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -199,8 +197,8 @@ MC_Chunk* create_MC_Chunk ( ThreadId tid, Addr p, SizeT szB,
    mc->szB       = szB;
    mc->allockind = kind;
    switch ( MC_(n_where_pointers)() ) {
-      case 2: mc->where[1] = 0; // fallback to 1
-      case 1: mc->where[0] = 0; // fallback to 0
+      case 2: mc->where[1] = 0; // fallthrough to 1
+      case 1: mc->where[0] = 0; // fallthrough to 0
       case 0: break;
       default: tl_assert(0);
    }

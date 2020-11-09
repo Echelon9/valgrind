@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-   02110-1301, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 
@@ -142,6 +140,15 @@ typedef unsigned long Addr;
    machine. */
 typedef  unsigned long HWord;
 
+/* Size of GPRs */
+#if defined(__mips__) && (__mips == 64) && (_MIPS_SIM == _ABIN32)
+    typedef ULong RegWord;
+#   define FMT_REGWORD "ll"
+#else
+    typedef HWord RegWord;
+#   define FMT_REGWORD "l"
+#endif
+
 /* Set up VEX_HOST_WORDSIZE and VEX_REGPARM. */
 #undef VEX_HOST_WORDSIZE
 #undef VEX_REGPARM
@@ -176,10 +183,18 @@ typedef  unsigned long HWord;
 #   define VEX_REGPARM(_n) /* */
 
 #elif defined(__mips__) && (__mips == 64)
+#if _MIPS_SIM == _ABIN32
+#   define VEX_HOST_WORDSIZE 4
+#else
 #   define VEX_HOST_WORDSIZE 8
+#endif
 #   define VEX_REGPARM(_n) /* */
 
 #elif defined(__mips__) && (__mips != 64)
+#   define VEX_HOST_WORDSIZE 4
+#   define VEX_REGPARM(_n) /* */
+
+#elif defined(__nanomips__) && (__nanomips != 64)
 #   define VEX_HOST_WORDSIZE 4
 #   define VEX_REGPARM(_n) /* */
 

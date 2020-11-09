@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-   02110-1301, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 
@@ -119,6 +117,12 @@ typedef
       /* The function code specified in GPR 0 executed by PFPO
          instruction is invalid */
       EmFail_S390X_invalid_PFPO_function,
+
+      /* some insn needs vector facility which is not available on this host */
+      EmFail_S390X_vx,
+
+      /* ppno insn is not supported on this host */
+      EmFail_S390X_ppno,
 
       EmNote_NUMBER
    }

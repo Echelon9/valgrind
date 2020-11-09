@@ -17,9 +17,8 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.  */
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
+*/
 
 #ifndef GDB_SIGNALS_H
 #define GDB_SIGNALS_H
@@ -228,6 +227,8 @@ enum target_signal
     TARGET_EXC_EMULATION,
     TARGET_EXC_SOFTWARE,
     TARGET_EXC_BREAKPOINT,
+
+    TARGET_SIGNAL_LIBRT,
 
     /* If you are adding a new signal, add it just above this comment.  */
 

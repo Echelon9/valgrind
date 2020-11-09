@@ -22,9 +22,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -210,12 +208,14 @@ static HChar* get_perm_string(const HChar* s)
 static void get_debug_info(Addr instr_addr, const HChar **dir,
                            const HChar **file, const HChar **fn, UInt* line)
 {
+   DiEpoch ep = VG_(current_DiEpoch)();
    Bool found_file_line = VG_(get_filename_linenum)(
+                             ep,
                              instr_addr, 
                              file, dir,
                              line
                           );
-   Bool found_fn        = VG_(get_fnname)(instr_addr, fn);
+   Bool found_fn        = VG_(get_fnname)(ep, instr_addr, fn);
 
    if (!found_file_line) {
       *file = "???";
@@ -1000,7 +1000,7 @@ void addEvent_Bc ( CgState* cgs, InstrInfo* inode, IRAtom* guard )
    Event* evt;
    tl_assert(isIRAtom(guard));
    tl_assert(typeOfIRExpr(cgs->sbOut->tyenv, guard) 
-             == (sizeof(HWord)==4 ? Ity_I32 : Ity_I64));
+             == (sizeof(RegWord)==4 ? Ity_I32 : Ity_I64));
    if (!clo_branch_sim)
       return;
    if (cgs->events_used == N_EVENTS)
@@ -1020,7 +1020,7 @@ void addEvent_Bi ( CgState* cgs, InstrInfo* inode, IRAtom* whereTo )
    Event* evt;
    tl_assert(isIRAtom(whereTo));
    tl_assert(typeOfIRExpr(cgs->sbOut->tyenv, whereTo) 
-             == (sizeof(HWord)==4 ? Ity_I32 : Ity_I64));
+             == (sizeof(RegWord)==4 ? Ity_I32 : Ity_I64));
    if (!clo_branch_sim)
       return;
    if (cgs->events_used == N_EVENTS)
@@ -1758,8 +1758,8 @@ static void cg_print_usage(void)
 {
    VG_(print_cache_clo_opts)();
    VG_(printf)(
-"    --cache-sim=yes|no  [yes]        collect cache stats?\n"
-"    --branch-sim=yes|no [no]         collect branch prediction stats?\n"
+"    --cache-sim=yes|no               collect cache stats? [yes]\n"
+"    --branch-sim=yes|no              collect branch prediction stats? [no]\n"
 "    --cachegrind-out-file=<file>     output file name [cachegrind.out.%%p]\n"
    );
 }

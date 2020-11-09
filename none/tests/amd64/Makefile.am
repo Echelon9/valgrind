@@ -3,6 +3,9 @@ include $(top_srcdir)/Makefile.tool-tests.am
 
 dist_noinst_SCRIPTS = filter_cpuid filter_inf_nan filter_stderr gen_insn_test.pl
 
+# Used by avx-1.c and avx_estimate_insn.c
+noinst_HEADERS = avx_tests.h
+
 CLEANFILES = $(addsuffix .c,$(INSN_TESTS))
 
 INSN_TESTS = insn_basic insn_mmx insn_sse insn_sse2 insn_fpu
@@ -24,6 +27,7 @@ EXTRA_DIST = \
 	aes.vgtest aes.stdout.exp aes.stderr.exp \
 	amd64locked.vgtest amd64locked.stdout.exp amd64locked.stderr.exp \
 	avx-1.vgtest avx-1.stdout.exp avx-1.stderr.exp \
+	avx_estimate_insn.vgtest avx_estimate_insn.stdout.exp avx_estimate_insn.stderr.exp \
 	avx2-1.vgtest avx2-1.stdout.exp avx2-1.stderr.exp \
 	asorep.stderr.exp asorep.stdout.exp asorep.vgtest \
 	bmi.stderr.exp bmi.stdout.exp bmi.vgtest \
@@ -42,6 +46,7 @@ EXTRA_DIST = \
 	clc.vgtest clc.stdout.exp clc.stderr.exp \
 	crc32.vgtest crc32.stdout.exp crc32.stderr.exp \
 	cmpxchg.vgtest cmpxchg.stdout.exp cmpxchg.stderr.exp \
+	f16c.vgtest f16c.stderr.exp f16c.stdout.exp \
 	faultstatus.disabled faultstatus.stderr.exp \
 	fb_test_amd64.vgtest \
 	fb_test_amd64.stderr.exp fb_test_amd64.stdout.exp \
@@ -76,6 +81,8 @@ EXTRA_DIST = \
 	pcmpxstrx64w.stderr.exp pcmpxstrx64w.stdout.exp \
 	pcmpxstrx64w.vgtest \
 	rcl-amd64.vgtest rcl-amd64.stdout.exp rcl-amd64.stderr.exp \
+	rdrand.vgtest rdrand.stdout.exp rdrand.stderr.exp \
+	rdseed.vgtest rdseed.stdout.exp rdseed.stderr.exp \
 	redundantRexW.vgtest redundantRexW.stdout.exp \
 	redundantRexW.stderr.exp \
 	smc1.stderr.exp smc1.stdout.exp smc1.vgtest \
@@ -118,7 +125,8 @@ if BUILD_ADX_TESTS
 endif
 if BUILD_AVX_TESTS
 if BUILD_VPCLMULQDQ_TESTS
-  check_PROGRAMS += avx-1
+  check_PROGRAMS += avx-1 \
+		    avx_estimate_insn
 endif
 if BUILD_FMA4_TESTS
   check_PROGRAMS += fma4
@@ -154,6 +162,15 @@ if BUILD_FMA_TESTS
 endif
 if BUILD_MPX_TESTS
  check_PROGRAMS += mpx
+endif
+if BUILD_F16C_TESTS
+ check_PROGRAMS += f16c
+endif
+if BUILD_RDRAND_TESTS
+ check_PROGRAMS += rdrand
+endif
+if BUILD_RDSEED_TESTS
+ check_PROGRAMS += rdseed
 endif
 
 
@@ -203,7 +220,7 @@ insn_fpu_SOURCES	= insn_fpu.def
 insn_fpu_LDADD		= -lm
 insn_pclmulqdq_SOURCES  = insn_pclmulqdq.def
 fxtract_LDADD		= -lm
-fma4_CFLAGS		= $(AM_CFLAGS) -std=c99
+fma4_CFLAGS             = $(AM_CFLAGS)
 if VGCONF_OS_IS_SOLARIS
 fma4_CFLAGS		+= -D__EXTENSIONS__
 endif

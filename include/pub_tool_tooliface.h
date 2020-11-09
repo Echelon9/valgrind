@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -463,7 +461,7 @@ extern void VG_(needs_print_stats) (
    of an address ? */
 extern void VG_(needs_info_location) (
    // Get and pp information about Addr
-   void (*info_location)(Addr)
+   void (*info_location)(DiEpoch, Addr)
 );
 
 /* Do we need to see variable type and location information? */

@@ -24,9 +24,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -54,11 +52,6 @@
 #include "mc_include.h"
 #include "memcheck.h"   /* for client requests */
 
-
-/* Set to 1 to enable handwritten assembly helpers on targets for
-   which it is supported. */
-#define ENABLE_ASSEMBLY_HELPERS 1
-
 /* Set to 1 to do a little more sanity checking */
 #define VG_DEBUG_MEMORY 0
 
@@ -74,7 +67,7 @@ static void ocache_sarp_Clear_Origins ( Addr, UWord ); /* fwds */
  
 // Comment these out to disable the fast cases (don't just set them to zero).
 
-#define PERF_FAST_LOADV    1
+/* PERF_FAST_LOADV is in mc_include.h */
 #define PERF_FAST_STOREV   1
 
 #define PERF_FAST_SARP     1
@@ -374,7 +367,17 @@ static void update_SM_counts(SecMap* oldSM, SecMap* newSM)
    space, addresses 0 .. (N_PRIMARY_MAP << 16)-1.  The rest of it is
    handled using the auxiliary primary map.  
 */
-static SecMap* primary_map[N_PRIMARY_MAP];
+#if ENABLE_ASSEMBLY_HELPERS && defined(PERF_FAST_LOADV) \
+    && (defined(VGP_arm_linux) \
+        || defined(VGP_x86_linux) || defined(VGP_x86_solaris))
+/* mc_main_asm.c needs visibility on a few things declared in this file.
+   MC_MAIN_STATIC allows to define them static if ok, i.e. on
+   platforms that are not using hand-coded asm statements. */
+#define MC_MAIN_STATIC
+#else
+#define MC_MAIN_STATIC static
+#endif
+MC_MAIN_STATIC SecMap* primary_map[N_PRIMARY_MAP];
 
 
 /* An entry in the auxiliary primary map.  base must be a 64k-aligned
@@ -1345,7 +1348,19 @@ void mc_LOADV_128_or_256_slow ( /*OUT*/ULong* res,
       ok |= pessim[j] != V_BITS64_DEFINED;
    tl_assert(ok);
 
-   if (0 == (a & (szB - 1)) && n_addrs_bad < szB) {
+#  if defined(VGP_s390x_linux)
+   tl_assert(szB == 16); // s390 doesn't have > 128 bit SIMD
+   /* OK if all loaded bytes are from the same page. */
+   Bool alignedOK = ((a & 0xfff) <= 0x1000 - szB);
+#  elif defined(VGA_ppc64be) || defined(VGA_ppc64le)
+   /* lxvd2x might generate an unaligned 128 bit vector load.  */
+   Bool alignedOK = (szB == 16);
+#  else
+   /* OK if the address is aligned by the load size. */
+   Bool alignedOK = (0 == (a & (szB - 1)));
+#  endif
+
+   if (alignedOK && n_addrs_bad < szB) {
       /* Exemption applies.  Use the previously computed pessimising
          value and return the combined result, but don't flag an
          addressing error.  The pessimising value is Defined for valid
@@ -1364,8 +1379,13 @@ void mc_LOADV_128_or_256_slow ( /*OUT*/ULong* res,
    MC_(record_address_error)( VG_(get_running_tid)(), a, szB, False );
 }
 
+MC_MAIN_STATIC
+__attribute__((noinline))
+__attribute__((used))
+VG_REGPARM(3)
+ULong mc_LOADVn_slow ( Addr a, SizeT nBits, Bool bigendian );
 
-static
+MC_MAIN_STATIC
 __attribute__((noinline))
 __attribute__((used))
 VG_REGPARM(3) /* make sure we're using a fixed calling convention, since
@@ -1382,8 +1402,13 @@ ULong mc_LOADVn_slow ( Addr a, SizeT nBits, Bool bigendian )
       folded out by compilers on 32-bit platforms.  These are derived
       from LOADV64 and LOADV32.
    */
-   if (LIKELY(sizeof(void*) == 8 
-                      && nBits == 64 && VG_IS_8_ALIGNED(a))) {
+
+#  if defined(VGA_mips64) && defined(VGABI_N32)
+   if (LIKELY(sizeof(void*) == 4 && nBits == 64 && VG_IS_8_ALIGNED(a)))
+#  else
+   if (LIKELY(sizeof(void*) == 8 && nBits == 64 && VG_IS_8_ALIGNED(a)))
+#  endif
+   {
       SecMap* sm       = get_secmap_for_reading(a);
       UWord   sm_off16 = SM_OFF_16(a);
       UWord   vabits16 = sm->vabits16[sm_off16];
@@ -1393,8 +1418,13 @@ ULong mc_LOADVn_slow ( Addr a, SizeT nBits, Bool bigendian )
          return V_BITS64_UNDEFINED;
       /* else fall into the slow case */
    }
-   if (LIKELY(sizeof(void*) == 8 
-                      && nBits == 32 && VG_IS_4_ALIGNED(a))) {
+
+#  if defined(VGA_mips64) && defined(VGABI_N32)
+   if (LIKELY(sizeof(void*) == 4 && nBits == 32 && VG_IS_4_ALIGNED(a)))
+#  else
+   if (LIKELY(sizeof(void*) == 8 && nBits == 32 && VG_IS_4_ALIGNED(a)))
+#  endif
+   {
       SecMap* sm = get_secmap_for_reading(a);
       UWord sm_off = SM_OFF(a);
       UWord vabits8 = sm->vabits8[sm_off];
@@ -1404,6 +1434,7 @@ ULong mc_LOADVn_slow ( Addr a, SizeT nBits, Bool bigendian )
          return ((UWord)0xFFFFFFFF00000000ULL | (UWord)V_BITS32_UNDEFINED);
       /* else fall into slow case */
    }
+
    /* ------------ END semi-fast cases ------------ */
 
    ULong  vbits64     = V_BITS64_UNDEFINED; /* result */
@@ -1475,8 +1506,17 @@ ULong mc_LOADVn_slow ( Addr a, SizeT nBits, Bool bigendian )
    /* "at least one of the addresses is invalid" */
    tl_assert(pessim64 != V_BITS64_DEFINED);
 
+#  if defined(VGA_mips64) && defined(VGABI_N32)
+   if (szB == VG_WORDSIZE * 2 && VG_IS_WORD_ALIGNED(a)
+       && n_addrs_bad < VG_WORDSIZE * 2)
+#  elif defined(VGA_ppc64be) || defined(VGA_ppc64le)
+   /* On power unaligned loads of words are OK. */
+   if (szB == VG_WORDSIZE && n_addrs_bad < VG_WORDSIZE)
+#  else
    if (szB == VG_WORDSIZE && VG_IS_WORD_ALIGNED(a)
-       && n_addrs_bad < VG_WORDSIZE) {
+       && n_addrs_bad < VG_WORDSIZE)
+#  endif
+   {
       /* Exemption applies.  Use the previously computed pessimising
          value for vbits64 and return the combined result, but don't
          flag an addressing error.  The pessimising value is Defined
@@ -1494,8 +1534,14 @@ ULong mc_LOADVn_slow ( Addr a, SizeT nBits, Bool bigendian )
       for this case.  Note that the first clause of the conditional
       (VG_WORDSIZE == 8) is known at compile time, so the whole clause
       will get folded out in 32 bit builds. */
+#  if defined(VGA_mips64) && defined(VGABI_N32)
+   if (VG_WORDSIZE == 4
+       && VG_IS_4_ALIGNED(a) && nBits == 32 && n_addrs_bad < 4)
+#  else
    if (VG_WORDSIZE == 8
-       && VG_IS_4_ALIGNED(a) && nBits == 32 && n_addrs_bad < 4) {
+       && VG_IS_4_ALIGNED(a) && nBits == 32 && n_addrs_bad < 4)
+#  endif
+   {
       tl_assert(V_BIT_UNDEFINED == 1 && V_BIT_DEFINED == 0);
       /* (really need "UifU" here...)
          vbits64 UifU= pessim64  (is pessimised by it, iow) */
@@ -1535,8 +1581,12 @@ void mc_STOREVn_slow ( Addr a, SizeT nBits, ULong vbytes, Bool bigendian )
       is somewhat similar to some cases extensively commented in
       MC_(helperc_STOREV8).
    */
-   if (LIKELY(sizeof(void*) == 8 
-                      && nBits == 64 && VG_IS_8_ALIGNED(a))) {
+#  if defined(VGA_mips64) && defined(VGABI_N32)
+   if (LIKELY(sizeof(void*) == 4 && nBits == 64 && VG_IS_8_ALIGNED(a)))
+#  else
+   if (LIKELY(sizeof(void*) == 8 && nBits == 64 && VG_IS_8_ALIGNED(a)))
+#  endif
+   {
       SecMap* sm       = get_secmap_for_reading(a);
       UWord   sm_off16 = SM_OFF_16(a);
       UWord   vabits16 = sm->vabits16[sm_off16];
@@ -1557,8 +1607,13 @@ void mc_STOREVn_slow ( Addr a, SizeT nBits, ULong vbytes, Bool bigendian )
       }
       /* else fall into the slow case */
    }
-   if (LIKELY(sizeof(void*) == 8
-                      && nBits == 32 && VG_IS_4_ALIGNED(a))) {
+
+#  if defined(VGA_mips64) && defined(VGABI_N32)
+   if (LIKELY(sizeof(void*) == 4 && nBits == 32 && VG_IS_4_ALIGNED(a)))
+#  else
+   if (LIKELY(sizeof(void*) == 8 && nBits == 32 && VG_IS_4_ALIGNED(a)))
+#  endif
+   {
       SecMap* sm      = get_secmap_for_reading(a);
       UWord   sm_off  = SM_OFF(a);
       UWord   vabits8 = sm->vabits8[sm_off];
@@ -4468,7 +4523,7 @@ static UInt mb_get_origin_for_guest_offset ( ThreadId tid,
 static void mc_post_reg_write ( CorePart part, ThreadId tid, 
                                 PtrdiffT offset, SizeT size)
 {
-#  define MAX_REG_WRITE_SIZE 1728
+#  define MAX_REG_WRITE_SIZE 1744
    UChar area[MAX_REG_WRITE_SIZE];
    tl_assert(size <= MAX_REG_WRITE_SIZE);
    VG_(memset)(area, V_BITS8_DEFINED, size);
@@ -4861,78 +4916,11 @@ VG_REGPARM(1) ULong MC_(helperc_LOADV64be) ( Addr a )
 // Non-generic assembly for arm32-linux
 #if ENABLE_ASSEMBLY_HELPERS && defined(PERF_FAST_LOADV) \
     && defined(VGP_arm_linux)
-__asm__( /* Derived from the 32 bit assembly helper */
-".text                                  \n"
-".align 2                               \n"
-".global vgMemCheck_helperc_LOADV64le   \n"
-".type   vgMemCheck_helperc_LOADV64le, %function \n"
-"vgMemCheck_helperc_LOADV64le:          \n"
-"      tst    r0, #7                    \n"
-"      movw   r3, #:lower16:primary_map \n"
-"      bne    .LLV64LEc4                \n" // if misaligned
-"      lsr    r2, r0, #16               \n"
-"      movt   r3, #:upper16:primary_map \n"
-"      ldr    r2, [r3, r2, lsl #2]      \n"
-"      uxth   r1, r0                    \n" // r1 is 0-(16)-0 X-(13)-X 000
-"      movw   r3, #0xAAAA               \n"
-"      lsr    r1, r1, #2                \n" // r1 is 0-(16)-0 00 X-(13)-X 0
-"      ldrh   r1, [r2, r1]              \n"
-"      cmp    r1, r3                    \n" // 0xAAAA == VA_BITS16_DEFINED
-"      bne    .LLV64LEc0                \n" // if !all_defined
-"      mov    r1, #0x0                  \n" // 0x0 == V_BITS32_DEFINED
-"      mov    r0, #0x0                  \n" // 0x0 == V_BITS32_DEFINED
-"      bx     lr                        \n"
-".LLV64LEc0:                            \n"
-"      movw   r3, #0x5555               \n"
-"      cmp    r1, r3                    \n" // 0x5555 == VA_BITS16_UNDEFINED
-"      bne    .LLV64LEc4                \n" // if !all_undefined
-"      mov    r1, #0xFFFFFFFF           \n" // 0xFFFFFFFF == V_BITS32_UNDEFINED
-"      mov    r0, #0xFFFFFFFF           \n" // 0xFFFFFFFF == V_BITS32_UNDEFINED
-"      bx     lr                        \n"
-".LLV64LEc4:                            \n"
-"      push   {r4, lr}                  \n"
-"      mov    r2, #0                    \n"
-"      mov    r1, #64                   \n"
-"      bl     mc_LOADVn_slow            \n"
-"      pop    {r4, pc}                  \n"
-".size vgMemCheck_helperc_LOADV64le, .-vgMemCheck_helperc_LOADV64le \n"
-".previous\n"
-);
+/* See mc_main_asm.c */
 
 #elif ENABLE_ASSEMBLY_HELPERS && defined(PERF_FAST_LOADV) \
       && (defined(VGP_x86_linux) || defined(VGP_x86_solaris))
-__asm__(
-".text\n"
-".align 16\n"
-".global vgMemCheck_helperc_LOADV64le\n"
-".type   vgMemCheck_helperc_LOADV64le, @function\n"
-"vgMemCheck_helperc_LOADV64le:\n"
-"      test   $0x7,  %eax\n"
-"      jne    .LLV64LE2\n"          /* jump if not aligned */
-"      mov    %eax,  %ecx\n"
-"      movzwl %ax,   %edx\n"
-"      shr    $0x10, %ecx\n"
-"      mov    primary_map(,%ecx,4), %ecx\n"
-"      shr    $0x3,  %edx\n"
-"      movzwl (%ecx,%edx,2), %edx\n"
-"      cmp    $0xaaaa, %edx\n"
-"      jne    .LLV64LE1\n"          /* jump if not all defined */
-"      xor    %eax, %eax\n"         /* return 0 in edx:eax */
-"      xor    %edx, %edx\n"
-"      ret\n"
-".LLV64LE1:\n"
-"      cmp    $0x5555, %edx\n"
-"      jne    .LLV64LE2\n"         /* jump if not all undefined */
-"      or     $0xffffffff, %eax\n" /* else return all bits set in edx:eax */
-"      or     $0xffffffff, %edx\n"
-"      ret\n"
-".LLV64LE2:\n"
-"      xor    %ecx,  %ecx\n"  /* tail call to mc_LOADVn_slow(a, 64, 0) */
-"      mov    $64,   %edx\n"
-"      jmp    mc_LOADVn_slow\n"
-".size vgMemCheck_helperc_LOADV64le, .-vgMemCheck_helperc_LOADV64le\n"
-".previous\n"
-);
+/* See mc_main_asm.c */
 
 #else
 // Generic for all platforms except {arm32,x86}-linux and x86-solaris
@@ -5064,71 +5052,11 @@ VG_REGPARM(1) UWord MC_(helperc_LOADV32be) ( Addr a )
 // Non-generic assembly for arm32-linux
 #if ENABLE_ASSEMBLY_HELPERS && defined(PERF_FAST_LOADV) \
     && defined(VGP_arm_linux)
-__asm__( /* Derived from NCode template */
-".text                                  \n"
-".align 2                               \n"
-".global vgMemCheck_helperc_LOADV32le   \n"
-".type   vgMemCheck_helperc_LOADV32le, %function \n"
-"vgMemCheck_helperc_LOADV32le:          \n"
-"      tst    r0, #3                    \n" // 1
-"      movw   r3, #:lower16:primary_map \n" // 1
-"      bne    .LLV32LEc4                \n" // 2  if misaligned
-"      lsr    r2, r0, #16               \n" // 3
-"      movt   r3, #:upper16:primary_map \n" // 3
-"      ldr    r2, [r3, r2, lsl #2]      \n" // 4
-"      uxth   r1, r0                    \n" // 4
-"      ldrb   r1, [r2, r1, lsr #2]      \n" // 5
-"      cmp    r1, #0xAA                 \n" // 6  0xAA == VA_BITS8_DEFINED
-"      bne    .LLV32LEc0                \n" // 7  if !all_defined
-"      mov    r0, #0x0                  \n" // 8  0x0 == V_BITS32_DEFINED
-"      bx     lr                        \n" // 9
-".LLV32LEc0:                            \n"
-"      cmp    r1, #0x55                 \n" // 0x55 == VA_BITS8_UNDEFINED
-"      bne    .LLV32LEc4                \n" // if !all_undefined
-"      mov    r0, #0xFFFFFFFF           \n" // 0xFFFFFFFF == V_BITS32_UNDEFINED
-"      bx     lr                        \n"
-".LLV32LEc4:                            \n"
-"      push   {r4, lr}                  \n"
-"      mov    r2, #0                    \n"
-"      mov    r1, #32                   \n"
-"      bl     mc_LOADVn_slow            \n"
-"      pop    {r4, pc}                  \n"
-".size vgMemCheck_helperc_LOADV32le, .-vgMemCheck_helperc_LOADV32le \n"
-".previous\n"
-);
+/* See mc_main_asm.c */
 
 #elif ENABLE_ASSEMBLY_HELPERS && defined(PERF_FAST_LOADV) \
       && (defined(VGP_x86_linux) || defined(VGP_x86_solaris))
-__asm__(
-".text\n"
-".align 16\n"
-".global vgMemCheck_helperc_LOADV32le\n"
-".type   vgMemCheck_helperc_LOADV32le, @function\n"
-"vgMemCheck_helperc_LOADV32le:\n"
-"      test   $0x3,  %eax\n"
-"      jnz    .LLV32LE2\n"         /* jump if misaligned */
-"      mov    %eax,  %edx\n"
-"      shr    $16,   %edx\n"
-"      mov    primary_map(,%edx,4), %ecx\n"
-"      movzwl %ax,   %edx\n"
-"      shr    $2,    %edx\n"
-"      movzbl (%ecx,%edx,1), %edx\n"
-"      cmp    $0xaa, %edx\n"       /* compare to VA_BITS8_DEFINED */
-"      jne    .LLV32LE1\n"         /* jump if not completely defined */
-"      xor    %eax,  %eax\n"       /* else return V_BITS32_DEFINED */
-"      ret\n"
-".LLV32LE1:\n"
-"      cmp    $0x55, %edx\n"       /* compare to VA_BITS8_UNDEFINED */
-"      jne    .LLV32LE2\n"         /* jump if not completely undefined */
-"      or     $0xffffffff, %eax\n" /* else return V_BITS32_UNDEFINED */
-"      ret\n"
-".LLV32LE2:\n"
-"      xor    %ecx,  %ecx\n"       /* tail call mc_LOADVn_slow(a, 32, 0) */
-"      mov    $32,   %edx\n"
-"      jmp    mc_LOADVn_slow\n"
-".size vgMemCheck_helperc_LOADV32le, .-vgMemCheck_helperc_LOADV32le\n"
-".previous\n"
-);
+/* See mc_main_asm.c */
 
 #else
 // Generic for all platforms except {arm32,x86}-linux and x86-solaris
@@ -6023,7 +5951,10 @@ Int           MC_(clo_free_fill)              = -1;
 KeepStacktraces MC_(clo_keep_stacktraces)     = KS_alloc_and_free;
 Int           MC_(clo_mc_level)               = 2;
 Bool          MC_(clo_show_mismatched_frees)  = True;
-Bool          MC_(clo_expensive_definedness_checks) = False;
+
+ExpensiveDefinednessChecks
+              MC_(clo_expensive_definedness_checks) = EdcAUTO;
+
 Bool          MC_(clo_ignore_range_below_sp)               = False;
 UInt          MC_(clo_ignore_range_below_sp__first_offset) = 0;
 UInt          MC_(clo_ignore_range_below_sp__last_offset)  = 0;
@@ -6050,51 +5981,48 @@ static Bool mc_process_cmd_line_options(const HChar* arg)
       --track-origins=.  Reject the case --undef-value-errors=no
       --track-origins=yes as meaningless.
    */
-   if (0 == VG_(strcmp)(arg, "--undef-value-errors=no")) {
-      if (MC_(clo_mc_level) == 3) {
-         goto bad_level;
+   if VG_BOOL_CLO(arg, "--undef-value-errors", tmp_show) {
+      if (tmp_show) {
+         if (MC_(clo_mc_level) == 1)
+            MC_(clo_mc_level) = 2;
       } else {
-         MC_(clo_mc_level) = 1;
-         return True;
+         if (MC_(clo_mc_level) == 3) {
+            goto bad_level;
+         } else {
+            MC_(clo_mc_level) = 1;
+         }
       }
    }
-   if (0 == VG_(strcmp)(arg, "--undef-value-errors=yes")) {
-      if (MC_(clo_mc_level) == 1)
-         MC_(clo_mc_level) = 2;
-      return True;
-   }
-   if (0 == VG_(strcmp)(arg, "--track-origins=no")) {
+   else if VG_BOOL_CLO(arg, "--track-origins", tmp_show) {
+      if (tmp_show)  {
+         if (MC_(clo_mc_level) == 1) {
+            goto bad_level;
+         } else {
+            MC_(clo_mc_level) = 3;
+         }
+      } else {
       if (MC_(clo_mc_level) == 3)
          MC_(clo_mc_level) = 2;
-      return True;
-   }
-   if (0 == VG_(strcmp)(arg, "--track-origins=yes")) {
-      if (MC_(clo_mc_level) == 1) {
-         goto bad_level;
-      } else {
-         MC_(clo_mc_level) = 3;
-         return True;
       }
    }
-
-        if VG_BOOL_CLO(arg, "--partial-loads-ok", MC_(clo_partial_loads_ok)) {}
-   else if VG_USET_CLO(arg, "--errors-for-leak-kinds",
-                       MC_(parse_leak_kinds_tokens),
-                       MC_(clo_error_for_leak_kinds)) {}
-   else if VG_USET_CLO(arg, "--show-leak-kinds",
-                       MC_(parse_leak_kinds_tokens),
-                       MC_(clo_show_leak_kinds)) {}
-   else if VG_USET_CLO(arg, "--leak-check-heuristics",
-                       MC_(parse_leak_heuristics_tokens),
-                       MC_(clo_leak_check_heuristics)) {}
-   else if (VG_BOOL_CLO(arg, "--show-reachable", tmp_show)) {
+   else if VG_BOOL_CLO(arg, "--partial-loads-ok", MC_(clo_partial_loads_ok)) {}
+   else if VG_USET_CLOM(cloPD, arg, "--errors-for-leak-kinds",
+                        MC_(parse_leak_kinds_tokens),
+                        MC_(clo_error_for_leak_kinds)) {}
+   else if VG_USET_CLOM(cloPD, arg, "--show-leak-kinds",
+                        MC_(parse_leak_kinds_tokens),
+                        MC_(clo_show_leak_kinds)) {}
+   else if VG_USET_CLOM(cloPD, arg, "--leak-check-heuristics",
+                        MC_(parse_leak_heuristics_tokens),
+                        MC_(clo_leak_check_heuristics)) {}
+   else if (VG_BOOL_CLOM(cloPD, arg, "--show-reachable", tmp_show)) {
       if (tmp_show) {
          MC_(clo_show_leak_kinds) = MC_(all_Reachedness)();
       } else {
          MC_(clo_show_leak_kinds) &= ~R2S(Reachable);
       }
    }
-   else if VG_BOOL_CLO(arg, "--show-possibly-lost", tmp_show) {
+   else if VG_BOOL_CLOM(cloPD, arg, "--show-possibly-lost", tmp_show) {
       if (tmp_show) {
          MC_(clo_show_leak_kinds) |= R2S(Possible);
       } else {
@@ -6102,35 +6030,35 @@ static Bool mc_process_cmd_line_options(const HChar* arg)
       }
    }
    else if VG_BOOL_CLO(arg, "--workaround-gcc296-bugs",
-                                            MC_(clo_workaround_gcc296_bugs)) {}
+                       MC_(clo_workaround_gcc296_bugs)) {}
 
-   else if VG_BINT_CLO(arg, "--freelist-vol",  MC_(clo_freelist_vol), 
-                                               0, 10*1000*1000*1000LL) {}
+   else if VG_BINT_CLOM(cloPD, arg, "--freelist-vol",  MC_(clo_freelist_vol),
+                        0, 10*1000*1000*1000LL) {}
 
-   else if VG_BINT_CLO(arg, "--freelist-big-blocks",
-                       MC_(clo_freelist_big_blocks),
-                       0, 10*1000*1000*1000LL) {}
+   else if VG_BINT_CLOM(cloPD, arg, "--freelist-big-blocks",
+                        MC_(clo_freelist_big_blocks),
+                        0, 10*1000*1000*1000LL) {}
 
-   else if VG_XACT_CLO(arg, "--leak-check=no",
-                            MC_(clo_leak_check), LC_Off) {}
-   else if VG_XACT_CLO(arg, "--leak-check=summary",
-                            MC_(clo_leak_check), LC_Summary) {}
-   else if VG_XACT_CLO(arg, "--leak-check=yes",
-                            MC_(clo_leak_check), LC_Full) {}
-   else if VG_XACT_CLO(arg, "--leak-check=full",
-                            MC_(clo_leak_check), LC_Full) {}
+   else if VG_XACT_CLOM(cloPD, arg, "--leak-check=no",
+                       MC_(clo_leak_check), LC_Off) {}
+   else if VG_XACT_CLOM(cloPD, arg, "--leak-check=summary",
+                       MC_(clo_leak_check), LC_Summary) {}
+   else if VG_XACT_CLOM(cloPD, arg, "--leak-check=yes",
+                       MC_(clo_leak_check), LC_Full) {}
+   else if VG_XACT_CLOM(cloPD, arg, "--leak-check=full",
+                       MC_(clo_leak_check), LC_Full) {}
 
    else if VG_XACT_CLO(arg, "--leak-resolution=low",
-                            MC_(clo_leak_resolution), Vg_LowRes) {}
+                       MC_(clo_leak_resolution), Vg_LowRes) {}
    else if VG_XACT_CLO(arg, "--leak-resolution=med",
-                            MC_(clo_leak_resolution), Vg_MedRes) {}
+                       MC_(clo_leak_resolution), Vg_MedRes) {}
    else if VG_XACT_CLO(arg, "--leak-resolution=high",
-                            MC_(clo_leak_resolution), Vg_HighRes) {}
+                       MC_(clo_leak_resolution), Vg_HighRes) {}
 
-   else if VG_STR_CLO(arg, "--ignore-ranges", tmp_str) {
+   else if VG_STR_CLOM(cloPD, arg, "--ignore-ranges", tmp_str) {
       Bool ok = parse_ignore_ranges(tmp_str);
       if (!ok) {
-         VG_(message)(Vg_DebugMsg, 
+         VG_(message)(Vg_DebugMsg,
             "ERROR: --ignore-ranges: "
             "invalid syntax, or end <= start in range\n");
          return False;
@@ -6146,9 +6074,9 @@ static Bool mc_process_cmd_line_options(const HChar* arg)
             tl_assert(key_min <= key_max);
             UWord limit = 0x4000000; /* 64M - entirely arbitrary limit */
             if (key_max - key_min > limit && val == IAR_CommandLine) {
-               VG_(message)(Vg_DebugMsg, 
+               VG_(message)(Vg_DebugMsg,
                   "ERROR: --ignore-ranges: suspiciously large range:\n");
-               VG_(message)(Vg_DebugMsg, 
+               VG_(message)(Vg_DebugMsg,
                    "       0x%lx-0x%lx (size %lu)\n", key_min, key_max,
                    key_max - key_min + 1);
                return False;
@@ -6157,7 +6085,7 @@ static Bool mc_process_cmd_line_options(const HChar* arg)
       }
    }
 
-   else if VG_STR_CLO(arg, "--ignore-range-below-sp", tmp_str) {
+   else if VG_STR_CLOM(cloPD, arg, "--ignore-range-below-sp", tmp_str) {
       /* This seems at first a bit weird, but: in order to imply
          a non-wrapped-around address range, the first offset needs to be
          larger than the second one.  For example
@@ -6169,26 +6097,26 @@ static Bool mc_process_cmd_line_options(const HChar* arg)
       // Ensure we used all the text after the '=' sign.
       if (ok && *tmp_str != 0) ok = False;
       if (!ok) {
-         VG_(message)(Vg_DebugMsg, 
+         VG_(message)(Vg_DebugMsg,
                       "ERROR: --ignore-range-below-sp: invalid syntax. "
                       " Expected \"...=decimalnumber-decimalnumber\".\n");
          return False;
-      }  
+      }
       if (offs1 > 1000*1000 /*arbitrary*/ || offs2 > 1000*1000 /*ditto*/) {
-         VG_(message)(Vg_DebugMsg, 
+         VG_(message)(Vg_DebugMsg,
                       "ERROR: --ignore-range-below-sp: suspiciously large "
                       "offset(s): %u and %u\n", offs1, offs2);
          return False;
       }
       if (offs1 <= offs2) {
-         VG_(message)(Vg_DebugMsg, 
+         VG_(message)(Vg_DebugMsg,
                       "ERROR: --ignore-range-below-sp: invalid offsets "
                       "(the first must be larger): %u and %u\n", offs1, offs2);
          return False;
       }
       tl_assert(offs1 > offs2);
       if (offs1 - offs2 > 4096 /*arbitrary*/) {
-         VG_(message)(Vg_DebugMsg, 
+         VG_(message)(Vg_DebugMsg,
                       "ERROR: --ignore-range-below-sp: suspiciously large "
                       "range: %u-%u (size %u)\n", offs1, offs2, offs1 - offs2);
          return False;
@@ -6213,10 +6141,15 @@ static Bool mc_process_cmd_line_options(const HChar* arg)
    else if VG_XACT_CLO(arg, "--keep-stacktraces=none",
                        MC_(clo_keep_stacktraces), KS_none) {}
 
-   else if VG_BOOL_CLO(arg, "--show-mismatched-frees",
-                       MC_(clo_show_mismatched_frees)) {}
-   else if VG_BOOL_CLO(arg, "--expensive-definedness-checks",
-                       MC_(clo_expensive_definedness_checks)) {}
+   else if VG_BOOL_CLOM(cloPD, arg, "--show-mismatched-frees",
+                        MC_(clo_show_mismatched_frees)) {}
+
+   else if VG_XACT_CLO(arg, "--expensive-definedness-checks=no",
+                            MC_(clo_expensive_definedness_checks), EdcNO) {}
+   else if VG_XACT_CLO(arg, "--expensive-definedness-checks=auto",
+                            MC_(clo_expensive_definedness_checks), EdcAUTO) {}
+   else if VG_XACT_CLO(arg, "--expensive-definedness-checks=yes",
+                            MC_(clo_expensive_definedness_checks), EdcYES) {}
 
    else if VG_BOOL_CLO(arg, "--xtree-leak",
                        MC_(clo_xtree_leak)) {}
@@ -6232,6 +6165,7 @@ static Bool mc_process_cmd_line_options(const HChar* arg)
   bad_level:
    VG_(fmsg_bad_option)(arg,
       "--track-origins=yes has no effect when --undef-value-errors=no.\n");
+   return False;
 }
 
 static void mc_print_usage(void)
@@ -6259,8 +6193,8 @@ static void mc_print_usage(void)
 "    --undef-value-errors=no|yes      check for undefined value errors [yes]\n"
 "    --track-origins=no|yes           show origins of undefined values? [no]\n"
 "    --partial-loads-ok=no|yes        too hard to explain here; see manual [yes]\n"
-"    --expensive-definedness-checks=no|yes\n"
-"                                     Use extra-precise definedness tracking [no]\n"
+"    --expensive-definedness-checks=no|auto|yes\n"
+"                                     Use extra-precise definedness tracking [auto]\n"
 "    --freelist-vol=<number>          volume of freed blocks queue     [20000000]\n"
 "    --freelist-big-blocks=<number>   releases first blocks with size>= [1000000]\n"
 "    --workaround-gcc296-bugs=no|yes  self explanatory [no].  Deprecated.\n"
@@ -6738,7 +6672,8 @@ static Bool handle_gdb_monitor_command (ThreadId tid, HChar *req)
             VG_(printf)
                ("Address %p len %lu not addressable:\nbad address %p\n",
                 (void *)address, szB, (void *) bad_addr);
-         MC_(pp_describe_addr) (address);
+         // Describe this (probably live) address with current epoch
+         MC_(pp_describe_addr) (VG_(current_DiEpoch)(), address);
          break;
       case  1: /* defined */
          res = is_mem_defined ( address, szB, &bad_addr, &otag );
@@ -6772,7 +6707,8 @@ static Bool handle_gdb_monitor_command (ThreadId tid, HChar *req)
          else
             VG_(printf) ("Address %p len %lu defined\n",
                          (void *)address, szB);
-         MC_(pp_describe_addr) (address);
+         // Describe this (probably live) address with current epoch
+         MC_(pp_describe_addr) (VG_(current_DiEpoch)(), address);
          break;
       default: tl_assert(0);
       }
@@ -6867,10 +6803,6 @@ static Bool handle_gdb_monitor_command (ThreadId tid, HChar *req)
          Int unaddressable = 0;
          for (i = 0; i < szB; i++) {
             Int bnr = i % 8;
-            res[bnr] = mc_get_or_set_vbits_for_client 
-               (address+i, (Addr) &vbits[bnr], 1, 
-                False, /* get them */
-                False  /* is client request */ ); 
             /* We going to print the first vabits of a new line.
                Terminate the previous line if needed: prints a line with the
                address and the data. */
@@ -6881,6 +6813,10 @@ static Bool handle_gdb_monitor_command (ThreadId tid, HChar *req)
                }
                VG_(printf) ("\t"); // To align VABITS with gdb_xb layout
             }
+            res[bnr] = mc_get_or_set_vbits_for_client
+               (address+i, (Addr) &vbits[bnr], 1,
+                False, /* get them */
+                False  /* is client request */ );
             if (res[bnr] == 1) {
                VG_(printf) ("\t  %02x", vbits[bnr]);
             } else {
@@ -8063,6 +7999,7 @@ static void mc_fini ( Int exitcode )
                                              MC_(clo_xtree_leak_file));
          lcp.xt_filename = xt_filename;
          lcp.mode = LC_Full;
+         lcp.show_leak_kinds = MC_(all_Reachedness)();
       }
       else
          lcp.xt_filename = NULL;
@@ -8076,11 +8013,6 @@ static void mc_fini ( Int exitcode )
             "\n"
          );
       }
-   }
-
-   if (VG_(clo_verbosity) == 1 && !VG_(clo_xml)) {
-      VG_(message)(Vg_UserMsg, 
-                   "For counts of detected and suppressed errors, rerun with: -v\n");
    }
 
    if (MC_(any_value_errors) && !VG_(clo_xml) && VG_(clo_verbosity) >= 1

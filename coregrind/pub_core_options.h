@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -44,10 +42,19 @@ extern const HChar *VG_(clo_toolname);
 
 /* Should we stop collecting errors if too many appear?  default: YES */
 extern Bool  VG_(clo_error_limit);
+/* Should we exit if an error appears?  default: NO */
+extern Bool  VG_(clo_exit_on_first_error);
 /* Alternative exit code to hand to parent if errors were found.
    default: 0 (no, return the application's exit code in the normal
    way. */
 extern Int   VG_(clo_error_exitcode);
+
+/* For tools that report errors, list detected errors and show suppression
+   usage counts at exit. Default: No.
+   Unless set explicitly by the user, the option is automatically
+   considered as set to yes for verbosity > 1. */
+extern Bool  VG_(clo_show_error_list);
+
 
 /* Markers used to mark the begin/end of an error, when errors are
    printed in textual (non xml) format.
@@ -199,6 +206,8 @@ extern enum FairSchedType VG_(clo_fair_sched);
 extern Bool  VG_(clo_trace_sched);
 /* DEBUG: do heap profiling?  default: NO */
 extern Bool  VG_(clo_profile_heap);
+// DEBUG: report progress every N seconds (1 .. 3600)
+extern UInt VG_(clo_progress_interval);
 #define MAX_REDZONE_SZB 128
 // Maximum for the default values for core arenas and for client
 // arena given by the tool.
@@ -369,6 +378,9 @@ extern UInt VG_(clo_kernel_variant);
 /* Darwin-specific: automatically run /usr/bin/dsymutil to update
    .dSYM directories as necessary? */
 extern Bool VG_(clo_dsymutil);
+
+/* Outputs the list of dynamically changeable options. */
+extern void VG_(list_dynamic_options) (void);
 
 /* Should we trace into this child executable (across execve etc) ?
    This involves considering --trace-children=,

@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-   02110-1301, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 
@@ -252,8 +250,8 @@ typedef
       /* 1388 */ ULong guest_PPR;       // Program Priority register
       /* 1396 */ UInt  guest_TEXASRU;   // Transaction EXception And Summary Register Upper
       /* 1400 */ UInt  guest_PSPB;      // Problem State Priority Boost register
+      /* 1404 */ ULong guest_DSCR;      // Data Stream Control register
       /* Padding to make it have an 16-aligned size */
-      /* 1404 */ UInt  padding2;
       /* 1408 */ UInt  padding3;
       /* 1412 */ UInt  padding4;
    }

@@ -8,7 +8,6 @@
    framework.
 
    Copyright (C) 2010-2017 RT-RK
-      mips-valgrind@rt-rk.com
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -21,9 +20,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef __VKI_MIPS64_LINUX_H
@@ -115,7 +112,7 @@ typedef __vki_restorefn_t __user *__vki_sigrestore_t;
 #define VKI_SIG_ERR     ((__vki_sighandler_t)-1)  /* error return from signal */
 
 #define _VKI_NSIG       128
-#define _VKI_NSIG_BPW   64
+#define _VKI_NSIG_BPW   (__SIZEOF_LONG__ * 8)
 #define _VKI_NSIG_WORDS (_VKI_NSIG / _VKI_NSIG_BPW)
 
 typedef unsigned long vki_old_sigset_t;  /* at least 32 bits */
@@ -389,9 +386,9 @@ struct vki_f_owner_ex {
 // From linux-2.6.35.9/include/asm-i386/sockios.h
 //----------------------------------------------------------------------
 
-#define VKI_SIOCSPGRP           0x8902
-#define VKI_SIOCGPGRP           0x8904
-#define VKI_SIOCATMARK          0x8905
+#define VKI_SIOCATMARK          _VKI_IOR('s', 7, int)
+#define VKI_SIOCSPGRP           _VKI_IOW('s', 8, vki_pid_t)
+#define VKI_SIOCGPGRP           _VKI_IOR('s', 9, vki_pid_t)
 #define VKI_SIOCGSTAMP          0x8906      /* Get stamp (timeval) */
 #define VKI_SIOCGSTAMPNS        0x8907      /* Get stamp (timespec) */
 
@@ -399,11 +396,17 @@ struct vki_f_owner_ex {
 // From linux-2.6.35.9/include/asm-mips/stat.h
 //----------------------------------------------------------------------
 
+/* Size of kernel long is different from Valgrind MIPS n32 long size, so we have to
+use long long instead long type. */
 struct vki_stat {
         unsigned int    st_dev;
         unsigned int    st_pad0[3];     /* Reserved for st_dev expansion  */
 
+#if defined(VGABI_N32)
+        unsigned long long st_ino;
+#else
         unsigned long   st_ino;
+#endif
 
         int             st_mode;
         unsigned int    st_nlink;
@@ -414,7 +417,11 @@ struct vki_stat {
         unsigned int    st_rdev;
         unsigned int    st_pad1[3];     /* Reserved for st_rdev expansion  */
 
+#if defined(VGABI_N32)
+        long long       st_size;
+#else
         long            st_size;
+#endif
 
         /*
          * Actually this should be timestruc_t st_atime, st_mtime and st_ctime
@@ -914,7 +921,13 @@ typedef union vki_sigval {
 } vki_sigval_t;
 
 #ifndef __VKI_ARCH_SI_PREAMBLE_SIZE
-#define __VKI_ARCH_SI_PREAMBLE_SIZE (4 * sizeof(int))
+#if defined(VGABI_64)
+ #define __VKI_ARCH_SI_PREAMBLE_SIZE (4 * sizeof(int))
+#elif defined(VGABI_N32)
+#define __VKI_ARCH_SI_PREAMBLE_SIZE (3 * sizeof(int))
+#else
+#error unknown mips64 abi
+#endif
 #endif
 
 #define VKI_SI_MAX_SIZE 128

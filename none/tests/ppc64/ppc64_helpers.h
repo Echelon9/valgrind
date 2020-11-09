@@ -16,8 +16,7 @@
  *   GNU General Public License for more details.
  *
  *   You should have received a copy of the GNU General Public License
- *   along with this program; if not, write to the Free Software
- *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *   along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "tests/malloc.h"       // memalign32
@@ -156,19 +155,19 @@ static char * fpscr_strings[] = {
  * human readable format.
  */
 
-inline int cr_overflow_set(unsigned this_cr) {
+static inline int cr_overflow_set(unsigned this_cr) {
    return (this_cr & CRFIELD_BIT3);
 }
 
-inline int cr_zero_set(unsigned this_cr) {
+static inline int cr_zero_set(unsigned this_cr) {
    return (this_cr & CRFIELD_BIT2);
 }
 
-inline int cr_positive_set(unsigned this_cr) {
+static inline int cr_positive_set(unsigned this_cr) {
    return (this_cr & CRFIELD_BIT1);
 }
 
-inline int cr_negative_set(unsigned this_cr) {
+static inline int cr_negative_set(unsigned this_cr) {
    return (this_cr & CRFIELD_BIT0);
 }
 
@@ -405,12 +404,28 @@ static void dissect_xer_raw(unsigned long local_xer) {
          printf(" %s", xer_strings[i]);
    }
 }
+/* Display only the XER contents that are relevant for our tests.
+ * this is currently the OV and OV32 bits.  */
+static void dissect_xer_valgrind(unsigned long local_xer) {
+   int i;
+   long mybit;
+      i = 33;  // OV
+      mybit = 1ULL << (63 - i);
+      if (mybit & local_xer) printf(" %s", xer_strings[i]);
+      i = 44;  // OV32
+      mybit = 1ULL << (63 - i);
+      if (mybit & local_xer) printf(" %s", xer_strings[i]);
+}
+
 
 /* */
 static void dissect_xer(unsigned long local_xer) {
    if (verbose > 1)
       printf(" [[ xer:%lx ]]", local_xer);
-   dissect_xer_raw(local_xer);
+   if (verbose > 2 )
+      dissect_xer_raw(local_xer);
+   else
+      dissect_xer_valgrind(local_xer);
 }
 
 
@@ -539,7 +554,7 @@ static unsigned long dfp128_vals[] = {
 #endif
 };
 
-#define NUM_DFP128_VALS (sizeof(dfp128_vals) / 8)
+#define NUM_DFP128_VALS (sizeof(dfp128_vals) / sizeof(unsigned long))
 unsigned long nb_dfp128_vals = NUM_DFP128_VALS;
 
 /* Todo: update dfp64_vals to match dfp128_vals content. */
@@ -579,7 +594,7 @@ static unsigned long dfp64_vals[] = {
 #endif
 };
 
-#define NUM_DFP64_VALS (sizeof(dfp64_vals) / 8)
+#define NUM_DFP64_VALS (sizeof(dfp64_vals) / sizeof(unsigned long))
 unsigned long nb_dfp64_vals = NUM_DFP64_VALS;
 
 /* shift helpers */

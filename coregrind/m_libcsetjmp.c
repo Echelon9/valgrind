@@ -2,12 +2,12 @@
 /*--------------------------------------------------------------------*/
 /*--- A minimal setjmp/longjmp implementation.      m_libcsetjmp.c ---*/
 /*--------------------------------------------------------------------*/
- 
+
 /*
    This file is part of Valgrind, a dynamic binary instrumentation
    framework.
 
-   Copyright (C) 2010-2017 Mozilla Inc
+   Copyright (C) 2010-2017 Mozilla Foundation
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -20,19 +20,19 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
 
 /* Contributed by Julian Seward <jseward@acm.org> */
 
+/* This file must be compiled without link time optimisation, as otherwise
+   the asm functions below become undefined references at link time for
+   unclear reasons. */
 
 #include "pub_core_basics.h"
 #include "pub_core_libcsetjmp.h"    /* self */
-
 
 /* See include/pub_tool_libcsetjmp.h for background and rationale. */
 
@@ -689,6 +689,57 @@ __asm__(
 ".previous                      \n\t"
 );
 #endif  /* VGP_mips64_linux */
+
+#if defined(VGP_nanomips_linux)
+__asm__(
+".text                          \n\t"
+".globl VG_MINIMAL_SETJMP;      \n\t"
+".set push                      \n\t"
+".set noreorder                 \n\t"
+"VG_MINIMAL_SETJMP:             \n\t"
+"   sw     $s0,   0($a0)        \n\t"
+"   sw     $s1,   4($a0)        \n\t"
+"   sw     $s2,   8($a0)        \n\t"
+"   sw     $s3,  12($a0)        \n\t"
+"   sw     $s4,  16($a0)        \n\t"
+"   sw     $s5,  20($a0)        \n\t"
+"   sw     $s6,  24($a0)        \n\t"
+"   sw     $s7,  28($a0)        \n\t"
+"   sw     $gp,  32($a0)        \n\t"
+"   sw     $sp,  36($a0)        \n\t"
+"   sw     $fp,  40($a0)        \n\t"
+"   sw     $ra,  44($a0)        \n\t"
+"   move   $a0,  $zero          \n\t"
+"   jrc    $ra                  \n\t"
+".set pop                       \n\t"
+".previous                      \n\t"
+"                               \n\t"
+".text                          \n\t"
+".globl VG_MINIMAL_LONGJMP;     \n\t"
+".set push                      \n\t"
+".set noreorder                 \n\t"
+"VG_MINIMAL_LONGJMP:            \n\t"
+"   lw     $s0,   0($a0)        \n\t"
+"   lw     $s1,   4($a0)        \n\t"
+"   lw     $s2,   8($a0)        \n\t"
+"   lw     $s3,  12($a0)        \n\t"
+"   lw     $s4,  16($a0)        \n\t"
+"   lw     $s5,  20($a0)        \n\t"
+"   lw     $s6,  24($a0)        \n\t"
+"   lw     $s7,  28($a0)        \n\t"
+"   lw     $gp,  32($a0)        \n\t"
+"   lw     $sp,  36($a0)        \n\t"
+"   lw     $fp,  40($a0)        \n\t"
+"   lw     $ra,  44($a0)        \n\t"
+"   bnezc  $a1,   1f            \n\t"
+"   addiu  $a1, $a1, 1          \n\t"
+"1:                             \n\t"
+"   move   $a0, $a1             \n\t"
+"   jrc    $ra                  \n\t"
+".set pop                       \n\t"
+".previous                      \n\t"
+);
+#endif  /* VGP_nanomips_linux */
 
 /*--------------------------------------------------------------------*/
 /*--- end                                                          ---*/

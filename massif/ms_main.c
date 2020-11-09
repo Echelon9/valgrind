@@ -1,6 +1,6 @@
-//--------------------------------------------------------------------*/
-//--- Massif: a heap profiling tool.                     ms_main.c ---*/
-//--------------------------------------------------------------------*/
+//--------------------------------------------------------------------//
+//--- Massif: a heap profiling tool.                     ms_main.c ---//
+//--------------------------------------------------------------------//
 
 /*
    This file is part of Massif, a Valgrind tool for profiling memory
@@ -20,9 +20,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -507,7 +505,7 @@ void filter_IPs (Addr* ips, Int n_ips,
                  UInt* top, UInt* n_ips_sel)
 {
    Int i;
-   Bool top_has_fnname;
+   Bool top_has_fnname = False;
    const HChar *fnname;
 
    *top = 0;
@@ -519,9 +517,10 @@ void filter_IPs (Addr* ips, Int n_ips,
    //  'sliding' a bunch of functions without names by removing an
    //  alloc function 'inside' a stacktrace e.g.
    //    0x1 0x2 0x3 alloc func1 main
-   //  becomes   0x1 0x2 0x3 func1 main
+   //  became   0x1 0x2 0x3 func1 main
+   const DiEpoch ep = VG_(current_DiEpoch)();
    for (i = *top; i < n_ips; i++) {
-      top_has_fnname = VG_(get_fnname)(ips[*top], &fnname);
+      top_has_fnname = VG_(get_fnname)(ep, ips[*top], &fnname);
       if (top_has_fnname &&  VG_(strIsMemberXA)(alloc_fns, fnname)) {
          VERB(4, "filtering alloc fn %s\n", fnname);
          (*top)++;
@@ -532,17 +531,30 @@ void filter_IPs (Addr* ips, Int n_ips,
    }
 
    // filter the whole stacktrace if this allocation has to be ignored.
-   if (*n_ips_sel > 0 
-       && top_has_fnname 
-       && VG_(strIsMemberXA)(ignore_fns, fnname)) {
-      VERB(4, "ignored allocation from fn %s\n", fnname);
-      *top = n_ips;
-      *n_ips_sel = 0;
+   if (*n_ips_sel > 0 && VG_(sizeXA)(ignore_fns) > 0) {
+      if (!top_has_fnname) {
+         // top has no fnname => search for the first entry that has a fnname
+         for (i = *top; i < n_ips && !top_has_fnname; i++) {
+            top_has_fnname = VG_(get_fnname)(ep, ips[i], &fnname);
+         }
+      }
+      if (top_has_fnname && VG_(strIsMemberXA)(ignore_fns, fnname)) {
+         VERB(4, "ignored allocation from fn %s\n", fnname);
+         *top = n_ips;
+         *n_ips_sel = 0;
+      }
    }
-       
 
    if (!VG_(clo_show_below_main) && *n_ips_sel > 0 ) {
-      Int mbm = VG_(XT_offset_main_or_below_main)(ips, n_ips);
+      // Technically, it would be better to use the 'real' epoch that
+      // was used to capture ips/n_ips. However, this searches
+      // for a main or below_main function. It is technically possible
+      // but unlikely that main or below main fn is in a dlclose-d library,
+      // so current epoch is reasonable enough, even if not perfect.
+      // FIXME PW EPOCH: would be better to also use the real ips epoch here,
+      // once m_xtree.c massif output format properly supports epoch.
+      const DiEpoch cur_ep = VG_(current_DiEpoch)();
+      Int mbm = VG_(XT_offset_main_or_below_main)(cur_ep, ips, n_ips);
 
       if (mbm < *top) {
          // Special case: the first main (or below main) function is an
@@ -573,11 +585,17 @@ static ExeContext* make_ec(ThreadId tid, Bool exclude_first_entry)
                                     NULL/*array to dump SP values in*/,
                                     NULL/*array to dump FP values in*/,
                                     0/*first_ip_delta*/ );
-   if (exclude_first_entry && n_ips > 0) {
-      const HChar *fnname;
-      VERB(4, "removing top fn %s from stacktrace\n", 
-           VG_(get_fnname)(ips[0], &fnname) ? fnname : "???");
-      return VG_(make_ExeContext_from_StackTrace)(ips+1, n_ips-1);
+   if (exclude_first_entry) {
+      if (n_ips > 1) {
+         const HChar *fnname;
+         VERB(4, "removing top fn %s from stacktrace\n",
+              VG_(get_fnname)(VG_(current_DiEpoch)(), ips[0], &fnname)
+              ? fnname : "???");
+         return VG_(make_ExeContext_from_StackTrace)(ips+1, n_ips-1);
+      } else {
+         VERB(4, "null execontext as removing top fn with n_ips %d\n", n_ips);
+         return VG_(null_ExeContext) ();
+      }
    } else
       return VG_(make_ExeContext_from_StackTrace)(ips, n_ips);
 }

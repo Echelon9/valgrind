@@ -22,9 +22,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -92,6 +90,11 @@ typedef
       /* Place where parent was when this thread was created. */
       ExeContext* created_at;
       Bool        announced;
+      /* != 0 if SP fixup needed for unwind : it contains a delta SP value
+         to use when evh__mem_help_c(read|write)_X is called in the 
+         'middle of an instruction' (e.g. in a push)
+         after the SP was changed, but before the push has been completed. */
+      Word        first_sp_delta;
       /* Index for generating references in error messages. */
       Int         errmsg_index;
 

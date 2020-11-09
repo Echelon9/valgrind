@@ -22,9 +22,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -1724,7 +1722,7 @@ void ML_(read_debuginfo_dwarf1) (
 #  define FP_REG         11    // sometimes s390 has a frame pointer in r11
 #  define SP_REG         15    // stack is always r15
 #  define RA_REG_DEFAULT 14    // the return address is in r14
-#elif defined(VGP_mips32_linux)
+#elif defined(VGP_mips32_linux) || defined(VGP_nanomips_linux)
 #  define FP_REG         30
 #  define SP_REG         29
 #  define RA_REG_DEFAULT 31
@@ -1742,12 +1740,14 @@ void ML_(read_debuginfo_dwarf1) (
    might exist, for Neon/VFP-v3. */
 #if defined(VGP_ppc32_linux) || defined(VGP_ppc64be_linux) \
      || defined(VGP_ppc64le_linux) || defined(VGP_mips32_linux) \
-     || defined(VGP_mips64_linux)
+     || defined(VGP_nanomips_linux) || defined(VGP_mips64_linux)
 # define N_CFI_REGS 72
 #elif defined(VGP_arm_linux)
 # define N_CFI_REGS 320
 #elif defined(VGP_arm64_linux)
 # define N_CFI_REGS 128
+#elif defined(VGP_s390x_linux)
+# define N_CFI_REGS 66
 #else
 # define N_CFI_REGS 20
 #endif
@@ -1842,7 +1842,6 @@ enum dwarf_cfa_secondary_ops
            | RR_Reg       arg  -- is in register 'arg' 
            | RR_Expr      arg  -- is at * [[ arg ]]
            | RR_ValExpr   arg  -- is [[ arg ]]
-           | RR_Arch           -- dunno
 
    Note that RR_Expr is redundant since the same can be represented
    using RR_ValExpr with an explicit dereference (CfiExpr_Deref) at
@@ -1856,7 +1855,7 @@ enum dwarf_cfa_secondary_ops
 typedef
    struct {
       enum { RR_Undef, RR_Same, RR_CFAOff, RR_CFAValOff, 
-             RR_Reg, /*RR_Expr,*/ RR_ValExpr, RR_Arch } tag;
+             RR_Reg, /*RR_Expr,*/ RR_ValExpr } tag;
       /* meaning:  int offset for CFAoff/CFAValOff
                    reg # for Reg
                    expr index for Expr/ValExpr */
@@ -1872,12 +1871,11 @@ static void ppRegRule ( const XArray* exprs, const RegRule* rrule )
       case RR_Same:      VG_(printf)("s  "); break;
       case RR_CFAOff:    VG_(printf)("c%d ", rrule->arg); break;
       case RR_CFAValOff: VG_(printf)("v%d ", rrule->arg); break;
-      case RR_Reg:       VG_(printf)("r%d ", rrule->arg); break;
+      case RR_Reg:       VG_(printf)("dwReg%d ", rrule->arg); break;
       case RR_ValExpr:   VG_(printf)("ve{"); 
                          ML_(ppCfiExpr)( exprs, rrule->arg ); 
                          VG_(printf)("} "); 
                          break;
-      case RR_Arch:      VG_(printf)("a  "); break;
       default:           VG_(core_panic)("ppRegRule");
    }
 }
@@ -2022,6 +2020,10 @@ static Bool summarise_context(/*OUT*/Addr* base,
    *len = 0;
    VG_(bzero_inline)(si_m, sizeof(*si_m));
 
+   /*const*/ Bool is_s390x_linux = False;
+#  if defined(VGP_s390x_linux)
+   is_s390x_linux = True;
+#  endif
 
    /* Guard against obviously stupid settings of the reg-rule stack
       pointer. */
@@ -2054,7 +2056,7 @@ static Bool summarise_context(/*OUT*/Addr* base,
    if (ctxs->cfa_is_regoff && ctxs->cfa_reg == SP_REG) {
       si_m->cfa_off = ctxs->cfa_off;
 #     if defined(VGA_x86) || defined(VGA_amd64) || defined(VGA_s390x) \
-         || defined(VGA_mips32) || defined(VGA_mips64)
+         || defined(VGA_mips32) || defined(VGA_nanomips) || defined(VGA_mips64)
       si_m->cfa_how = CFIC_IA_SPREL;
 #     elif defined(VGA_arm)
       si_m->cfa_how = CFIC_ARM_R13REL;
@@ -2068,7 +2070,7 @@ static Bool summarise_context(/*OUT*/Addr* base,
    if (ctxs->cfa_is_regoff && ctxs->cfa_reg == FP_REG) {
       si_m->cfa_off = ctxs->cfa_off;
 #     if defined(VGA_x86) || defined(VGA_amd64) || defined(VGA_s390x) \
-         || defined(VGA_mips32) || defined(VGA_mips64)
+         || defined(VGA_mips32) || defined(VGA_nanomips) || defined(VGA_mips64)
       si_m->cfa_how = CFIC_IA_BPREL;
 #     elif defined(VGA_arm)
       si_m->cfa_how = CFIC_ARM_R12REL;
@@ -2098,6 +2100,8 @@ static Bool summarise_context(/*OUT*/Addr* base,
    }
 
 #  define SUMMARISE_HOW(_how, _off, _ctxreg)                  \
+   _how = CFIR_UNKNOWN; /* install safe initial values */     \
+   _off = 0;                                                  \
    switch (_ctxreg.tag) {                                     \
       case RR_Undef:                                          \
          _how = CFIR_UNKNOWN;   _off = 0; break;              \
@@ -2129,6 +2133,51 @@ static Bool summarise_context(/*OUT*/Addr* base,
             ML_(ppCfiExpr)(dst, conv);                        \
          break;                                               \
       }                                                       \
+      case RR_Reg:                                            \
+         if (is_s390x_linux) {                                \
+            if (_ctxreg.arg == 16/*dwarf reg 16 is %f0*/) {   \
+               _how = CFIR_S390X_F0;                          \
+               _off = 0;                                      \
+               break;                                         \
+            }                                                 \
+            else if (_ctxreg.arg == 17/*dwarf reg 17 is %f2*/) { \
+               _how = CFIR_S390X_F2;                          \
+               _off = 0;                                      \
+               break;                                         \
+            }                                                 \
+            else if (_ctxreg.arg == 18/*dwarf reg 18 is %f4*/) { \
+               _how = CFIR_S390X_F4;                          \
+               _off = 0;                                      \
+               break;                                         \
+            }                                                 \
+            else if (_ctxreg.arg == 19/*dwarf reg 19 is %f6*/) { \
+               _how = CFIR_S390X_F6;                          \
+               _off = 0;                                      \
+               break;                                         \
+            }                                                 \
+            else if (_ctxreg.arg == 20/*dwarf reg 20 is %f1*/) { \
+               _how = CFIR_S390X_F1;                          \
+               _off = 0;                                      \
+               break;                                         \
+            }                                                 \
+            else if (_ctxreg.arg == 21/*dwarf reg 21 is %f3*/) { \
+               _how = CFIR_S390X_F3;                          \
+               _off = 0;                                      \
+               break;                                         \
+            }                                                 \
+            else if (_ctxreg.arg == 22/*dwarf reg 22 is %f5*/) { \
+               _how = CFIR_S390X_F5;                          \
+               _off = 0;                                      \
+               break;                                         \
+            }                                                 \
+            else if (_ctxreg.arg == 23/*dwarf reg 23 is %f7*/) { \
+               _how = CFIR_S390X_F7;                          \
+               _off = 0;                                      \
+               break;                                         \
+            }                                                 \
+         }                                                    \
+         /* Currently we only support RR_Reg for s390. */     \
+         why = 2; goto failed;                                \
       default:                                                \
          why = 2; goto failed; /* otherwise give up */        \
    }
@@ -2276,6 +2325,22 @@ static Bool summarise_context(/*OUT*/Addr* base,
                                ctxs->reg[FP_REG] );
    SUMMARISE_HOW(si_m->sp_how, si_m->sp_off,
                                ctxs->reg[SP_REG] );
+   SUMMARISE_HOW(si_m->f0_how, si_m->f0_off,
+                               ctxs->reg[16/*%f0*/]);
+   SUMMARISE_HOW(si_m->f2_how, si_m->f2_off,
+                               ctxs->reg[17/*%f2*/]);
+   SUMMARISE_HOW(si_m->f4_how, si_m->f4_off,
+                               ctxs->reg[18/*%f4*/]);
+   SUMMARISE_HOW(si_m->f6_how, si_m->f6_off,
+                               ctxs->reg[19/*%f6*/]);
+   SUMMARISE_HOW(si_m->f1_how, si_m->f1_off,
+                               ctxs->reg[20/*%f1*/]);
+   SUMMARISE_HOW(si_m->f3_how, si_m->f3_off,
+                               ctxs->reg[21/*%f3*/]);
+   SUMMARISE_HOW(si_m->f5_how, si_m->f5_off,
+                               ctxs->reg[22/*%f5*/]);
+   SUMMARISE_HOW(si_m->f7_how, si_m->f7_off,
+                               ctxs->reg[23/*%f7*/]);
 
    /* change some defaults to consumable values */
    if (si_m->sp_how == CFIR_UNKNOWN)
@@ -2288,6 +2353,7 @@ static Bool summarise_context(/*OUT*/Addr* base,
       si_m->cfa_how = CFIC_IA_SPREL;
       si_m->cfa_off = 160;
    }
+
    if (si_m->ra_how == CFIR_UNKNOWN) {
       if (!debuginfo->cfsi_exprs)
          debuginfo->cfsi_exprs = VG_(newXA)( ML_(dinfo_zalloc),
@@ -2298,6 +2364,30 @@ static Bool summarise_context(/*OUT*/Addr* base,
       si_m->ra_off = ML_(CfiExpr_CfiReg)( debuginfo->cfsi_exprs,
                                           Creg_S390_LR);
    }
+
+   if (si_m->f0_how == CFIR_UNKNOWN)
+      si_m->f0_how = CFIR_SAME;
+
+   if (si_m->f1_how == CFIR_UNKNOWN)
+      si_m->f1_how = CFIR_SAME;
+
+   if (si_m->f2_how == CFIR_UNKNOWN)
+      si_m->f2_how = CFIR_SAME;
+
+   if (si_m->f3_how == CFIR_UNKNOWN)
+      si_m->f3_how = CFIR_SAME;
+
+   if (si_m->f4_how == CFIR_UNKNOWN)
+      si_m->f4_how = CFIR_SAME;
+
+   if (si_m->f5_how == CFIR_UNKNOWN)
+      si_m->f5_how = CFIR_SAME;
+
+   if (si_m->f6_how == CFIR_UNKNOWN)
+      si_m->f6_how = CFIR_SAME;
+
+   if (si_m->f7_how == CFIR_UNKNOWN)
+      si_m->f7_how = CFIR_SAME;
 
    /* knock out some obviously stupid cases */
    if (si_m->ra_how == CFIR_SAME)
@@ -2315,7 +2405,7 @@ static Bool summarise_context(/*OUT*/Addr* base,
 
    return True;
 
-#  elif defined(VGA_mips32) || defined(VGA_mips64)
+#  elif defined(VGA_mips32) || defined(VGA_mips64) || defined(VGA_nanomips)
 
    /* --- entire tail of this fn specialised for mips --- */
 
@@ -2442,7 +2532,8 @@ static Int copy_convert_CfiExpr_tree ( XArray*        dstxa,
             return ML_(CfiExpr_CfiReg)( dstxa, Creg_S390_FP );
          if (dwreg == srcuc->ra_reg)
             return ML_(CfiExpr_CfiReg)( dstxa, Creg_S390_IA );
-#        elif defined(VGA_mips32) || defined(VGA_mips64)
+#        elif defined(VGA_mips32) || defined(VGA_mips64) \
+           || defined(VGA_nanomips)
          if (dwreg == SP_REG)
             return ML_(CfiExpr_CfiReg)( dstxa, Creg_IA_SP );
          if (dwreg == FP_REG)
@@ -2851,6 +2942,12 @@ static Int dwarfexpr_to_dag ( const UnwindContext* ctx,
             PUSH( ML_(CfiExpr_Deref)( dst, ix ) );
             if (ddump_frames)
                VG_(printf)("DW_OP_deref");
+            break;
+
+         case DW_OP_drop:
+            POP( ix );
+            if (ddump_frames)
+               VG_(printf)("DW_OP_drop");
             break;
 
          default:

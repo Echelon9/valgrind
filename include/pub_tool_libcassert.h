@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -60,6 +58,20 @@ __attribute__ ((__noreturn__))
 extern void VG_(assert_fail) ( Bool isCore, const HChar* expr, const HChar* file, 
                                Int line, const HChar* fn, 
                                const HChar* format, ... );
+
+/* Show the state of various threads related information, such
+   as the guest stacktrace for each thread.
+   Mostly for debugging V.
+   The following activates optional output:
+     host_stacktrace : shows the host stacktrace.
+     stack_usage True means:
+                   shows how much of the valgrind stack was used.
+                   shows the client stack range
+     exited_thread_slots : show information for thread slots that were used
+        but the thread has now exited. */
+extern void VG_(show_sched_status) ( Bool host_stacktrace,
+                                     Bool stack_usage,
+                                     Bool exited_threads);
 
 #endif   // __PUB_TOOL_LIBCBASSERT_H
 

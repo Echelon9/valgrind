@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-   02110-1301, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 
@@ -60,7 +58,8 @@ typedef
       VexArchPPC64,
       VexArchS390X,
       VexArchMIPS32,
-      VexArchMIPS64
+      VexArchMIPS64,
+      VexArchNANOMIPS,
    }
    VexArch;
 
@@ -92,12 +91,16 @@ typedef
 /* amd64: baseline capability is SSE2, with cmpxchg8b but not
    cmpxchg16b. */
 #define VEX_HWCAPS_AMD64_SSE3   (1<<5)  /* SSE3 support */
+#define VEX_HWCAPS_AMD64_SSSE3  (1<<12) /* Supplemental SSE3 support */
 #define VEX_HWCAPS_AMD64_CX16   (1<<6)  /* cmpxchg16b support */
 #define VEX_HWCAPS_AMD64_LZCNT  (1<<7)  /* SSE4a LZCNT insn */
 #define VEX_HWCAPS_AMD64_AVX    (1<<8)  /* AVX instructions */
 #define VEX_HWCAPS_AMD64_RDTSCP (1<<9)  /* RDTSCP instruction */
 #define VEX_HWCAPS_AMD64_BMI    (1<<10) /* BMI1 instructions */
 #define VEX_HWCAPS_AMD64_AVX2   (1<<11) /* AVX2 instructions */
+#define VEX_HWCAPS_AMD64_RDRAND (1<<13) /* RDRAND instructions */
+#define VEX_HWCAPS_AMD64_F16C   (1<<14) /* F16C instructions */
+#define VEX_HWCAPS_AMD64_RDSEED (1<<15) /* RDSEED instructions */
 
 /* ppc32: baseline capability is integer only */
 #define VEX_HWCAPS_PPC32_F     (1<<8)  /* basic (non-optional) FP */
@@ -109,6 +112,8 @@ typedef
 #define VEX_HWCAPS_PPC32_DFP   (1<<17) /* Decimal Floating Point (DFP) -- e.g., dadd */
 #define VEX_HWCAPS_PPC32_ISA2_07   (1<<19) /* ISA 2.07 -- e.g., mtvsrd */
 #define VEX_HWCAPS_PPC32_ISA3_0    (1<<21) /* ISA 3.0  -- e.g., cnttzw */
+#define VEX_HWCAPS_PPC32_ISA3_1    (1<<22) /* ISA 3.1  -- e.g., brh */
+/* ISA 3.1 not supported in 32-bit mode */
 
 /* ppc64: baseline capability is integer and basic FP insns */
 #define VEX_HWCAPS_PPC64_V     (1<<13) /* Altivec (VMX) */
@@ -119,6 +124,7 @@ typedef
 #define VEX_HWCAPS_PPC64_DFP   (1<<18) /* Decimal Floating Point (DFP) -- e.g., dadd */
 #define VEX_HWCAPS_PPC64_ISA2_07   (1<<20) /* ISA 2.07 -- e.g., mtvsrd */
 #define VEX_HWCAPS_PPC64_ISA3_0    (1<<22) /* ISA 3.0  -- e.g., cnttzw */
+#define VEX_HWCAPS_PPC64_ISA3_1    (1<<23) /* ISA 3.1  -- e.g., brh */
 
 /* s390x: Hardware capability encoding
 
@@ -143,7 +149,10 @@ typedef
 #define VEX_S390X_MODEL_ZBC12    11
 #define VEX_S390X_MODEL_Z13      12
 #define VEX_S390X_MODEL_Z13S     13
-#define VEX_S390X_MODEL_UNKNOWN  14     /* always last in list */
+#define VEX_S390X_MODEL_Z14      14
+#define VEX_S390X_MODEL_Z14_ZR1  15
+#define VEX_S390X_MODEL_Z15      16
+#define VEX_S390X_MODEL_UNKNOWN  17     /* always last in list */
 #define VEX_S390X_MODEL_MASK     0x3F
 
 #define VEX_HWCAPS_S390X_LDISP (1<<6)   /* Long-displacement facility */
@@ -158,6 +167,11 @@ typedef
 #define VEX_HWCAPS_S390X_FPEXT (1<<15)  /* Floating point extension facility */
 #define VEX_HWCAPS_S390X_LSC   (1<<16)  /* Conditional load/store facility */
 #define VEX_HWCAPS_S390X_PFPO  (1<<17)  /* Perform floating point ops facility */
+#define VEX_HWCAPS_S390X_VX    (1<<18)  /* Vector facility */
+#define VEX_HWCAPS_S390X_MSA5  (1<<19)  /* message security assistance facility */
+#define VEX_HWCAPS_S390X_MI2   (1<<20)  /* miscellaneous-instruction-extensions facility 2 */
+#define VEX_HWCAPS_S390X_LSC2  (1<<21)  /* Conditional load/store facility2 */
+
 
 /* Special value representing all available s390x hwcaps */
 #define VEX_HWCAPS_S390X_ALL   (VEX_HWCAPS_S390X_LDISP | \
@@ -171,7 +185,11 @@ typedef
                                 VEX_HWCAPS_S390X_LSC   | \
                                 VEX_HWCAPS_S390X_ETF3  | \
                                 VEX_HWCAPS_S390X_ETF2  | \
-                                VEX_HWCAPS_S390X_PFPO)
+                                VEX_HWCAPS_S390X_PFPO  | \
+                                VEX_HWCAPS_S390X_VX    | \
+                                VEX_HWCAPS_S390X_MSA5  | \
+                                VEX_HWCAPS_S390X_MI2   | \
+                                VEX_HWCAPS_S390X_LSC2)
 
 #define VEX_HWCAPS_S390X(x)  ((x) & ~VEX_S390X_MODEL_MASK)
 #define VEX_S390X_MODEL(x)   ((x) &  VEX_S390X_MODEL_MASK)
@@ -220,6 +238,7 @@ typedef
  */
 #define VEX_PRID_IMP_34K                0x9500
 #define VEX_PRID_IMP_74K                0x9700
+#define VEX_PRID_IMP_P5600              0xa800
 
 /*
  * Instead of Company Options values, bits 31:24 will be packed with
@@ -246,6 +265,13 @@ typedef
 /* Check if the processor supports MIPS32R2. */
 #define VEX_MIPS_CPU_HAS_MIPS32R2(x) (VEX_MIPS_EX_INFO(x) & \
                                       VEX_MIPS_CPU_ISA_M32R2)
+/* Check if the processor supports MIPS64R2. */
+#define VEX_MIPS_CPU_HAS_MIPS64R2(x) (VEX_MIPS_EX_INFO(x) & \
+                                      VEX_MIPS_CPU_ISA_M64R2)
+/* Check if the processor supports MIPSR6. */
+#define VEX_MIPS_CPU_HAS_MIPSR6(x) (VEX_MIPS_EX_INFO(x) & \
+                                    (VEX_MIPS_CPU_ISA_M32R6 | \
+                                    VEX_MIPS_CPU_ISA_M64R6))
 /* Check if the processor supports DSP ASE Rev 2. */
 #define VEX_MIPS_PROC_DSP2(x) ((VEX_MIPS_COMP_ID(x) == VEX_PRID_COMP_MIPS) && \
                                (VEX_MIPS_PROC_ID(x) == VEX_PRID_IMP_74K))
@@ -253,6 +279,11 @@ typedef
 #define VEX_MIPS_PROC_DSP(x)  (VEX_MIPS_PROC_DSP2(x) || \
                                ((VEX_MIPS_COMP_ID(x) == VEX_PRID_COMP_MIPS) && \
                                (VEX_MIPS_PROC_ID(x) == VEX_PRID_IMP_34K)))
+
+/* Check if the processor supports MIPS MSA (SIMD)*/
+#define VEX_MIPS_PROC_MSA(x) ((VEX_MIPS_COMP_ID(x) == VEX_PRID_COMP_MIPS) && \
+                              (VEX_MIPS_PROC_ID(x) == VEX_PRID_IMP_P5600) && \
+                              (VEX_MIPS_HOST_FP_MODE(x)))
 
 /* These return statically allocated strings. */
 
@@ -415,8 +446,8 @@ typedef
          itself?  True => descriptor, False => code. */
       Bool host_ppc_calls_use_fndescrs;
 
-      /* ??? Description ??? */
-      Bool guest_mips_fp_mode64;
+      /* MIPS32/MIPS64 GUESTS only: emulated FPU mode. */
+      UInt guest_mips_fp_mode;
    }
    VexAbiInfo;
 
@@ -488,15 +519,17 @@ typedef
          BBs longer than this are split up.  Default=60 (guest
          insns). */
       Int guest_max_insns;
-      /* How aggressive should front ends be in following
-         unconditional branches to known destinations?  Default=10,
-         meaning that if a block contains less than 10 guest insns so
-         far, the front end(s) will attempt to chase into its
-         successor. A setting of zero disables chasing.  */
-      Int guest_chase_thresh;
-      /* EXPERIMENTAL: chase across conditional branches?  Not all
-         front ends honour this.  Default: NO. */
-      Bool guest_chase_cond;
+      /* Should Vex try to construct superblocks, by chasing unconditional
+         branches/calls to known destinations, and performing AND/OR idiom
+         recognition?  It is recommended to set this to True as that possibly
+         improves performance a bit, and also is important for avoiding certain
+         kinds of false positives in Memcheck.  Default=True.  */
+      Bool guest_chase;
+      /* Register allocator version. Allowed values are:
+         - '2': previous, good and slow implementation.
+         - '3': current, faster implementation; perhaps producing slightly worse
+                spilling decisions. */
+      UInt regalloc_version;
    }
    VexControl;
 
@@ -625,6 +658,12 @@ typedef
       /* Stats only: the number of guest insns included in the
          translation.  It may be zero (!). */
       UInt n_guest_instrs;
+      /* Stats only: the number of unconditional branches incorporated into the
+         trace. */
+      UShort n_uncond_in_trace;
+      /* Stats only: the number of conditional branches incorporated into the
+         trace. */
+      UShort n_cond_in_trace;
    }
    VexTranslateResult;
 

@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -85,6 +83,14 @@ typedef
          struct {
             ULong r_fp;
             ULong r_lr;
+            ULong r_f0;
+            ULong r_f1;
+            ULong r_f2;
+            ULong r_f3;
+            ULong r_f4;
+            ULong r_f5;
+            ULong r_f6;
+            ULong r_f7;
          } S390X;
          struct {
             UInt r30;  /* Stack frame pointer or subroutine variable  */

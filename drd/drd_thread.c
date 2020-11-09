@@ -1,7 +1,7 @@
 /*
   This file is part of drd, a thread error detector.
 
-  Copyright (C) 2006-2017 Bart Van Assche <bvanassche@acm.org>.
+  Copyright (C) 2006-2020 Bart Van Assche <bvanassche@acm.org>.
 
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License as
@@ -14,9 +14,7 @@
   General Public License for more details.
 
   You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-  02111-1307, USA.
+  along with this program; if not, see <http://www.gnu.org/licenses/>.
 
   The GNU General Public License is contained in the file COPYING.
 */
@@ -570,13 +568,13 @@ void DRD_(thread_finished)(const DrdThreadId tid)
 }
 
 /** Called just after fork() in the child process. */
-void DRD_(drd_thread_atfork_child)(const DrdThreadId tid)
+void DRD_(drd_thread_atfork_child)(const ThreadId tid)
 {
    unsigned i;
 
    for (i = 1; i < DRD_N_THREADS; i++)
    {
-      if (i == tid)
+      if (DRD_(g_threadinfo)[i].vg_threadid == tid)
 	 continue;
       if (DRD_(IsValidDrdThreadId(i)))
 	 DRD_(thread_delete)(i, True);

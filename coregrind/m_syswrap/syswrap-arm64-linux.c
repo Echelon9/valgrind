@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -265,7 +263,7 @@ DECL_TEMPLATE(arm64_linux, sys_rt_sigreturn);
 //ZZ DECL_TEMPLATE(arm_linux, sys_sigsuspend);
 //ZZ DECL_TEMPLATE(arm_linux, sys_set_tls);
 //ZZ DECL_TEMPLATE(arm_linux, sys_cacheflush);
-//ZZ DECL_TEMPLATE(arm_linux, sys_ptrace);
+DECL_TEMPLATE(arm64_linux, sys_ptrace);
 
 //ZZ PRE(sys_mmap2)
 //ZZ {
@@ -459,137 +457,74 @@ PRE(sys_rt_sigreturn)
 //ZZ                               "PRE(sys_cacheflush)" );
 //ZZ    SET_STATUS_Success(0);
 //ZZ }
-//ZZ 
-//ZZ // ARG3 is only used for pointers into the traced process's address
-//ZZ // space and for offsets into the traced process's struct
-//ZZ // user_regs_struct. It is never a pointer into this process's memory
-//ZZ // space, and we should therefore not check anything it points to.
-//ZZ PRE(sys_ptrace)
-//ZZ {
-//ZZ    PRINT("sys_ptrace ( %ld, %ld, %#lx, %#lx )", ARG1,ARG2,ARG3,ARG4);
-//ZZ    PRE_REG_READ4(int, "ptrace", 
-//ZZ                  long, request, long, pid, long, addr, long, data);
-//ZZ    switch (ARG1) {
-//ZZ    case VKI_PTRACE_PEEKTEXT:
-//ZZ    case VKI_PTRACE_PEEKDATA:
-//ZZ    case VKI_PTRACE_PEEKUSR:
-//ZZ       PRE_MEM_WRITE( "ptrace(peek)", ARG4, 
-//ZZ 		     sizeof (long));
-//ZZ       break;
-//ZZ    case VKI_PTRACE_GETREGS:
-//ZZ       PRE_MEM_WRITE( "ptrace(getregs)", ARG4, 
-//ZZ 		     sizeof (struct vki_user_regs_struct));
-//ZZ       break;
-//ZZ    case VKI_PTRACE_GETFPREGS:
-//ZZ       PRE_MEM_WRITE( "ptrace(getfpregs)", ARG4, 
-//ZZ 		     sizeof (struct vki_user_fp));
-//ZZ       break;
-//ZZ    case VKI_PTRACE_GETWMMXREGS:
-//ZZ       PRE_MEM_WRITE( "ptrace(getwmmxregs)", ARG4, 
-//ZZ 		     VKI_IWMMXT_SIZE);
-//ZZ       break;
-//ZZ    case VKI_PTRACE_GETCRUNCHREGS:
-//ZZ       PRE_MEM_WRITE( "ptrace(getcrunchregs)", ARG4, 
-//ZZ 		     VKI_CRUNCH_SIZE);
-//ZZ       break;
-//ZZ    case VKI_PTRACE_GETVFPREGS:
-//ZZ       PRE_MEM_WRITE( "ptrace(getvfpregs)", ARG4, 
-//ZZ                      sizeof (struct vki_user_vfp) );
-//ZZ       break;
-//ZZ    case VKI_PTRACE_GETHBPREGS:
-//ZZ       PRE_MEM_WRITE( "ptrace(gethbpregs)", ARG4, 
-//ZZ                      sizeof (unsigned long) );
-//ZZ       break;
-//ZZ    case VKI_PTRACE_SETREGS:
-//ZZ       PRE_MEM_READ( "ptrace(setregs)", ARG4, 
-//ZZ 		     sizeof (struct vki_user_regs_struct));
-//ZZ       break;
-//ZZ    case VKI_PTRACE_SETFPREGS:
-//ZZ       PRE_MEM_READ( "ptrace(setfpregs)", ARG4, 
-//ZZ 		     sizeof (struct vki_user_fp));
-//ZZ       break;
-//ZZ    case VKI_PTRACE_SETWMMXREGS:
-//ZZ       PRE_MEM_READ( "ptrace(setwmmxregs)", ARG4, 
-//ZZ 		     VKI_IWMMXT_SIZE);
-//ZZ       break;
-//ZZ    case VKI_PTRACE_SETCRUNCHREGS:
-//ZZ       PRE_MEM_READ( "ptrace(setcrunchregs)", ARG4, 
-//ZZ 		     VKI_CRUNCH_SIZE);
-//ZZ       break;
-//ZZ    case VKI_PTRACE_SETVFPREGS:
-//ZZ       PRE_MEM_READ( "ptrace(setvfpregs)", ARG4, 
-//ZZ                      sizeof (struct vki_user_vfp));
-//ZZ       break;
-//ZZ    case VKI_PTRACE_SETHBPREGS:
-//ZZ       PRE_MEM_READ( "ptrace(sethbpregs)", ARG4, sizeof(unsigned long));
-//ZZ       break;
-//ZZ    case VKI_PTRACE_GET_THREAD_AREA:
-//ZZ       PRE_MEM_WRITE( "ptrace(get_thread_area)", ARG4, sizeof(unsigned long));
-//ZZ       break;
-//ZZ    case VKI_PTRACE_GETEVENTMSG:
-//ZZ       PRE_MEM_WRITE( "ptrace(geteventmsg)", ARG4, sizeof(unsigned long));
-//ZZ       break;
-//ZZ    case VKI_PTRACE_GETSIGINFO:
-//ZZ       PRE_MEM_WRITE( "ptrace(getsiginfo)", ARG4, sizeof(vki_siginfo_t));
-//ZZ       break;
-//ZZ    case VKI_PTRACE_SETSIGINFO:
-//ZZ       PRE_MEM_READ( "ptrace(setsiginfo)", ARG4, sizeof(vki_siginfo_t));
-//ZZ       break;
-//ZZ    case VKI_PTRACE_GETREGSET:
-//ZZ       ML_(linux_PRE_getregset)(tid, ARG3, ARG4);
-//ZZ       break;
-//ZZ    case VKI_PTRACE_SETREGSET:
-//ZZ       ML_(linux_PRE_setregset)(tid, ARG3, ARG4);
-//ZZ       break;
-//ZZ    default:
-//ZZ       break;
-//ZZ    }
-//ZZ }
-//ZZ 
-//ZZ POST(sys_ptrace)
-//ZZ {
-//ZZ    switch (ARG1) {
-//ZZ    case VKI_PTRACE_PEEKTEXT:
-//ZZ    case VKI_PTRACE_PEEKDATA:
-//ZZ    case VKI_PTRACE_PEEKUSR:
-//ZZ       POST_MEM_WRITE( ARG4, sizeof (long));
-//ZZ       break;
-//ZZ    case VKI_PTRACE_GETREGS:
-//ZZ       POST_MEM_WRITE( ARG4, sizeof (struct vki_user_regs_struct));
-//ZZ       break;
-//ZZ    case VKI_PTRACE_GETFPREGS:
-//ZZ       POST_MEM_WRITE( ARG4, sizeof (struct vki_user_fp));
-//ZZ       break;
-//ZZ    case VKI_PTRACE_GETWMMXREGS:
-//ZZ       POST_MEM_WRITE( ARG4, VKI_IWMMXT_SIZE);
-//ZZ       break;
-//ZZ    case VKI_PTRACE_GETCRUNCHREGS:
-//ZZ       POST_MEM_WRITE( ARG4, VKI_CRUNCH_SIZE);
-//ZZ       break;
-//ZZ    case VKI_PTRACE_GETVFPREGS:
-//ZZ       POST_MEM_WRITE( ARG4, sizeof(struct vki_user_vfp));
-//ZZ       break;
-//ZZ    case VKI_PTRACE_GET_THREAD_AREA:
-//ZZ    case VKI_PTRACE_GETHBPREGS:
-//ZZ    case VKI_PTRACE_GETEVENTMSG:
-//ZZ       POST_MEM_WRITE( ARG4, sizeof(unsigned long));
-//ZZ       break;
-//ZZ    case VKI_PTRACE_GETSIGINFO:
-//ZZ       /* XXX: This is a simplification. Different parts of the
-//ZZ        * siginfo_t are valid depending on the type of signal.
-//ZZ        */
-//ZZ       POST_MEM_WRITE( ARG4, sizeof(vki_siginfo_t));
-//ZZ       break;
-//ZZ    case VKI_PTRACE_GETREGSET:
-//ZZ       ML_(linux_POST_getregset)(tid, ARG3, ARG4);
-//ZZ       break;
-//ZZ    default:
-//ZZ       break;
-//ZZ    }
-//ZZ }
-//ZZ 
-//ZZ #undef PRE
-//ZZ #undef POST
+
+// ARG3 is only used for pointers into the traced process's address
+// space and for offsets into the traced process's struct
+// user_regs_struct. It is never a pointer into this process's memory
+// space, and we should therefore not check anything it points to.
+PRE(sys_ptrace)
+{
+   PRINT("sys_ptrace ( %ld, %ld, %#lx, %#lx )",
+         (Word)ARG1,(Word)ARG2,ARG3,ARG4);
+   PRE_REG_READ4(int, "ptrace",
+                 long, request, long, pid, long, addr, long, data);
+   switch (ARG1) {
+   case VKI_PTRACE_PEEKTEXT:
+   case VKI_PTRACE_PEEKDATA:
+   case VKI_PTRACE_PEEKUSR:
+      PRE_MEM_WRITE( "ptrace(peek)", ARG4,
+		     sizeof (long));
+      break;
+   case VKI_PTRACE_GETEVENTMSG:
+      PRE_MEM_WRITE( "ptrace(geteventmsg)", ARG4, sizeof(unsigned long));
+      break;
+   case VKI_PTRACE_GETSIGINFO:
+      PRE_MEM_WRITE( "ptrace(getsiginfo)", ARG4, sizeof(vki_siginfo_t));
+      break;
+   case VKI_PTRACE_SETSIGINFO:
+      PRE_MEM_READ( "ptrace(setsiginfo)", ARG4, sizeof(vki_siginfo_t));
+      break;
+   case VKI_PTRACE_GETREGSET:
+      ML_(linux_PRE_getregset)(tid, ARG3, ARG4);
+      break;
+   case VKI_PTRACE_SETREGSET:
+      ML_(linux_PRE_setregset)(tid, ARG3, ARG4);
+      break;
+   default:
+      break;
+   }
+}
+
+POST(sys_ptrace)
+{
+   switch (ARG1) {
+   case VKI_PTRACE_TRACEME:
+         ML_(linux_POST_traceme)(tid);
+         break;
+   case VKI_PTRACE_PEEKTEXT:
+   case VKI_PTRACE_PEEKDATA:
+   case VKI_PTRACE_PEEKUSR:
+      POST_MEM_WRITE( ARG4, sizeof (long));
+      break;
+   case VKI_PTRACE_GETEVENTMSG:
+      POST_MEM_WRITE( ARG4, sizeof(unsigned long));
+      break;
+   case VKI_PTRACE_GETSIGINFO:
+      /* XXX: This is a simplification. Different parts of the
+       * siginfo_t are valid depending on the type of signal.
+       */
+      POST_MEM_WRITE( ARG4, sizeof(vki_siginfo_t));
+      break;
+   case VKI_PTRACE_GETREGSET:
+      ML_(linux_POST_getregset)(tid, ARG3, ARG4);
+      break;
+   default:
+      break;
+   }
+}
+
+#undef PRE
+#undef POST
 
 /* ---------------------------------------------------------------------
    The arm64/Linux syscall table
@@ -730,7 +665,7 @@ static SyscallTableEntry syscall_main_table[] = {
    LINXY(__NR_clock_getres,      sys_clock_getres),      // 114
    LINXY(__NR_clock_nanosleep,   sys_clock_nanosleep),   // 115
    LINXY(__NR_syslog,            sys_syslog),            // 116
-   //   (__NR_ptrace,            sys_ptrace),            // 117
+   PLAXY(__NR_ptrace,            sys_ptrace),            // 117
    LINXY(__NR_sched_setparam,    sys_sched_setparam),    // 118
    LINX_(__NR_sched_setscheduler,sys_sched_setscheduler),// 119
    LINX_(__NR_sched_getscheduler,sys_sched_getscheduler),// 120
@@ -865,29 +800,33 @@ static SyscallTableEntry syscall_main_table[] = {
    LINXY(__NR_open_by_handle_at, sys_open_by_handle_at), // 265
    LINXY(__NR_clock_adjtime,     sys_clock_adjtime),     // 266
    LINX_(__NR_syncfs,            sys_syncfs),            // 267
-   //   (__NR_setns,             sys_ni_syscall),        // 268
+   LINX_(__NR_setns,             sys_setns),             // 268
    LINXY(__NR_sendmmsg,          sys_sendmmsg),          // 269
    LINXY(__NR_process_vm_readv,  sys_process_vm_readv),  // 270
    LINX_(__NR_process_vm_writev, sys_process_vm_writev), // 271
    LINX_(__NR_kcmp,              sys_kcmp),              // 272
-   //   (__NR_finit_module,      sys_ni_syscall),        // 273
-   //   (__NR_sched_setattr,     sys_ni_syscall),        // 274
-   //   (__NR_sched_getattr,     sys_ni_syscall),        // 275
+   LINX_(__NR_finit_module,      sys_finit_module),      // 273
+   LINX_(__NR_sched_setattr,     sys_sched_setattr),     // 274
+   LINXY(__NR_sched_getattr,     sys_sched_getattr),     // 275
    LINX_(__NR_renameat2,         sys_renameat2),         // 276
    //   (__NR_seccomp,           sys_ni_syscall),        // 277
    LINXY(__NR_getrandom,         sys_getrandom),         // 278
    LINXY(__NR_memfd_create,      sys_memfd_create),      // 279
-   //   (__NR_bpf,               sys_ni_syscall)         // 280
-   //   (__NR_execveat,          sys_ni_syscall),        // 281
+   LINXY(__NR_bpf,               sys_bpf),               // 280
+   LINX_(__NR_execveat,          sys_execveat),          // 281
    //   (__NR_userfaultfd,       sys_ni_syscall),        // 282
-   //   (__NR_membarrier,        sys_ni_syscall),        // 283
+   LINX_(__NR_membarrier,        sys_membarrier),        // 283
    //   (__NR_mlock2,            sys_ni_syscall),        // 284
-   //   (__NR_copy_file_range,   sys_ni_syscall),        // 285
-   //   (__NR_preadv2,           sys_ni_syscall),        // 286
-   //   (__NR_pwritev2,          sys_ni_syscall),        // 287
+   LINX_(__NR_copy_file_range,   sys_copy_file_range),   // 285
+   LINXY(__NR_preadv2,           sys_preadv2),           // 286
+   LINX_(__NR_pwritev2,          sys_pwritev2),          // 287
    //   (__NR_pkey_mprotect,     sys_ni_syscall),        // 288
    //   (__NR_pkey_alloc,        sys_ni_syscall),        // 289
    //   (__NR_pkey_free,         sys_ni_syscall),        // 290
+
+   LINXY(__NR_statx,             sys_statx),             // 397
+
+   LINX_(__NR_faccessat2,        sys_faccessat2),        // 439
 };
 
 

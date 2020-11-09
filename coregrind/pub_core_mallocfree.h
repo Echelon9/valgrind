@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -66,6 +64,8 @@ typedef Int ArenaId;
 #if   defined(VGP_x86_linux)    || \
       defined(VGP_arm_linux)    || \
       defined(VGP_mips32_linux) || \
+      (defined(VGP_mips64_linux) && defined(VGABI_N32)) || \
+      defined(VGP_nanomips_linux) || \
       defined(VGP_x86_solaris)
 #  define VG_MIN_MALLOC_SZB        8
 // Nb: We always use 16 bytes for Darwin, even on 32-bits, so it can be used
@@ -77,7 +77,7 @@ typedef Int ArenaId;
       defined(VGP_ppc64be_linux)  || \
       defined(VGP_ppc64le_linux)  || \
       defined(VGP_s390x_linux)    || \
-      defined(VGP_mips64_linux)   || \
+      (defined(VGP_mips64_linux) && !defined(VGABI_N32)) || \
       defined(VGP_x86_darwin)     || \
       defined(VGP_amd64_darwin)   || \
       defined(VGP_arm64_linux)    || \

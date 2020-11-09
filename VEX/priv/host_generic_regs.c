@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-   02110-1301, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 
@@ -58,11 +56,10 @@ void ppHRegClass ( HRegClass hrc )
 }
 
 /* Generic printing for registers. */
-void ppHReg ( HReg r ) 
+UInt ppHReg ( HReg r )
 {
    if (hregIsInvalid(r)) {
-      vex_printf("HReg_INVALID");
-      return;
+      return vex_printf("HReg_INVALID");
    }
    const Bool   isV     = hregIsVirtual(r);
    const HChar* maybe_v = isV ? "v" : "";
@@ -71,12 +68,12 @@ void ppHReg ( HReg r )
       always zero for virtual registers, so that's pointless -- hence
       show the index number instead. */
    switch (hregClass(r)) {
-      case HRcInt32:   vex_printf("%%%sr%u", maybe_v, regNN); return;
-      case HRcInt64:   vex_printf("%%%sR%u", maybe_v, regNN); return;
-      case HRcFlt32:   vex_printf("%%%sF%u", maybe_v, regNN); return;
-      case HRcFlt64:   vex_printf("%%%sD%u", maybe_v, regNN); return;
-      case HRcVec64:   vex_printf("%%%sv%u", maybe_v, regNN); return;
-      case HRcVec128:  vex_printf("%%%sV%u", maybe_v, regNN); return;
+      case HRcInt32:   return vex_printf("%%%sr%u", maybe_v, regNN);
+      case HRcInt64:   return vex_printf("%%%sR%u", maybe_v, regNN);
+      case HRcFlt32:   return vex_printf("%%%sF%u", maybe_v, regNN);
+      case HRcFlt64:   return vex_printf("%%%sD%u", maybe_v, regNN);
+      case HRcVec64:   return vex_printf("%%%sv%u", maybe_v, regNN);
+      case HRcVec128:  return vex_printf("%%%sV%u", maybe_v, regNN);
       default: vpanic("ppHReg");
    }
 }
@@ -93,6 +90,11 @@ void RRegUniverse__init ( /*OUT*/RRegUniverse* univ )
    univ->allocable = 0;
    for (UInt i = 0; i < N_RREGUNIVERSE_REGS; i++) {
       univ->regs[i] = INVALID_HREG;
+   }
+
+   for (UInt i = 0; i <= HrcLAST; i++) {
+      univ->allocable_start[i] = N_RREGUNIVERSE_REGS;
+      univ->allocable_end[i]   = N_RREGUNIVERSE_REGS;
    }
 }
 
@@ -113,6 +115,33 @@ void RRegUniverse__check_is_sane ( const RRegUniverse* univ )
       HReg reg = univ->regs[i];
       vassert(hregIsInvalid(reg));
    }
+
+   /* Determine register classes used and if they form contiguous range. */
+   Bool regclass_used[HrcLAST + 1];
+   for (UInt i = 0; i <= HrcLAST; i++) {
+      regclass_used[i] = False;
+   }
+
+   for (UInt i = 0; i < univ->allocable; i++) {
+      HReg reg = univ->regs[i];
+      HRegClass regclass = hregClass(reg);
+      if (!regclass_used[regclass]) {
+         regclass_used[regclass] = True;
+      }
+   }
+
+   UInt regs_visited = 0;
+   for (UInt i = 0; i <= HrcLAST; i++) {
+      if (regclass_used[i]) {
+         for (UInt j = univ->allocable_start[i];
+              j <= univ->allocable_end[i]; j++) {
+            vassert(hregClass(univ->regs[j]) == i);
+            regs_visited += 1;
+         }
+      }
+   }
+
+   vassert(regs_visited == univ->allocable);
 }
 
 
@@ -152,6 +181,9 @@ void ppHRegUsage ( const RRegUniverse* univ, HRegUsage* tab )
       vex_printf("   %s ", str);
       ppHReg(tab->vRegs[i]);
       vex_printf("\n");
+   }
+   if (tab->isRegRegMove) {
+      vex_printf("   (is a reg-reg move)\n");
    }
    vex_printf("}\n");
 }

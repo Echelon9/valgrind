@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-   02110-1301, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 
@@ -47,28 +45,27 @@
 */
 
 #define ST_IN static inline
-ST_IN HReg hregAMD64_RSI   ( void ) { return mkHReg(False, HRcInt64,   6,  0); }
-ST_IN HReg hregAMD64_RDI   ( void ) { return mkHReg(False, HRcInt64,   7,  1); }
-ST_IN HReg hregAMD64_R8    ( void ) { return mkHReg(False, HRcInt64,   8,  2); }
-ST_IN HReg hregAMD64_R9    ( void ) { return mkHReg(False, HRcInt64,   9,  3); }
-ST_IN HReg hregAMD64_R12   ( void ) { return mkHReg(False, HRcInt64,  12,  4); }
-ST_IN HReg hregAMD64_R13   ( void ) { return mkHReg(False, HRcInt64,  13,  5); }
-ST_IN HReg hregAMD64_R14   ( void ) { return mkHReg(False, HRcInt64,  14,  6); }
-ST_IN HReg hregAMD64_R15   ( void ) { return mkHReg(False, HRcInt64,  15,  7); }
-ST_IN HReg hregAMD64_RBX   ( void ) { return mkHReg(False, HRcInt64,   3,  8); }
+ST_IN HReg hregAMD64_R12   ( void ) { return mkHReg(False, HRcInt64,  12,  0); }
+ST_IN HReg hregAMD64_R13   ( void ) { return mkHReg(False, HRcInt64,  13,  1); }
+ST_IN HReg hregAMD64_R14   ( void ) { return mkHReg(False, HRcInt64,  14,  2); }
+ST_IN HReg hregAMD64_R15   ( void ) { return mkHReg(False, HRcInt64,  15,  3); }
+ST_IN HReg hregAMD64_RBX   ( void ) { return mkHReg(False, HRcInt64,   3,  4); }
+ST_IN HReg hregAMD64_RSI   ( void ) { return mkHReg(False, HRcInt64,   6,  5); }
+ST_IN HReg hregAMD64_RDI   ( void ) { return mkHReg(False, HRcInt64,   7,  6); }
+ST_IN HReg hregAMD64_R8    ( void ) { return mkHReg(False, HRcInt64,   8,  7); }
+ST_IN HReg hregAMD64_R9    ( void ) { return mkHReg(False, HRcInt64,   9,  8); }
+ST_IN HReg hregAMD64_R10   ( void ) { return mkHReg(False, HRcInt64,  10,  9); }
 
-ST_IN HReg hregAMD64_XMM3  ( void ) { return mkHReg(False, HRcVec128,  3,  9); }
-ST_IN HReg hregAMD64_XMM4  ( void ) { return mkHReg(False, HRcVec128,  4, 10); }
-ST_IN HReg hregAMD64_XMM5  ( void ) { return mkHReg(False, HRcVec128,  5, 11); }
-ST_IN HReg hregAMD64_XMM6  ( void ) { return mkHReg(False, HRcVec128,  6, 12); }
-ST_IN HReg hregAMD64_XMM7  ( void ) { return mkHReg(False, HRcVec128,  7, 13); }
-ST_IN HReg hregAMD64_XMM8  ( void ) { return mkHReg(False, HRcVec128,  8, 14); }
-ST_IN HReg hregAMD64_XMM9  ( void ) { return mkHReg(False, HRcVec128,  9, 15); }
-ST_IN HReg hregAMD64_XMM10 ( void ) { return mkHReg(False, HRcVec128, 10, 16); }
-ST_IN HReg hregAMD64_XMM11 ( void ) { return mkHReg(False, HRcVec128, 11, 17); }
-ST_IN HReg hregAMD64_XMM12 ( void ) { return mkHReg(False, HRcVec128, 12, 18); }
-
-ST_IN HReg hregAMD64_R10   ( void ) { return mkHReg(False, HRcInt64,  10, 19); }
+ST_IN HReg hregAMD64_XMM3  ( void ) { return mkHReg(False, HRcVec128,  3, 10); }
+ST_IN HReg hregAMD64_XMM4  ( void ) { return mkHReg(False, HRcVec128,  4, 11); }
+ST_IN HReg hregAMD64_XMM5  ( void ) { return mkHReg(False, HRcVec128,  5, 12); }
+ST_IN HReg hregAMD64_XMM6  ( void ) { return mkHReg(False, HRcVec128,  6, 13); }
+ST_IN HReg hregAMD64_XMM7  ( void ) { return mkHReg(False, HRcVec128,  7, 14); }
+ST_IN HReg hregAMD64_XMM8  ( void ) { return mkHReg(False, HRcVec128,  8, 15); }
+ST_IN HReg hregAMD64_XMM9  ( void ) { return mkHReg(False, HRcVec128,  9, 16); }
+ST_IN HReg hregAMD64_XMM10 ( void ) { return mkHReg(False, HRcVec128, 10, 17); }
+ST_IN HReg hregAMD64_XMM11 ( void ) { return mkHReg(False, HRcVec128, 11, 18); }
+ST_IN HReg hregAMD64_XMM12 ( void ) { return mkHReg(False, HRcVec128, 12, 19); }
 
 ST_IN HReg hregAMD64_RAX   ( void ) { return mkHReg(False, HRcInt64,   0, 20); }
 ST_IN HReg hregAMD64_RCX   ( void ) { return mkHReg(False, HRcInt64,   1, 21); }
@@ -81,7 +78,7 @@ ST_IN HReg hregAMD64_XMM0  ( void ) { return mkHReg(False, HRcVec128,  0, 26); }
 ST_IN HReg hregAMD64_XMM1  ( void ) { return mkHReg(False, HRcVec128,  1, 27); }
 #undef ST_IN
 
-extern void ppHRegAMD64 ( HReg );
+extern UInt ppHRegAMD64 ( HReg );
 
 
 /* --------- Condition codes, AMD encoding. --------- */
@@ -317,6 +314,9 @@ typedef
       Asse_CMPEQF, Asse_CMPLTF, Asse_CMPLEF, Asse_CMPUNF,
       /* Floating point unary */
       Asse_RCPF, Asse_RSQRTF, Asse_SQRTF, 
+      /* Floating point conversion */
+      Asse_I2F, // i32-signed to float conversion, aka cvtdq2ps in vec form
+      Asse_F2I, // float to i32-signed conversion, aka cvtps2dq in vec form
       /* Bitwise */
       Asse_AND, Asse_OR, Asse_XOR, Asse_ANDN,
       Asse_ADD8, Asse_ADD16, Asse_ADD32, Asse_ADD64,
@@ -335,12 +335,18 @@ typedef
       Asse_MIN8U,
       Asse_CMPEQ8, Asse_CMPEQ16, Asse_CMPEQ32,
       Asse_CMPGT8S, Asse_CMPGT16S, Asse_CMPGT32S,
-      Asse_SHL16, Asse_SHL32, Asse_SHL64,
-      Asse_SHR16, Asse_SHR32, Asse_SHR64,
+      Asse_SHL16, Asse_SHL32, Asse_SHL64, Asse_SHL128,
+      Asse_SHR16, Asse_SHR32, Asse_SHR64, Asse_SHR128,
       Asse_SAR16, Asse_SAR32, 
       Asse_PACKSSD, Asse_PACKSSW, Asse_PACKUSW,
       Asse_UNPCKHB, Asse_UNPCKHW, Asse_UNPCKHD, Asse_UNPCKHQ,
-      Asse_UNPCKLB, Asse_UNPCKLW, Asse_UNPCKLD, Asse_UNPCKLQ
+      Asse_UNPCKLB, Asse_UNPCKLW, Asse_UNPCKLD, Asse_UNPCKLQ,
+      // Only for SSSE3 capable hosts:
+      Asse_PSHUFB,
+      Asse_PMADDUBSW,
+      // Only for F16C capable hosts:
+      Asse_F32toF16, // F32 to F16 conversion, aka vcvtps2ph
+      Asse_F16toF32, // F16 to F32 conversion, aka vcvtph2ps
    }
    AMD64SseOp;
 
@@ -353,7 +359,8 @@ typedef
       Ain_Imm64,       /* Generate 64-bit literal to register */
       Ain_Alu64R,      /* 64-bit mov/arith/logical, dst=REG */
       Ain_Alu64M,      /* 64-bit mov/arith/logical, dst=MEM */
-      Ain_Sh64,        /* 64-bit shift/rotate, dst=REG or MEM */
+      Ain_Sh64,        /* 64-bit shift, dst=REG */
+      Ain_Sh32,        /* 32-bit shift, dst=REG */
       Ain_Test64,      /* 64-bit test (AND, set flags, discard result) */
       Ain_Unary64,     /* 64-bit not and neg */
       Ain_Lea64,       /* 64-bit compute EA into a reg */
@@ -400,6 +407,8 @@ typedef
       Ain_SseReRg,     /* SSE binary general reg-reg, Re, Rg */
       Ain_SseCMov,     /* SSE conditional move */
       Ain_SseShuf,     /* SSE2 shuffle (pshufd) */
+      Ain_SseShiftN,   /* SSE2 shift by immediate */
+      Ain_SseMOVQ,     /* SSE2 moves of xmm[63:0] to/from GPR */
       //uu Ain_AvxLdSt,     /* AVX load/store 256 bits,
       //uu                     no alignment constraints */
       //uu Ain_AvxReRg,     /* AVX binary general reg-reg, Re, Rg */
@@ -433,6 +442,11 @@ typedef
             UInt         src;  /* shift amount, or 0 means %cl */
             HReg         dst;
          } Sh64;
+         struct {
+            AMD64ShiftOp op;
+            UInt         src;  /* shift amount, or 0 means %cl */
+            HReg         dst;
+         } Sh32;
          struct {
             UInt   imm32;
             HReg   dst;
@@ -695,6 +709,16 @@ typedef
             HReg   src;
             HReg   dst;
          } SseShuf;
+         struct {
+            AMD64SseOp op;
+            UInt       shiftBits;
+            HReg       dst;
+         } SseShiftN;
+         struct {
+            HReg gpr;
+            HReg xmm;
+            Bool toXMM; // when moving to xmm, xmm[127:64] is zeroed out
+         } SseMOVQ;
          //uu struct {
          //uu    Bool        isLoad;
          //uu    HReg        reg;
@@ -726,6 +750,7 @@ extern AMD64Instr* AMD64Instr_Unary64    ( AMD64UnaryOp op, HReg dst );
 extern AMD64Instr* AMD64Instr_Lea64      ( AMD64AMode* am, HReg dst );
 extern AMD64Instr* AMD64Instr_Alu32R     ( AMD64AluOp, AMD64RMI*, HReg );
 extern AMD64Instr* AMD64Instr_Sh64       ( AMD64ShiftOp, UInt, HReg );
+extern AMD64Instr* AMD64Instr_Sh32       ( AMD64ShiftOp, UInt, HReg );
 extern AMD64Instr* AMD64Instr_Test64     ( UInt imm32, HReg dst );
 extern AMD64Instr* AMD64Instr_MulL       ( Bool syned, AMD64RM* );
 extern AMD64Instr* AMD64Instr_Div        ( Bool syned, Int sz, AMD64RM* );
@@ -773,6 +798,9 @@ extern AMD64Instr* AMD64Instr_Sse64FLo   ( AMD64SseOp, HReg, HReg );
 extern AMD64Instr* AMD64Instr_SseReRg    ( AMD64SseOp, HReg, HReg );
 extern AMD64Instr* AMD64Instr_SseCMov    ( AMD64CondCode, HReg src, HReg dst );
 extern AMD64Instr* AMD64Instr_SseShuf    ( Int order, HReg src, HReg dst );
+extern AMD64Instr* AMD64Instr_SseShiftN  ( AMD64SseOp,
+                                           UInt shiftBits, HReg dst );
+extern AMD64Instr* AMD64Instr_SseMOVQ    ( HReg gpr, HReg xmm, Bool toXMM );
 //uu extern AMD64Instr* AMD64Instr_AvxLdSt    ( Bool isLoad, HReg, AMD64AMode* );
 //uu extern AMD64Instr* AMD64Instr_AvxReRg    ( AMD64SseOp, HReg, HReg );
 extern AMD64Instr* AMD64Instr_EvCheck    ( AMD64AMode* amCounter,
@@ -786,7 +814,6 @@ extern void ppAMD64Instr ( const AMD64Instr*, Bool );
    of the underlying instruction set. */
 extern void getRegUsage_AMD64Instr ( HRegUsage*, const AMD64Instr*, Bool );
 extern void mapRegs_AMD64Instr     ( HRegRemap*, AMD64Instr*, Bool );
-extern Bool isMove_AMD64Instr      ( const AMD64Instr*, HReg*, HReg* );
 extern Int          emit_AMD64Instr   ( /*MB_MOD*/Bool* is_profInc,
                                         UChar* buf, Int nbuf,
                                         const AMD64Instr* i, 
@@ -801,7 +828,7 @@ extern void genSpill_AMD64  ( /*OUT*/HInstr** i1, /*OUT*/HInstr** i2,
                               HReg rreg, Int offset, Bool );
 extern void genReload_AMD64 ( /*OUT*/HInstr** i1, /*OUT*/HInstr** i2,
                               HReg rreg, Int offset, Bool );
-
+extern AMD64Instr* genMove_AMD64(HReg from, HReg to, Bool);
 extern AMD64Instr* directReload_AMD64 ( AMD64Instr* i,
                                         HReg vreg, Short spill_off );
 

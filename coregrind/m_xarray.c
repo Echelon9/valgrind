@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -347,6 +345,17 @@ void VG_(insertIndexXA)( XArray* xa, Word n, const void* elem )
    VG_(memcpy)( ((UChar*)xa->arr) + n * xa->elemSzB,
                 elem, xa->elemSzB );
    xa->usedsizeE++;
+   xa->sorted = False;
+}
+
+void VG_(replaceIndexXA)( XArray* xa, Word n, const void* elem )
+{
+   vg_assert(xa);
+   vg_assert(n >= 0);
+   vg_assert(n < xa->usedsizeE);
+   vg_assert(xa->usedsizeE >= 0 && xa->usedsizeE <= xa->totsizeE);
+   VG_(memcpy)( ((UChar*)xa->arr) + n * xa->elemSzB,
+                elem, xa->elemSzB );
    xa->sorted = False;
 }
 

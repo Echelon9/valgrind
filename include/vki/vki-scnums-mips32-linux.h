@@ -9,7 +9,6 @@
    framework.
 
    Copyright (C) 2010-2017 RT-RK
-      mips-valgrind@rt-rk.com
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -22,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -32,7 +29,7 @@
 #ifndef __VKI_SCNUMS_MIPS32_LINUX_H
 #define __VKI_SCNUMS_MIPS32_LINUX_H
 
-// From linux-2.6.35.5/include/asm-mips/unistd.h
+// From linux/arch/mips/include/uapi/asm/unistd.h
 /*
  * Linux o32 style syscalls are in the range from 4000 to 4999.
  */
@@ -380,6 +377,7 @@
 #define __NR_open_by_handle_at          (__NR_Linux + 340)
 #define __NR_clock_adjtime              (__NR_Linux + 341)
 #define __NR_syncfs                     (__NR_Linux + 342)
+#define __NR_setns                      (__NR_Linux + 343)
 #define __NR_process_vm_readv           (__NR_Linux + 345)
 #define __NR_process_vm_writev          (__NR_Linux + 346)
 #define __NR_kcmp			(__NR_Linux + 347)
@@ -390,15 +388,27 @@
 #define __NR_seccomp			(__NR_Linux + 352)
 #define __NR_getrandom			(__NR_Linux + 353)
 #define __NR_memfd_create		(__NR_Linux + 354)
+#define __NR_bpf			(__NR_Linux + 355)
+#define __NR_execveat			(__NR_Linux + 356)
+#define __NR_userfaultfd		(__NR_Linux + 357)
+#define __NR_membarrier			(__NR_Linux + 358)
+#define __NR_mlock2			(__NR_Linux + 359)
+#define __NR_copy_file_range		(__NR_Linux + 360)
+#define __NR_preadv2			(__NR_Linux + 361)
+#define __NR_pwritev2			(__NR_Linux + 362)
+#define __NR_pkey_mprotect		(__NR_Linux + 363)
+#define __NR_pkey_alloc			(__NR_Linux + 364)
+#define __NR_pkey_free			(__NR_Linux + 365)
+#define __NR_statx			(__NR_Linux + 366)
 
 /*
  * Offset of the last Linux o32 flavoured syscall
  */
-#define __NR_Linux_syscalls	            334
+#define __NR_Linux_syscalls	            366
 
 
 #define __NR_O32_Linux                  4000
-#define __NR_O32_Linux_syscalls	        334
+#define __NR_O32_Linux_syscalls	        366
 
 
 #endif                          /* __VKI_SCNUMS_MIPS32_LINUX_H */

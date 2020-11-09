@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -248,7 +246,9 @@ DECL_TEMPLATE(darwin, seteuid);                 // 183
 DECL_TEMPLATE(darwin, sigreturn);               // 184
 DECL_TEMPLATE(darwin, FAKE_SIGRETURN);
 // NYI chud 185
-// 186
+#if DARWIN_VERS >= DARWIN_10_13
+// NYI thread_selfcounts                        // 186
+#endif /* DARWIN_VERS >= DARWIN_10_13 */
 // 187
 // GEN stat 188
 // GEN fstat 189
@@ -468,9 +468,11 @@ DECL_TEMPLATE(darwin, __thread_selfid);         // 372
 #endif
 // 373
 #if DARWIN_VERS >= DARWIN_10_11
-// NYI kevent_qos                               // 374
+DECL_TEMPLATE(darwin, kevent_qos);              // 374
 #endif /* DARWIN_VERS >= DARWIN_10_11 */
-// 375
+#if DARWIN_VERS >= DARWIN_10_13
+// NYI kevent_id                                // 375
+#endif /* DARWIN_VERS >= DARWIN_10_13 */
 // 376
 // 377
 // 378
@@ -489,7 +491,11 @@ DECL_TEMPLATE(darwin, __mac_syscall);           // 381
 // NYI __mac_get_lcid 391
 // NYI __mac_get_lctx 392
 // NYI __mac_set_lctx 393
+#if DARWIN_VERS >= DARWIN_10_11
+DECL_TEMPLATE(darwin, pselect);                 // 394
+#else
 // NYI setlcid 394
+#endif /* DARWIN_VERS >= DARWIN_10_11 */
 // NYI getlcid 395
 // GEN read_nocancel 396
 // GEN write_nocancel 397
@@ -622,7 +628,7 @@ DECL_TEMPLATE(darwin, getentropy);                  // 500
 // 512
 // 513
 // 514
-// NYI ulock_wait                                   // 515
+DECL_TEMPLATE(darwin, ulock_wait);                  // 515
 DECL_TEMPLATE(darwin, ulock_wake);                  // 516
 // NYI fclonefileat                                 // 517
 // NYI fs_snapshot                                  // 518
@@ -630,6 +636,16 @@ DECL_TEMPLATE(darwin, ulock_wake);                  // 516
 // NYI terminate_with_payload                       // 520
 // NYI abort_with_payload                           // 521
 #endif /* DARWIN_VERS >= DARWIN_10_12 */
+#if DARWIN_VERS >= DARWIN_10_13
+// NYI necp_session_open                            // 522
+// NYI necp_session_action                          // 523
+// NYI setattrlistat                                // 524
+// NYI net_qos_guideline                            // 525
+// NYI fmount                                       // 526
+// NYI ntp_adjtime                                  // 527
+// NYI ntp_gettime                                  // 528
+// NYI os_fault_with_payload                        // 529
+#endif /* DARWIN_VERS >= DARWIN_10_13 */
 
 // Mach message helpers
 DECL_TEMPLATE(darwin, mach_port_set_context);
@@ -746,10 +762,15 @@ DECL_TEMPLATE(darwin, semaphore_timedwait_signal);
 DECL_TEMPLATE(darwin, task_for_pid);
 DECL_TEMPLATE(darwin, pid_for_task);
 
+#if DARWIN_VERS >= DARWIN_10_13
+// NYI thread_get_special_reply_port                // 50
+#endif /* DARWIN_VERS >= DARWIN_10_13 */
+
 #if DARWIN_VERS >= DARWIN_10_12
 DECL_TEMPLATE(darwin, host_create_mach_voucher_trap);
 DECL_TEMPLATE(darwin, task_register_dyld_image_infos);
 DECL_TEMPLATE(darwin, task_register_dyld_shared_cache_image_info);
+DECL_TEMPLATE(darwin, mach_generate_activity_id);
 #endif /* DARWIN_VERS >= DARWIN_10_12 */
 
 DECL_TEMPLATE(darwin, mach_timebase_info);

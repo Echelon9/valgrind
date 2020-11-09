@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -156,7 +154,7 @@ typedef struct {
    void (*tool_print_stats)(void);
 
    // VG_(needs).info_location
-   void (*tool_info_location)(Addr a);
+   void (*tool_info_location)(DiEpoch ep, Addr a);
 
    // VG_(needs).malloc_replacement
    void* (*tool_malloc)              (ThreadId, SizeT);
@@ -211,6 +209,8 @@ typedef struct {
    void VG_REGPARM(1) (*track_new_mem_stack_160)(Addr);
    void (*track_new_mem_stack)(Addr,SizeT);
 
+   Bool any_new_mem_stack; // True if one or more track_new_mem_stack is set
+
    void VG_REGPARM(1) (*track_die_mem_stack_4)  (Addr);
    void VG_REGPARM(1) (*track_die_mem_stack_8)  (Addr);
    void VG_REGPARM(1) (*track_die_mem_stack_12) (Addr);
@@ -221,6 +221,8 @@ typedef struct {
    void VG_REGPARM(1) (*track_die_mem_stack_144)(Addr);
    void VG_REGPARM(1) (*track_die_mem_stack_160)(Addr);
    void (*track_die_mem_stack)(Addr, SizeT);
+
+   Bool any_die_mem_stack; // True if one or more track_die_mem_stack is set
 
    void (*track_ban_mem_stack)(Addr, SizeT);
 
@@ -255,7 +257,9 @@ extern VgToolInterface VG_(tdict);
    Miscellaneous functions
    ------------------------------------------------------------------ */
 
-Bool VG_(sanity_check_needs) ( const HChar** failmsg );
+/* Sanity checks and finish the initialisation of the tool needs.
+   Returns False and sets a failmsg if the needs are inconsistent. */
+Bool VG_(finish_needs_init) ( const HChar** failmsg );
 
 #endif   // __PUB_CORE_TOOLIFACE_H
 

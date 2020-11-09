@@ -26,9 +26,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-   02110-1301, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -486,6 +484,7 @@ static IRExpr* align4if ( IRExpr* e, Bool b )
 
 #define OFFB_FPSCR    offsetof(VexGuestARMState,guest_FPSCR)
 #define OFFB_TPIDRURO offsetof(VexGuestARMState,guest_TPIDRURO)
+#define OFFB_TPIDRURW offsetof(VexGuestARMState,guest_TPIDRURW)
 #define OFFB_ITSTATE  offsetof(VexGuestARMState,guest_ITSTATE)
 #define OFFB_QFLAG32  offsetof(VexGuestARMState,guest_QFLAG32)
 #define OFFB_GEFLAG0  offsetof(VexGuestARMState,guest_GEFLAG0)
@@ -935,6 +934,7 @@ static void putMiscReg32 ( UInt    gsoffset,
       case OFFB_GEFLAG1: break;
       case OFFB_GEFLAG2: break;
       case OFFB_GEFLAG3: break;
+      case OFFB_TPIDRURW: break;
       default: vassert(0); /* awaiting more cases */
    }
    vassert(typeOfIRExpr(irsb->tyenv, e) == Ity_I32);
@@ -6505,9 +6505,8 @@ Bool dis_neon_data_2reg_and_shift ( UInt theInstr, IRTemp condT )
                }
                return True;
             }
-         } else {
-            /* fall through */
          }
+         /* else fall through */
       case 9:
          dreg = ((theInstr >> 18) & 0x10) | ((theInstr >> 12) & 0xF);
          mreg = ((theInstr >>  1) & 0x10) | (theInstr & 0xF);
@@ -7532,7 +7531,7 @@ Bool dis_neon_data_2reg_misc ( UInt theInstr, IRTemp condT )
                if (mreg & 1)
                   return False;
                mreg >>= 1;
-               putDRegI64(dreg, unop(Iop_F32toF16x4, getQReg(mreg)),
+               putDRegI64(dreg, unop(Iop_F32toF16x4_DEP, getQReg(mreg)),
                                 condT);
                DIP("vcvt.f16.f32 d%u, q%u\n", dreg, mreg);
             }
@@ -7587,22 +7586,22 @@ Bool dis_neon_data_2reg_misc ( UInt theInstr, IRTemp condT )
                return False;
             switch ((B >> 1) & 3) {
                case 0:
-                  op = Q ? Iop_I32StoFx4 : Iop_I32StoFx2;
+                  op = Q ? Iop_I32StoF32x4_DEP : Iop_I32StoF32x2_DEP;
                   DIP("vcvt.f32.s32 %c%u, %c%u\n",
                       Q ? 'q' : 'd', dreg, Q ? 'q' : 'd', mreg);
                   break;
                case 1:
-                  op = Q ? Iop_I32UtoFx4 : Iop_I32UtoFx2;
+                  op = Q ? Iop_I32UtoF32x4_DEP : Iop_I32UtoF32x2_DEP;
                   DIP("vcvt.f32.u32 %c%u, %c%u\n",
                       Q ? 'q' : 'd', dreg, Q ? 'q' : 'd', mreg);
                   break;
                case 2:
-                  op = Q ? Iop_FtoI32Sx4_RZ : Iop_FtoI32Sx2_RZ;
+                  op = Q ? Iop_F32toI32Sx4_RZ : Iop_F32toI32Sx2_RZ;
                   DIP("vcvt.s32.f32 %c%u, %c%u\n",
                       Q ? 'q' : 'd', dreg, Q ? 'q' : 'd', mreg);
                   break;
                case 3:
-                  op = Q ? Iop_FtoI32Ux4_RZ : Iop_FtoI32Ux2_RZ;
+                  op = Q ? Iop_F32toI32Ux4_RZ : Iop_F32toI32Ux2_RZ;
                   DIP("vcvt.u32.f32 %c%u, %c%u\n",
                       Q ? 'q' : 'd', dreg, Q ? 'q' : 'd', mreg);
                   break;
@@ -9143,8 +9142,11 @@ static Bool decode_V6MEDIA_instruction (
         }
      } else {
         if (INSNA(27,20) == BITS8(0,1,1,0,1,0,0,0) &&
-            INSNA(5,4)   == BITS2(0,1)             &&
-            (INSNA(6,6)  == 0 || INSNA(6,6) == 1) ) {
+            INSNA(5,4)   == BITS2(0,1) /*          &&
+            (INSNA(6,6)  == 0 || INSNA(6,6) == 1)
+            This last bit with INSNA(6,6) is correct, but gcc 8 complains
+            (correctly) that it is always true.  So I commented it out
+            to keep gcc quiet. */ ) {
            regD = INSNA(15,12);
            regN = INSNA(19,16);
            regM = INSNA(3,0);
@@ -12811,7 +12813,7 @@ static Bool decode_V8_instruction (
         stmt(IRStmt_Dirty(di));
 
         putQReg(regD >> 1, mkexpr(res), IRTemp_INVALID);
-        DIP("%s.8 q%d, q%d\n", iNames[opc], regD >> 1, regM >> 1);
+        DIP("%s.8 q%u, q%u\n", iNames[opc], regD >> 1, regM >> 1);
         return True;
      }
      /* fall through */
@@ -16075,9 +16077,6 @@ static Bool decode_NV_instruction_ARMv7_and_below
 
 static
 DisResult disInstr_ARM_WRK (
-             Bool         (*resteerOkFn) ( /*opaque*/void*, Addr ),
-             Bool         resteerCisOk,
-             void*        callback_opaque,
              const UChar* guest_instr,
              const VexArchInfo* archinfo,
              const VexAbiInfo*  abiinfo,
@@ -16097,7 +16096,6 @@ DisResult disInstr_ARM_WRK (
    /* Set result defaults. */
    dres.whatNext    = Dis_Continue;
    dres.len         = 4;
-   dres.continueAt  = 0;
    dres.jk_StopHere = Ijk_INVALID;
    dres.hint        = Dis_HintNone;
 
@@ -17032,75 +17030,19 @@ DisResult disInstr_ARM_WRK (
                       condT, Ijk_Boring);
       }
       if (condT == IRTemp_INVALID) {
-         /* unconditional transfer to 'dst'.  See if we can simply
-            continue tracing at the destination. */
-         if (resteerOkFn( callback_opaque, dst )) {
-            /* yes */
-            dres.whatNext   = Dis_ResteerU;
-            dres.continueAt = dst;
-         } else {
-            /* no; terminate the SB at this point. */
-            llPutIReg(15, mkU32(dst));
-            dres.jk_StopHere = jk;
-            dres.whatNext    = Dis_StopHere;
-         }
+         /* Unconditional transfer to 'dst'.  Terminate the SB at this point. */
+         llPutIReg(15, mkU32(dst));
+         dres.jk_StopHere = jk;
+         dres.whatNext    = Dis_StopHere;
          DIP("b%s 0x%x\n", link ? "l" : "", dst);
       } else {
-         /* conditional transfer to 'dst' */
-         const HChar* comment = "";
-
-         /* First see if we can do some speculative chasing into one
-            arm or the other.  Be conservative and only chase if
-            !link, that is, this is a normal conditional branch to a
-            known destination. */
-         if (!link
-             && resteerCisOk
-             && vex_control.guest_chase_cond
-             && dst < guest_R15_curr_instr_notENC
-             && resteerOkFn( callback_opaque, dst) ) {
-            /* Speculation: assume this backward branch is taken.  So
-               we need to emit a side-exit to the insn following this
-               one, on the negation of the condition, and continue at
-               the branch target address (dst). */
-            stmt( IRStmt_Exit( unop(Iop_Not1,
-                                    unop(Iop_32to1, mkexpr(condT))),
-                               Ijk_Boring,
-                               IRConst_U32(guest_R15_curr_instr_notENC+4),
-                               OFFB_R15T ));
-            dres.whatNext   = Dis_ResteerC;
-            dres.continueAt = (Addr32)dst;
-            comment = "(assumed taken)";
-         }
-         else
-         if (!link
-             && resteerCisOk
-             && vex_control.guest_chase_cond
-             && dst >= guest_R15_curr_instr_notENC
-             && resteerOkFn( callback_opaque, 
-                             guest_R15_curr_instr_notENC+4) ) {
-            /* Speculation: assume this forward branch is not taken.
-               So we need to emit a side-exit to dst (the dest) and
-               continue disassembling at the insn immediately
-               following this one. */
-            stmt( IRStmt_Exit( unop(Iop_32to1, mkexpr(condT)),
-                               Ijk_Boring,
-                               IRConst_U32(dst),
-                               OFFB_R15T ));
-            dres.whatNext   = Dis_ResteerC;
-            dres.continueAt = guest_R15_curr_instr_notENC+4;
-            comment = "(assumed not taken)";
-         }
-         else {
-            /* Conservative default translation - end the block at
-               this point. */
-            stmt( IRStmt_Exit( unop(Iop_32to1, mkexpr(condT)),
-                               jk, IRConst_U32(dst), OFFB_R15T ));
-            llPutIReg(15, mkU32(guest_R15_curr_instr_notENC + 4));
-            dres.jk_StopHere = Ijk_Boring;
-            dres.whatNext    = Dis_StopHere;
-         }
-         DIP("b%s%s 0x%x %s\n", link ? "l" : "", nCC(INSN_COND),
-             dst, comment);
+         /* Conditional transfer to 'dst'.  Terminate the SB at this point. */
+         stmt( IRStmt_Exit( unop(Iop_32to1, mkexpr(condT)),
+                            jk, IRConst_U32(dst), OFFB_R15T ));
+         llPutIReg(15, mkU32(guest_R15_curr_instr_notENC + 4));
+         dres.jk_StopHere = Ijk_Boring;
+         dres.whatNext    = Dis_StopHere;
+         DIP("b%s%s 0x%x\n", link ? "l" : "", nCC(INSN_COND), dst);
       }
       goto decode_success;
    }
@@ -18702,6 +18644,35 @@ DisResult disInstr_ARM_WRK (
       /* fall through */
    }
 
+   /* ------------ read/write CP15 TPIDRURW register ----------- */
+   /* mcr     p15, 0, r0,  c13, c0, 2 (r->cr xfer)  up to
+      mcr     p15, 0, r14, c13, c0, 2
+
+      mrc     p15, 0, r0,  c13, c0, 2 (rc->r xfer)  up to
+      mrc     p15, 0, r14, c13, c0, 2
+   */
+   if (0x0E0D0F50 == (insn & 0x0FFF0FFF)) { // MCR
+      UInt rS = INSN(15,12);
+      if (rS <= 14) {
+         /* skip r15, that's too stupid to handle */
+         putMiscReg32(OFFB_TPIDRURW, getIRegA(rS), condT);
+         DIP("mcr%s p15,0, r%u, c13, c0, 2\n", nCC(INSN_COND), rS);
+         goto decode_success;
+      }
+      /* fall through */
+   }
+   if (0x0E1D0F50 == (insn & 0x0FFF0FFF)) { // MRC
+      UInt rD = INSN(15,12);
+      if (rD <= 14) {
+         /* skip r15, that's too stupid to handle */
+         putIRegA(rD, IRExpr_Get(OFFB_TPIDRURW, Ity_I32),
+                      condT, Ijk_Boring);
+         DIP("mrc%s p15,0, r%u, c13, c0, 2\n", nCC(INSN_COND), rD);
+         goto decode_success;
+      }
+      /* fall through */
+   }
+
    /* -------------- read CP15 PMUSRENR register ------------- */
    /* mrc     p15, 0, r0,  c9, c14, 0  up to
       mrc     p15, 0, r14, c9, c14, 0
@@ -18865,7 +18836,6 @@ DisResult disInstr_ARM_WRK (
    dres.len         = 0;
    dres.whatNext    = Dis_StopHere;
    dres.jk_StopHere = Ijk_NoDecode;
-   dres.continueAt  = 0;
    return dres;
 
   decode_success:
@@ -18922,10 +18892,6 @@ DisResult disInstr_ARM_WRK (
          case Dis_Continue:
             llPutIReg(15, mkU32(dres.len + guest_R15_curr_instr_notENC));
             break;
-         case Dis_ResteerU:
-         case Dis_ResteerC:
-            llPutIReg(15, mkU32(dres.continueAt));
-            break;
          case Dis_StopHere:
             break;
          default:
@@ -18958,9 +18924,6 @@ static const UChar it_length_table[256]; /* fwds */
 
 static   
 DisResult disInstr_THUMB_WRK (
-             Bool         (*resteerOkFn) ( /*opaque*/void*, Addr ),
-             Bool         resteerCisOk,
-             void*        callback_opaque,
              const UChar* guest_instr,
              const VexArchInfo* archinfo,
              const VexAbiInfo*  abiinfo,
@@ -18985,7 +18948,6 @@ DisResult disInstr_THUMB_WRK (
    /* Set result defaults. */
    dres.whatNext    = Dis_Continue;
    dres.len         = 2;
-   dres.continueAt  = 0;
    dres.jk_StopHere = Ijk_INVALID;
    dres.hint        = Dis_HintNone;
 
@@ -20730,7 +20692,6 @@ DisResult disInstr_THUMB_WRK (
    /* Change result defaults to suit 32-bit insns. */
    vassert(dres.whatNext   == Dis_Continue);
    vassert(dres.len        == 2);
-   vassert(dres.continueAt == 0);
    dres.len = 4;
 
    /* ---------------- BL/BLX simm26 ---------------- */
@@ -23121,6 +23082,32 @@ DisResult disInstr_THUMB_WRK (
       /* fall through */
    }
 
+   /* ------------ read/write CP15 TPIDRURW register ----------- */
+   /* mcr     p15, 0, r0,  c13, c0, 2 (r->cr xfer)  up to
+      mcr     p15, 0, r14, c13, c0, 2
+
+      mrc     p15, 0, r0,  c13, c0, 2 (rc->r xfer)  up to
+      mrc     p15, 0, r14, c13, c0, 2
+   */
+   if ((INSN0(15,0) == 0xEE0D) && (INSN1(11,0) == 0x0F50)) {
+      UInt rS = INSN1(15,12);
+      if (!isBadRegT(rS)) {
+         putMiscReg32(OFFB_TPIDRURW, getIRegT(rS), condT);
+         DIP("mcr p15,0, r%u, c13, c0, 2\n", rS);
+         goto decode_success;
+      }
+      /* fall through */
+   }
+   if ((INSN0(15,0) == 0xEE1D) && (INSN1(11,0) == 0x0F50)) {
+      UInt rD = INSN1(15,12);
+      if (!isBadRegT(rD)) {
+         putIRegT(rD, IRExpr_Get(OFFB_TPIDRURW, Ity_I32), condT);
+         DIP("mrc p15,0, r%u, c13, c0, 2\n", rD);
+         goto decode_success;
+      }
+      /* fall through */
+   }
+
    /* -------------- read CP15 PMUSRENR register ------------- */
    /* mrc     p15, 0, r0,  c9, c14, 0  up to
       mrc     p15, 0, r14, c9, c14, 0
@@ -23474,7 +23461,6 @@ DisResult disInstr_THUMB_WRK (
    dres.len         = 0;
    dres.whatNext    = Dis_StopHere;
    dres.jk_StopHere = Ijk_NoDecode;
-   dres.continueAt  = 0;
    return dres;
 
   decode_success:
@@ -23483,10 +23469,6 @@ DisResult disInstr_THUMB_WRK (
    switch (dres.whatNext) {
       case Dis_Continue:
          llPutIReg(15, mkU32(dres.len + (guest_R15_curr_instr_notENC | 1)));
-         break;
-      case Dis_ResteerU:
-      case Dis_ResteerC:
-         llPutIReg(15, mkU32(dres.continueAt));
          break;
       case Dis_StopHere:
          break;
@@ -23593,9 +23575,6 @@ static const UChar it_length_table[256]
    is located in host memory at &guest_code[delta]. */
 
 DisResult disInstr_ARM ( IRSB*        irsb_IN,
-                         Bool         (*resteerOkFn) ( void*, Addr ),
-                         Bool         resteerCisOk,
-                         void*        callback_opaque,
                          const UChar* guest_code_IN,
                          Long         delta_ENCODED,
                          Addr         guest_IP_ENCODED,
@@ -23622,14 +23601,10 @@ DisResult disInstr_ARM ( IRSB*        irsb_IN,
    }
 
    if (isThumb) {
-      dres = disInstr_THUMB_WRK ( resteerOkFn,
-                                  resteerCisOk, callback_opaque,
-                                  &guest_code_IN[delta_ENCODED - 1],
+      dres = disInstr_THUMB_WRK ( &guest_code_IN[delta_ENCODED - 1],
                                   archinfo, abiinfo, sigill_diag_IN );
    } else {
-      dres = disInstr_ARM_WRK ( resteerOkFn,
-                                resteerCisOk, callback_opaque,
-                                &guest_code_IN[delta_ENCODED],
+      dres = disInstr_ARM_WRK ( &guest_code_IN[delta_ENCODED],
                                 archinfo, abiinfo, sigill_diag_IN );
    }
 

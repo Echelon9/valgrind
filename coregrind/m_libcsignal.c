@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -92,7 +90,7 @@ Bool VG_(isemptysigset)( const vki_sigset_t* set )
       }
       else {
          /* Partial word check. */
-         ULong mask = (1UL << (_VKI_MAXSIG % _VKI_NSIG_BPW)) - 1;
+         ULong mask = ((ULong)1UL << (_VKI_MAXSIG % _VKI_NSIG_BPW)) - 1;
          if ((set->sig[i] & mask) != 0) return False;
          break;
       }
@@ -111,7 +109,7 @@ Bool VG_(isfullsigset)( const vki_sigset_t* set )
       }
       else {
          /* Partial word check. */
-         ULong mask = (1UL << (_VKI_MAXSIG % _VKI_NSIG_BPW)) - 1;
+         ULong mask = ((ULong)1UL << (_VKI_MAXSIG % _VKI_NSIG_BPW)) - 1;
          if ((set->sig[i] & mask) != mask) return False;
          break;
       }
@@ -130,7 +128,7 @@ Bool VG_(iseqsigset)( const vki_sigset_t* set1, const vki_sigset_t* set2 )
       }
       else {
          /* Partial word comparison. */
-         ULong mask = (1UL << (_VKI_MAXSIG % _VKI_NSIG_BPW)) - 1;
+         ULong mask = ((ULong)1UL << (_VKI_MAXSIG % _VKI_NSIG_BPW)) - 1;
          if ((set1->sig[i] & mask) != (set2->sig[i] & mask)) return False;
          break;
       }

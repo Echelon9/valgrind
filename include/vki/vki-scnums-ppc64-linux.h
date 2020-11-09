@@ -22,9 +22,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -32,7 +30,7 @@
 #ifndef __VKI_SCNUMS_PPC64_LINUX_H
 #define __VKI_SCNUMS_PPC64_LINUX_H
 
-// From linux-2.6/arc/powerpc/include/asm/unistd.h
+// From linux/arch/powerpc/include/uapi/asm/unistd.h
 
 #define __NR_restart_syscall      0
 #define __NR_exit                 1
@@ -395,6 +393,20 @@
 #define __NR_seccomp		358
 #define __NR_getrandom		359
 #define __NR_memfd_create	360
+#define __NR_bpf		361
+#define __NR_execveat		362
+#define __NR_switch_endian	363
+#define __NR_userfaultfd	364
+#define __NR_membarrier		365
+#define __NR_mlock2		378
+#define __NR_copy_file_range	379
+#define __NR_preadv2		380
+#define __NR_pwritev2		381
+#define __NR_kexec_file_load	382
+#define __NR_statx		383
+#define __NR_pkey_alloc		384
+#define __NR_pkey_free		385
+#define __NR_pkey_mprotect	386
 
 #endif /* __VKI_SCNUMS_PPC64_LINUX_H */
 

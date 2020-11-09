@@ -17,9 +17,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -44,6 +42,8 @@
 #endif
 #include <inttypes.h>
 #include "vtest.h"
+
+#include "memcheck.h" // VALGRIND_MAKE_MEM_DEFINED
 
 
 /* Something bad happened. Cannot continue. */
@@ -120,12 +120,14 @@ print_opnd(FILE *fp, const opnd_t *opnd)
 {
    fprintf(fp, "vbits = ");
    print_vbits(fp, opnd->vbits);
-   /* Write the value only if it is defined. Otherwise, there will be error
-      messages about it being undefined */
-   if (equal_vbits(opnd->vbits, defined_vbits(opnd->vbits.num_bits))) {
-      fprintf(fp, "   value = ");
-      print_value(fp, opnd->value, opnd->vbits.num_bits);
-   }
+   /* The value itself might be partially or fully undefined, so take a
+      copy, paint the copy as defined, and print the copied value.  This is
+      so as to avoid error messages from Memcheck, which are correct, but
+      confusing. */
+   volatile value_t value_copy = opnd->value;
+   VALGRIND_MAKE_MEM_DEFINED(&value_copy, sizeof(value_copy));
+   fprintf(fp, "   value = ");
+   print_value(fp, value_copy, opnd->vbits.num_bits);
 }
 
 

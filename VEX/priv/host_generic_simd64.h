@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-   02110-1301, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 
@@ -102,7 +100,8 @@ extern ULong h_generic_calc_InterleaveLO32x2 ( ULong, ULong );
 
 extern ULong h_generic_calc_CatOddLanes16x4 ( ULong, ULong );
 extern ULong h_generic_calc_CatEvenLanes16x4 ( ULong, ULong );
-extern ULong h_generic_calc_Perm8x8 ( ULong, ULong );
+extern ULong h_generic_calc_Perm8x8       ( ULong, ULong );
+extern ULong h_generic_calc_PermOrZero8x8 ( ULong, ULong );
 
 extern ULong h_generic_calc_ShlN8x8  ( ULong, UInt );
 extern ULong h_generic_calc_ShlN16x4 ( ULong, UInt );

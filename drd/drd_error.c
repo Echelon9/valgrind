@@ -1,7 +1,7 @@
 /*
   This file is part of drd, a thread error detector.
 
-  Copyright (C) 2006-2017 Bart Van Assche <bvanassche@acm.org>.
+  Copyright (C) 2006-2020 Bart Van Assche <bvanassche@acm.org>.
 
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License as
@@ -14,9 +14,7 @@
   General Public License for more details.
 
   You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-  02111-1307, USA.
+  along with this program; if not, see <http://www.gnu.org/licenses/>.
 
   The GNU General Public License is contained in the file COPYING.
 */
@@ -159,8 +157,12 @@ void drd_report_data_race(const Error* const err,
    const HChar* const auxwhat_prefix = xml ? "  <auxwhat>" : "";
    const HChar* const auxwhat_suffix = xml ? "</auxwhat>" : "";
    const HChar* const indent = xml ? "  " : "";
-   AddrInfo ai;
 
+   AddrInfo ai;
+   VG_(memset)(&ai, 0, sizeof(ai));
+   ai.akind = eUnknown; // A safe initial value (?)
+
+   DiEpoch cur_ep = VG_(current_DiEpoch)();
    XArray* /* of HChar */ descr1
       = VG_(newXA)( VG_(malloc), "drd.error.drdr2.1",
                     VG_(free), sizeof(HChar) );
@@ -172,7 +174,7 @@ void drd_report_data_race(const Error* const err,
    tl_assert(dri->addr);
    tl_assert(dri->size > 0);
 
-   (void) VG_(get_data_description)(descr1, descr2, dri->addr);
+   (void) VG_(get_data_description)(descr1, descr2, cur_ep, dri->addr);
    /* If there's nothing in descr1/2, free them.  Why is it safe to
       VG_(indexXA) at zero here?  Because VG_(get_data_description)
       guarantees to zero terminate descr1/2 regardless of the outcome

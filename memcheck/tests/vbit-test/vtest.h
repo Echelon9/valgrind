@@ -17,9 +17,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -78,6 +76,13 @@ typedef enum {
    UNDEF_AND,     // bitwise AND operation
 
    UNDEF_ORD,     // Iop_CmpORD compare 
+
+   // Expensive (exact) integer EQ and NE
+   UNDEF_CMP_EQ_NE,
+
+   // Expensive (exact) integer addition and subtraction
+   UNDEF_INT_ADD,
+   UNDEF_INT_SUB,
 
    /* For each of the following UNDEF_ALL_BxE, E is the number of
     * elements and B is the number of bits in the element.

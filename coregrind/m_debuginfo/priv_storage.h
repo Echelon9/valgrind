@@ -23,9 +23,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -229,6 +227,14 @@ typedef
               CFIR_CFAREL    -> cfa + sp/fp/ra_off
               CFIR_MEMCFAREL -> *( cfa + sp/fp/ra_off )
               CFIR_EXPR      -> expr whose index is in sp/fp/ra_off
+              CFIR_S390X_F0  -> old value of %f0
+              CFIR_S390X_F1  -> old value of %f1
+              CFIR_S390X_F2  -> old value of %f2
+              CFIR_S390X_F3  -> old value of %f3
+              CFIR_S390X_F4  -> old value of %f4
+              CFIR_S390X_F5  -> old value of %f5
+              CFIR_S390X_F6  -> old value of %f6
+              CFIR_S390X_F7  -> old value of %f7
 */
 
 #define CFIC_IA_SPREL     ((UChar)1)
@@ -246,6 +252,14 @@ typedef
 #define CFIR_CFAREL       ((UChar)66)
 #define CFIR_MEMCFAREL    ((UChar)67)
 #define CFIR_EXPR         ((UChar)68)
+#define CFIR_S390X_F0     ((UChar)69)
+#define CFIR_S390X_F1     ((UChar)70)
+#define CFIR_S390X_F2     ((UChar)71)
+#define CFIR_S390X_F3     ((UChar)72)
+#define CFIR_S390X_F4     ((UChar)73)
+#define CFIR_S390X_F5     ((UChar)74)
+#define CFIR_S390X_F6     ((UChar)75)
+#define CFIR_S390X_F7     ((UChar)76)
 
 /* Definition of the DiCfSI_m DiCfSI machine dependent part.
    These are highly duplicated, and are stored in a pool. */
@@ -318,13 +332,29 @@ typedef
       UChar sp_how;  /* a CFIR_ value */
       UChar ra_how;  /* a CFIR_ value */
       UChar fp_how;  /* a CFIR_ value */
+      UChar f0_how;  /* a CFIR_ value */
+      UChar f1_how;  /* a CFIR_ value */
+      UChar f2_how;  /* a CFIR_ value */
+      UChar f3_how;  /* a CFIR_ value */
+      UChar f4_how;  /* a CFIR_ value */
+      UChar f5_how;  /* a CFIR_ value */
+      UChar f6_how;  /* a CFIR_ value */
+      UChar f7_how;  /* a CFIR_ value */
       Int   cfa_off;
       Int   sp_off;
       Int   ra_off;
       Int   fp_off;
+      Int   f0_off;
+      Int   f1_off;
+      Int   f2_off;
+      Int   f3_off;
+      Int   f4_off;
+      Int   f5_off;
+      Int   f6_off;
+      Int   f7_off;
    }
    DiCfSI_m;
-#elif defined(VGA_mips32) || defined(VGA_mips64)
+#elif defined(VGA_mips32) || defined(VGA_mips64) || defined(VGA_nanomips)
 typedef
    struct {
       UChar cfa_how; /* a CFIC_ value */
@@ -588,6 +618,36 @@ struct _DebugInfo {
       structure is allocated. */
    ULong handle;
 
+   /* The range of epochs for which this DebugInfo is valid.  These also
+      divide the DebugInfo's lifetime into three parts:
+
+      (1) Allocated: but with only .fsm holding useful info -- in
+          particular, not yet holding any debug info.
+          .first_epoch == DebugInfoEpoch_INVALID
+          .last_epoch  == DebugInfoEpoch_INVALID
+
+      (2) Active: containing debug info, and current.
+          .first_epoch != DebugInfoEpoch_INVALID
+          .last_epoch  == DebugInfoEpoch_INVALID
+
+      (3) Archived: containing debug info, but no longer current.
+          .first_epoch != DebugInfoEpoch_INVALID
+          .last_epoch  != DebugInfoEpoch_INVALID
+
+      State (2) corresponds to an object which is currently mapped.  When
+      the object is unmapped, what happens depends on the setting of
+      --keep-debuginfo:
+
+      * when =no, the DebugInfo is removed from debugInfo_list and
+        deleted.
+
+      * when =yes, the DebugInfo is retained in debugInfo_list, but its
+        .last_epoch field is filled in, and current_epoch is advanced.  This
+        effectively moves the DebugInfo into state (3).
+   */
+   DiEpoch first_epoch;
+   DiEpoch last_epoch;
+
    /* Used for debugging only - indicate what stuff to dump whilst
       reading stuff into the seginfo.  Are computed as early in the
       lifetime of the DebugInfo as possible -- at the point when it is
@@ -638,11 +698,14 @@ struct _DebugInfo {
 
       or the normal case, which is the AND of the following:
       (0) size of at least one rx mapping > 0
-      (1) no two DebugInfos with some rx mapping of size > 0 
+      (1) no two non-archived DebugInfos with some rx mapping of size > 0
           have overlapping rx mappings
-      (2) [cfsi_minavma,cfsi_maxavma] does not extend beyond
-          [avma,+size) of one rx mapping; that is, the former
-          is a subrange or equal to the latter.
+      (2) Each address in [cfsi_minavma,cfsi_maxavma] is in an rx mapping
+          or else no cfsi can cover this address.
+          The typical case is a single rx mapping covering the full range.
+          In some cases, the union of several rx mappings covers the range,
+          with possibly some holes between the rx mappings, and no cfsi fall
+          within such an hole.
       (3) all DiCfSI in the cfsi array all have ranges that fall within
           [avma,+size) of that rx mapping.
       (4) all DiCfSI in the cfsi array are non-overlapping

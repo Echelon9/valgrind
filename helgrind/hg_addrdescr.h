@@ -23,9 +23,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -37,12 +35,12 @@
    lock description, putting the result in ai.
    This might allocate some memory in ai, to be cleared with
    VG_(clear_addrinfo). */
-extern void HG_(describe_addr) ( Addr a, /*OUT*/AddrInfo* ai );
+extern void HG_(describe_addr) ( DiEpoch ep, Addr a, /*OUT*/AddrInfo* ai );
 
 /* Get a readable description of addr, then print it using HG_(pp_addrdescr)
    using xml False and VG_(printf) to emit the characters.
    Returns True if a description was found/printed, False otherwise. */
-extern Bool HG_(get_and_pp_addrdescr) (Addr a);
+extern Bool HG_(get_and_pp_addrdescr) (DiEpoch ep, Addr a);
 
 /* For error creation/address description:
    map 'data_addr' to a malloc'd chunk, if any.

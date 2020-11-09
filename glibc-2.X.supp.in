@@ -236,3 +236,49 @@
    Memcheck:Cond
    fun:_dl_relocate_object
 }
+
+# glibc ld.so has an optimization when resolving a symbol that checks
+# whether or not the upper 128 bits of the ymm registers are zero. If
+# so it uses "cheaper" instructions to save/restore them using the xmm
+# registers. If those upper 128 bits contain undefined values memcheck
+# will issue an Conditional jump or move depends on uninitialised value(s)
+# warning whenever trying to resolve a symbol.
+{
+   dl-trampoline-sse-avx
+   Memcheck:Cond
+   fun:_dl_runtime_resolve_avx_slow
+}
+
+# The main thread dynamic thread vector, DTV, which contains pointers
+# to thread local variables, isn't freed.  There are a couple of call
+# patterns that can cause it to be extended.
+{
+  dtv-addr-tail
+  Memcheck:Leak
+  match-leak-kinds: possible,reachable
+  fun:malloc
+  fun:tls_get_addr_tail*
+  fun:__tls_get_addr
+}
+
+{
+  dtv-addr-resize
+  Memcheck:Leak
+  match-leak-kinds: possible,reachable
+  fun:malloc
+  fun:_dl_resize_dtv
+  fun:_dl_update_slotinfo
+  fun:update_get_addr
+  fun:__tls_get_addr
+}
+
+{
+  dtv-addr-init
+  Memcheck:Leak
+  match-leak-kinds: possible,reachable
+  fun:malloc
+  fun:allocate_dtv_entry
+  fun:allocate_and_init
+  fun:tls_get_addr_tail*
+  fun:__tls_get_addr
+}

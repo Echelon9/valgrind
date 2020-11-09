@@ -23,9 +23,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -1185,8 +1183,10 @@ void VG_(redir_notify_delete_DebugInfo)( const DebugInfo* delsi )
 Addr VG_(redir_do_lookup) ( Addr orig, Bool* isWrap )
 {
    Active* r = VG_(OSetGen_Lookup)(activeSet, &orig);
-   if (r == NULL)
+   if (r == NULL) {
+      if (isWrap) *isWrap = False;
       return orig;
+   }
 
    vg_assert(r->to_addr != 0);
    if (isWrap)
@@ -1211,6 +1211,7 @@ Bool VG_(is_soname_ld_so) (const HChar *soname)
    if (VG_STREQ(soname, VG_U_LD_SO_1))               return True;
    if (VG_STREQ(soname, VG_U_LD_LINUX_AARCH64_SO_1)) return True;
    if (VG_STREQ(soname, VG_U_LD_LINUX_ARMHF_SO_3))   return True;
+   if (VG_STREQ(soname, VG_U_LD_LINUX_MIPSN8_S0_1))  return True;
 #  elif defined(VGO_darwin)
    if (VG_STREQ(soname, VG_U_DYLD)) return True;
 #  elif defined(VGO_solaris)
@@ -1575,7 +1576,6 @@ void VG_(redir_initialise) ( void )
 
 #  elif defined(VGP_mips32_linux)
    if (0==VG_(strcmp)("Memcheck", VG_(details).name)) {
-
       /* this is mandatory - can't sanely continue without it */
       add_hardwired_spec(
          "ld.so.1", "strlen",
@@ -1587,19 +1587,17 @@ void VG_(redir_initialise) ( void )
          (Addr)&VG_(mips32_linux_REDIR_FOR_index),
          complain_about_stripped_glibc_ldso
       );
-#  if defined(VGPV_mips32_linux_android)
+#     if defined(VGPV_mips32_linux_android)
       add_hardwired_spec(
          "NONE", "__dl_strlen",
          (Addr)&VG_(mips32_linux_REDIR_FOR_strlen),
          NULL
       );
-#  endif
-
+#     endif
    }
 
 #  elif defined(VGP_mips64_linux)
    if (0==VG_(strcmp)("Memcheck", VG_(details).name)) {
-
       /* this is mandatory - can't sanely continue without it */
       add_hardwired_spec(
          "ld.so.1", "strlen",
@@ -1609,6 +1607,41 @@ void VG_(redir_initialise) ( void )
       add_hardwired_spec(
          "ld.so.1", "index",
          (Addr)&VG_(mips64_linux_REDIR_FOR_index),
+         complain_about_stripped_glibc_ldso
+      );
+#     if defined(VGABI_64)
+      add_hardwired_spec(
+         "ld-linux-mipsn8.so.1", "strlen",
+         (Addr)&VG_(mips64_linux_REDIR_FOR_strlen),
+         complain_about_stripped_glibc_ldso
+      );
+      add_hardwired_spec(
+         "ld-linux-mipsn8.so.1", "index",
+         (Addr)&VG_(mips64_linux_REDIR_FOR_index),
+         complain_about_stripped_glibc_ldso
+      );
+#     elif defined(VGABI_N32)
+      add_hardwired_spec(
+         "ld.so.1", "strchr",
+         (Addr)&VG_(mips64_linux_REDIR_FOR_index),
+         complain_about_stripped_glibc_ldso
+      );
+#     else
+#     error unknown mips64 ABI
+#     endif
+   }
+
+# elif defined(VGP_nanomips_linux)
+   if (0==VG_(strcmp)("Memcheck", VG_(details).name)) {
+
+      add_hardwired_spec(
+         "ld.so.1", "strlen",
+         (Addr)&VG_(nanomips_linux_REDIR_FOR_strlen),
+         complain_about_stripped_glibc_ldso
+      );
+      add_hardwired_spec(
+         "ld.so.1", "index",
+         (Addr)&VG_(nanomips_linux_REDIR_FOR_index),
          complain_about_stripped_glibc_ldso
       );
    }
@@ -1870,15 +1903,16 @@ static void show_active ( const HChar* left, const Active* act )
 {
    Bool ok;
    const HChar *buf;
- 
-   ok = VG_(get_fnname_w_offset)(act->from_addr, &buf);
+
+   DiEpoch ep = VG_(current_DiEpoch)();
+   ok = VG_(get_fnname_w_offset)(ep, act->from_addr, &buf);
    if (!ok) buf = "???";
    // Stash away name1
    HChar name1[VG_(strlen)(buf) + 1];
    VG_(strcpy)(name1, buf);
 
    const HChar *name2;
-   ok = VG_(get_fnname_w_offset)(act->to_addr, &name2);
+   ok = VG_(get_fnname_w_offset)(ep, act->to_addr, &name2);
    if (!ok) name2 = "???";
 
    VG_(message)(Vg_DebugMsg, "%s0x%08lx (%-20s) %s-> (%04d.%d) 0x%08lx %s\n", 

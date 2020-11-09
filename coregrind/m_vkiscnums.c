@@ -22,9 +22,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -60,6 +58,9 @@ const HChar* VG_(sysnum_string)(Word sysnum)
 #if defined(VGP_mips32_linux)
 STATIC_ASSERT(__NR_pipe  == 4042);
 STATIC_ASSERT(__NR_pipe2 == 4328);
+#elif defined(VGP_mips64_linux) && defined(VGABI_N32)
+STATIC_ASSERT(__NR_pipe  == 6021);
+STATIC_ASSERT(__NR_pipe2 == 6291);
 #elif defined(VGP_mips64_linux)
 STATIC_ASSERT(__NR_pipe  == 5021);
 STATIC_ASSERT(__NR_pipe2 == 5287);

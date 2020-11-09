@@ -20,9 +20,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -46,6 +44,8 @@
 #define STACK_PTR(regs)    ((regs).vex.VG_STACK_PTR)
 #define FRAME_PTR(regs)    ((regs).vex.VG_FRAME_PTR)
 
+#define STACK_PTR_S1(regs)    ((regs).vex_shadow1.VG_STACK_PTR)
+
 Addr VG_(get_IP) ( ThreadId tid ) {
    return INSTR_PTR( VG_(threads)[tid].arch );
 }
@@ -54,6 +54,13 @@ Addr VG_(get_SP) ( ThreadId tid ) {
 }
 Addr VG_(get_FP) ( ThreadId tid ) {
    return FRAME_PTR( VG_(threads)[tid].arch );
+}
+
+Addr VG_(get_SP_s1) ( ThreadId tid ) {
+   return STACK_PTR_S1( VG_(threads)[tid].arch );
+}
+void VG_(set_SP_s1) ( ThreadId tid, Addr sp ) {
+   STACK_PTR_S1( VG_(threads)[tid].arch ) = sp;
 }
 
 void VG_(set_IP) ( ThreadId tid, Addr ip ) {
@@ -109,7 +116,24 @@ void VG_(get_UnwindStartRegs) ( /*OUT*/UnwindStartRegs* regs,
       = VG_(threads)[tid].arch.vex.guest_FP;
    regs->misc.S390X.r_lr
       = VG_(threads)[tid].arch.vex.guest_LR;
-#  elif defined(VGA_mips32)
+   /* ANDREAS 3 Apr 2019 FIXME r_f0..r_f7: is this correct? */
+   regs->misc.S390X.r_f0
+      = VG_(threads)[tid].arch.vex.guest_v0.w64[0];
+   regs->misc.S390X.r_f1
+      = VG_(threads)[tid].arch.vex.guest_v1.w64[0];
+   regs->misc.S390X.r_f2
+      = VG_(threads)[tid].arch.vex.guest_v2.w64[0];
+   regs->misc.S390X.r_f3
+      = VG_(threads)[tid].arch.vex.guest_v3.w64[0];
+   regs->misc.S390X.r_f4
+      = VG_(threads)[tid].arch.vex.guest_v4.w64[0];
+   regs->misc.S390X.r_f5
+      = VG_(threads)[tid].arch.vex.guest_v5.w64[0];
+   regs->misc.S390X.r_f6
+      = VG_(threads)[tid].arch.vex.guest_v6.w64[0];
+   regs->misc.S390X.r_f7
+      = VG_(threads)[tid].arch.vex.guest_v7.w64[0];
+#  elif defined(VGA_mips32) || defined(VGP_nanomips_linux)
    regs->r_pc = VG_(threads)[tid].arch.vex.guest_PC;
    regs->r_sp = VG_(threads)[tid].arch.vex.guest_r29;
    regs->misc.MIPS32.r30
@@ -279,7 +303,7 @@ static void apply_to_GPs_of_tid(ThreadId tid, void (*f)(ThreadId,
    (*f)(tid, "r13", vex->guest_r13);
    (*f)(tid, "r14", vex->guest_r14);
    (*f)(tid, "r15", vex->guest_r15);
-#elif defined(VGA_mips32) || defined(VGA_mips64)
+#elif defined(VGA_mips32) || defined(VGA_mips64) || defined(VGP_nanomips_linux)
    (*f)(tid, "r0" , vex->guest_r0 );
    (*f)(tid, "r1" , vex->guest_r1 );
    (*f)(tid, "r2" , vex->guest_r2 );
@@ -453,7 +477,8 @@ Int VG_(machine_arm_archlevel) = 4;
 /* For hwcaps detection on ppc32/64, s390x, and arm we'll need to do SIGILL
    testing, so we need a VG_MINIMAL_JMP_BUF. */
 #if defined(VGA_ppc32) || defined(VGA_ppc64be) || defined(VGA_ppc64le) \
-    || defined(VGA_arm) || defined(VGA_s390x) || defined(VGA_mips32)
+    || defined(VGA_arm) || defined(VGA_s390x) || defined(VGA_mips32) \
+    || defined(VGA_mips64)
 #include "pub_core_libcsetjmp.h"
 static VG_MINIMAL_JMP_BUF(env_unsup_insn);
 static void handler_unsup_insn ( Int x ) {
@@ -554,6 +579,10 @@ static UInt VG_(get_machine_model)(void)
       { "2828", VEX_S390X_MODEL_ZBC12 },
       { "2964", VEX_S390X_MODEL_Z13 },
       { "2965", VEX_S390X_MODEL_Z13S },
+      { "3906", VEX_S390X_MODEL_Z14 },
+      { "3907", VEX_S390X_MODEL_Z14_ZR1 },
+      { "8561", VEX_S390X_MODEL_Z15 },
+      { "8562", VEX_S390X_MODEL_Z15 },
    };
 
    Int    model, n, fh;
@@ -748,9 +777,11 @@ static Bool VG_(parse_cpuinfo)(void)
           case VEX_PRID_COMP_CAVIUM:
           case VEX_PRID_COMP_NETLOGIC:
              vai.hwcaps |= (VEX_MIPS_CPU_ISA_M64R2 | VEX_MIPS_CPU_ISA_M64R1);
+             /* fallthrough */
           case VEX_PRID_COMP_INGENIC_E1:
           case VEX_PRID_COMP_MIPS:
              vai.hwcaps |= VEX_MIPS_CPU_ISA_M32R2;
+             /* fallthrough */
           case VEX_PRID_COMP_BROADCOM:
              vai.hwcaps |= VEX_MIPS_CPU_ISA_M32R1;
              break;
@@ -934,13 +965,19 @@ Bool VG_(machine_get_hwcaps)( void )
    }
 
 #elif defined(VGA_amd64)
-   { Bool have_sse3, have_cx8, have_cx16;
+   { Bool have_sse3, have_ssse3, have_cx8, have_cx16;
      Bool have_lzcnt, have_avx, have_bmi, have_avx2;
-     Bool have_rdtscp;
+     Bool have_rdtscp, have_rdrand, have_f16c, have_rdseed;
      UInt eax, ebx, ecx, edx, max_basic, max_extended;
      ULong xgetbv_0 = 0;
      HChar vstr[13];
      vstr[0] = 0;
+
+     have_sse3 = have_ssse3 = have_cx8 = have_cx16
+               = have_lzcnt = have_avx = have_bmi = have_avx2
+               = have_rdtscp = have_rdrand = have_f16c = have_rdseed = False;
+
+     eax = ebx = ecx = edx = max_basic = max_extended = 0;
 
      if (!VG_(has_cpuid)())
         /* we can't do cpuid at all.  Give up. */
@@ -966,15 +1003,17 @@ Bool VG_(machine_get_hwcaps)( void )
      VG_(cpuid)(1, 0, &eax, &ebx, &ecx, &edx);
 
      // we assume that SSE1 and SSE2 are available by default
-     have_sse3 = (ecx & (1<<0)) != 0;  /* True => have sse3 insns */
-     // ssse3   is ecx:9
+     have_sse3  = (ecx & (1<<0)) != 0;  /* True => have sse3 insns */
+     have_ssse3 = (ecx & (1<<9)) != 0;  /* True => have Sup SSE3 insns */
+     // fma     is ecx:12
      // sse41   is ecx:19
      // sse42   is ecx:20
-
      // xsave   is ecx:26
      // osxsave is ecx:27
      // avx     is ecx:28
-     // fma     is ecx:12
+     have_f16c   = (ecx & (1<<29)) != 0; /* True => have F16C insns */
+     have_rdrand = (ecx & (1<<30)) != 0; /* True => have RDRAND insns */
+
      have_avx = False;
      /* have_fma = False; */
      if ( (ecx & ((1<<28)|(1<<27)|(1<<26))) == ((1<<28)|(1<<27)|(1<<26)) ) {
@@ -1040,17 +1079,31 @@ Bool VG_(machine_get_hwcaps)( void )
         VG_(cpuid)(7, 0, &eax, &ebx, &ecx, &edx);
         have_bmi  = (ebx & (1<<3)) != 0; /* True => have BMI1 */
         have_avx2 = (ebx & (1<<5)) != 0; /* True => have AVX2 */
+        have_rdseed = (ebx & (1<<18)) != 0; /* True => have RDSEED insns */
+     }
+
+     /* Sanity check for RDRAND and F16C.  These don't actually *need* AVX, but
+        it's convenient to restrict them to the AVX case since the simulated
+        CPUID we'll offer them on has AVX as a base. */
+     if (!have_avx) {
+        have_f16c   = False;
+        have_rdrand = False;
+        have_rdseed = False;
      }
 
      va          = VexArchAMD64;
      vai.endness = VexEndnessLE;
      vai.hwcaps  = (have_sse3   ? VEX_HWCAPS_AMD64_SSE3   : 0)
+                 | (have_ssse3  ? VEX_HWCAPS_AMD64_SSSE3  : 0)
                  | (have_cx16   ? VEX_HWCAPS_AMD64_CX16   : 0)
                  | (have_lzcnt  ? VEX_HWCAPS_AMD64_LZCNT  : 0)
                  | (have_avx    ? VEX_HWCAPS_AMD64_AVX    : 0)
                  | (have_bmi    ? VEX_HWCAPS_AMD64_BMI    : 0)
                  | (have_avx2   ? VEX_HWCAPS_AMD64_AVX2   : 0)
-                 | (have_rdtscp ? VEX_HWCAPS_AMD64_RDTSCP : 0);
+                 | (have_rdtscp ? VEX_HWCAPS_AMD64_RDTSCP : 0)
+                 | (have_f16c   ? VEX_HWCAPS_AMD64_F16C   : 0)
+                 | (have_rdrand ? VEX_HWCAPS_AMD64_RDRAND : 0)
+                 | (have_rdseed ? VEX_HWCAPS_AMD64_RDSEED : 0);
 
      VG_(machine_get_cache_info)(&vai);
 
@@ -1486,12 +1539,20 @@ Bool VG_(machine_get_hwcaps)( void )
         { False, S390_FAC_FPEXT, VEX_HWCAPS_S390X_FPEXT, "FPEXT" },
         { False, S390_FAC_LSC,   VEX_HWCAPS_S390X_LSC,   "LSC"   },
         { False, S390_FAC_PFPO,  VEX_HWCAPS_S390X_PFPO,  "PFPO"  },
+        { False, S390_FAC_VX,    VEX_HWCAPS_S390X_VX,    "VX"    },
+        { False, S390_FAC_MSA5,  VEX_HWCAPS_S390X_MSA5,  "MSA5"  },
+        { False, S390_FAC_MI2,   VEX_HWCAPS_S390X_MI2,   "MI2"   },
+        { False, S390_FAC_LSC2,  VEX_HWCAPS_S390X_LSC2,  "LSC2"  },
      };
 
      /* Set hwcaps according to the detected facilities */
+     UChar dw_number = 0;
+     UChar fac_bit = 0;
      for (i=0; i < sizeof fac_hwcaps / sizeof fac_hwcaps[0]; ++i) {
-        vg_assert(fac_hwcaps[i].facility_bit <= 63);  // for now
-        if (hoststfle[0] & (1ULL << (63 - fac_hwcaps[i].facility_bit))) {
+        vg_assert(fac_hwcaps[i].facility_bit <= 191);  // for now
+        dw_number = fac_hwcaps[i].facility_bit / 64;
+        fac_bit = fac_hwcaps[i].facility_bit % 64;
+        if (hoststfle[dw_number] & (1ULL << (63 - fac_bit))) {
            fac_hwcaps[i].installed = True;
            vai.hwcaps |= fac_hwcaps[i].hwcaps_bit;
         }
@@ -1697,7 +1758,7 @@ Bool VG_(machine_get_hwcaps)( void )
      vki_sigaction_fromK_t saved_sigill_act;
      vki_sigaction_toK_t   tmp_sigill_act;
 
-     volatile Bool have_DSP, have_DSPr2;
+     volatile Bool have_DSP, have_DSPr2, have_MSA;
      Int r;
 
      vg_assert(sizeof(vki_sigaction_fromK_t) == sizeof(vki_sigaction_toK_t));
@@ -1722,27 +1783,39 @@ Bool VG_(machine_get_hwcaps)( void )
      VG_(sigaction)(VKI_SIGILL, &tmp_sigill_act, NULL);
 
      if (VEX_PRID_COMP_MIPS == VEX_MIPS_COMP_ID(vai.hwcaps)) {
-        /* DSPr2 instructions. */
-        have_DSPr2 = True;
+
+        /* MSA instructions. */
+        have_MSA = True;
         if (VG_MINIMAL_SETJMP(env_unsup_insn)) {
-           have_DSPr2 = False;
+           have_MSA = False;
         } else {
-           __asm__ __volatile__(".word 0x7d095351"); /* precr.qb.ph t2, t0, t1 */
+           __asm__ __volatile__(".word 0x7800088E"); /* addv.b w2, w1, w0 */
         }
-        if (have_DSPr2) {
-           /* We assume it's 74K, since it can run DSPr2. */
-           vai.hwcaps |= VEX_PRID_IMP_74K;
+        if (have_MSA) {
+           vai.hwcaps |= VEX_PRID_IMP_P5600;
         } else {
-           /* DSP instructions. */
-           have_DSP = True;
+           /* DSPr2 instructions. */
+           have_DSPr2 = True;
            if (VG_MINIMAL_SETJMP(env_unsup_insn)) {
-              have_DSP = False;
+              have_DSPr2 = False;
            } else {
-              __asm__ __volatile__(".word 0x7c3f44b8"); /* rddsp t0, 0x3f */
+              __asm__ __volatile__(".word 0x7d095351"); /* precr.qb.ph t2, t0, t1 */
            }
-           if (have_DSP) {
-              /* We assume it's 34K, since it has support for DSP. */
-              vai.hwcaps |= VEX_PRID_IMP_34K;
+           if (have_DSPr2) {
+              /* We assume it's 74K, since it can run DSPr2. */
+              vai.hwcaps |= VEX_PRID_IMP_74K;
+           } else {
+              /* DSP instructions. */
+              have_DSP = True;
+              if (VG_MINIMAL_SETJMP(env_unsup_insn)) {
+                 have_DSP = False;
+              } else {
+                 __asm__ __volatile__(".word 0x7c3f44b8"); /* rddsp t0, 0x3f */
+              }
+              if (have_DSP) {
+                 /* We assume it's 34K, since it has support for DSP. */
+                 vai.hwcaps |= VEX_PRID_IMP_34K;
+              }
            }
         }
      }
@@ -1806,11 +1879,79 @@ Bool VG_(machine_get_hwcaps)( void )
 
      vai.hwcaps |= VEX_MIPS_HOST_FR;
 
+     /* Same instruction set detection algorithm as for ppc32/arm... */
+     vki_sigset_t          saved_set, tmp_set;
+     vki_sigaction_fromK_t saved_sigill_act;
+     vki_sigaction_toK_t   tmp_sigill_act;
+
+     volatile Bool have_MSA;
+     Int r;
+
+     vg_assert(sizeof(vki_sigaction_fromK_t) == sizeof(vki_sigaction_toK_t));
+
+     VG_(sigemptyset)(&tmp_set);
+     VG_(sigaddset)(&tmp_set, VKI_SIGILL);
+
+     r = VG_(sigprocmask)(VKI_SIG_UNBLOCK, &tmp_set, &saved_set);
+     vg_assert(r == 0);
+
+     r = VG_(sigaction)(VKI_SIGILL, NULL, &saved_sigill_act);
+     vg_assert(r == 0);
+     tmp_sigill_act = saved_sigill_act;
+
+     /* NODEFER: signal handler does not return (from the kernel's point of
+        view), hence if it is to successfully catch a signal more than once,
+        we need the NODEFER flag. */
+     tmp_sigill_act.sa_flags &= ~VKI_SA_RESETHAND;
+     tmp_sigill_act.sa_flags &= ~VKI_SA_SIGINFO;
+     tmp_sigill_act.sa_flags |=  VKI_SA_NODEFER;
+     tmp_sigill_act.ksa_handler = handler_unsup_insn;
+     VG_(sigaction)(VKI_SIGILL, &tmp_sigill_act, NULL);
+
+     if (VEX_PRID_COMP_MIPS == VEX_MIPS_COMP_ID(vai.hwcaps)) {
+
+        /* MSA instructions */
+        have_MSA = True;
+        if (VG_MINIMAL_SETJMP(env_unsup_insn)) {
+           have_MSA = False;
+        } else {
+           __asm__ __volatile__(".word 0x7800088E"); /* addv.b w2, w1, w0 */
+        }
+        if (have_MSA) {
+           vai.hwcaps |= VEX_PRID_IMP_P5600;
+        }
+     }
+
+     VG_(convert_sigaction_fromK_to_toK)(&saved_sigill_act, &tmp_sigill_act);
+     VG_(sigaction)(VKI_SIGILL, &tmp_sigill_act, NULL);
+     VG_(sigprocmask)(VKI_SIG_SETMASK, &saved_set, NULL);
+
+     VG_(debugLog)(1, "machine", "hwcaps = 0x%x\n", vai.hwcaps);
+
      VG_(machine_get_cache_info)(&vai);
 
      return True;
    }
 
+#elif defined(VGP_nanomips_linux)
+   {
+     va = VexArchNANOMIPS;
+     vai.hwcaps = 0;
+
+#    if defined(VKI_LITTLE_ENDIAN)
+     vai.endness = VexEndnessLE;
+#    elif defined(VKI_BIG_ENDIAN)
+     vai.endness = VexEndnessBE;
+#    else
+     vai.endness = VexEndness_INVALID;
+#    endif
+
+     VG_(debugLog)(1, "machine", "hwcaps = 0x%x\n", vai.hwcaps);
+
+     VG_(machine_get_cache_info)(&vai);
+
+     return True;
+   }
 #else
 #  error "Unknown arch"
 #endif
@@ -1936,7 +2077,7 @@ Int VG_(machine_get_size_of_largest_guest_register) ( void )
    /* ARM64 always has Neon, AFAICS. */
    return 16;
 
-#  elif defined(VGA_mips32)
+#  elif defined(VGA_mips32) || defined(VGP_nanomips_linux)
    /* The guest state implies 4, but that can't really be true, can
       it? */
    return 8;
@@ -1959,7 +2100,8 @@ void* VG_(fnptr_to_fnentry)( void* f )
       || defined(VGP_ppc32_linux) || defined(VGP_ppc64le_linux) \
       || defined(VGP_s390x_linux) || defined(VGP_mips32_linux) \
       || defined(VGP_mips64_linux) || defined(VGP_arm64_linux) \
-      || defined(VGP_x86_solaris) || defined(VGP_amd64_solaris)
+      || defined(VGP_x86_solaris) || defined(VGP_amd64_solaris) \
+      || defined(VGP_nanomips_linux)
    return f;
 #  elif defined(VGP_ppc64be_linux)
    /* ppc64-linux uses the AIX scheme, in which f is a pointer to a

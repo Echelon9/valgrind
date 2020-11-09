@@ -22,9 +22,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -45,7 +43,7 @@
 #include "hg_lock_n_thread.h"
 #include "hg_addrdescr.h"            /* self */
 
-void HG_(describe_addr) ( Addr a, /*OUT*/AddrInfo* ai )
+void HG_(describe_addr) ( DiEpoch ep, Addr a, /*OUT*/AddrInfo* ai )
 {
    tl_assert(ai->tag == Addr_Undescribed);
 
@@ -81,7 +79,7 @@ void HG_(describe_addr) ( Addr a, /*OUT*/AddrInfo* ai )
       ai->Addr.Block.freed_at = VG_(null_ExeContext)();;
    } else {
       /* No block found. Search a non-heap block description. */
-      VG_(describe_addr) (a, ai);
+      VG_(describe_addr) (ep, a, ai);
 
       /* In case ai contains a tid, set tnr to the corresponding helgrind
          thread number. */
@@ -100,14 +98,14 @@ void HG_(describe_addr) ( Addr a, /*OUT*/AddrInfo* ai )
    }
 }
 
-Bool HG_(get_and_pp_addrdescr) (Addr addr)
+Bool HG_(get_and_pp_addrdescr) (DiEpoch ep, Addr addr)
 {
 
    Bool ret;
    AddrInfo glai;
 
    glai.tag = Addr_Undescribed;
-   HG_(describe_addr) (addr, &glai);
+   HG_(describe_addr) (ep, addr, &glai);
    VG_(pp_addrinfo) (addr, &glai);
    ret = glai.tag != Addr_Unknown;
 

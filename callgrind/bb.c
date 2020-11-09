@@ -19,9 +19,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -199,7 +197,8 @@ obj_node* obj_of_address(Addr addr)
   DebugInfo* di;
   PtrdiffT offset;
 
-  di = VG_(find_DebugInfo)(addr);
+  DiEpoch ep = VG_(current_DiEpoch)();
+  di = VG_(find_DebugInfo)(ep, addr);
   obj = CLG_(get_obj_node)( di );
 
   /* Update symbol offset in object if remapped */

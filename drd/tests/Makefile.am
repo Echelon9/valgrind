@@ -81,6 +81,8 @@ EXTRA_DIST =                                        \
 	annotate_static.vgtest		            \
 	atomic_var.stderr.exp			    \
 	atomic_var.vgtest			    \
+	bug322621.vgtest			    \
+	bug322621.stderr.exp			    \
 	bar_bad.stderr.exp			    \
 	bar_bad.stderr.exp-nohang		    \
 	bar_bad.stderr.exp-solaris		    \
@@ -107,6 +109,10 @@ EXTRA_DIST =                                        \
 	dlopen.stderr.exp			    \
 	dlopen.stdout.exp			    \
 	dlopen.vgtest				    \
+	fork-serial.stderr.exp			    \
+	fork-serial.vgtest			    \
+	fork-parallel.stderr.exp		    \
+	fork-parallel.vgtest			    \
 	fp_race.stderr.exp                          \
 	fp_race.stderr.exp-mips32-be                \
 	fp_race.stderr.exp-mips32-le                \
@@ -265,9 +271,11 @@ EXTRA_DIST =                                        \
 	sigaltstack.stderr.exp                      \
 	sigaltstack.vgtest                          \
 	std_atomic.stderr.exp		  	    \
-	std_atomic.vgtest			            \
+	std_atomic.vgtest			    \
 	std_list.stderr.exp		  	    \
 	std_list.vgtest			            \
+	std_mutex.stderr.exp		  	    \
+	std_mutex.vgtest			    \
 	std_string.stderr.exp		  	    \
 	std_string.vgtest			    \
 	std_thread.stderr.exp		  	    \
@@ -321,6 +329,7 @@ EXTRA_DIST =                                        \
 	tc18_semabuse.stderr.exp-solaris            \
 	tc18_semabuse.vgtest                        \
 	tc19_shadowmem.stderr.exp-32bit             \
+	tc19_shadowmem.stderr.exp-32bit-BE          \
 	tc19_shadowmem.stderr.exp-64bit             \
 	tc19_shadowmem.vgtest                       \
 	tc21_pthonce.stderr.exp                     \
@@ -367,6 +376,7 @@ check_PROGRAMS =      \
   concurrent_close    \
   dlopen_main         \
   dlopen_lib.so       \
+  fork                \
   fp_race             \
   free_is_write	      \
   hold_lock           \
@@ -426,6 +436,7 @@ if HAVE_SHARED_POINTER_ANNOTATION
 check_PROGRAMS += \
   std_atomic      \
   std_list        \
+  std_mutex	  \
   std_string      \
   std_thread      \
   std_thread2
@@ -437,8 +448,14 @@ check_PROGRAMS += omp_matinv omp_prime omp_printf
 endif
 
 if HAVE_PTHREAD_BARRIER
-check_PROGRAMS += matinv pth_barrier pth_barrier_race pth_barrier_reinit \
-	pth_barrier_thr_cr thread_name
+check_PROGRAMS +=		\
+	bug322621		\
+	matinv			\
+	pth_barrier		\
+	pth_barrier_race	\
+	pth_barrier_reinit	\
+	pth_barrier_thr_cr	\
+	thread_name
 endif
 
 if HAVE_PTHREAD_CREATE_GLIBC_2_0
@@ -455,11 +472,13 @@ endif
 
 
 AM_CFLAGS   += $(AM_FLAG_M3264_PRI) @FLAG_W_EXTRA@ -Wno-inline -Wno-unused-parameter
-AM_CXXFLAGS += $(AM_FLAG_M3264_PRI) @FLAG_W_EXTRA@ -Wno-inline -Wno-unused-parameter
+AM_CXXFLAGS += $(AM_FLAG_M3264_PRI) @FLAG_W_EXTRA@ @FLAG_FALIGNED_NEW@ \
+	-Wno-inline -Wno-unused-parameter
 
 LDADD = -lpthread
 
 
+bug322621_SOURCES           = bug322621.cpp
 concurrent_close_SOURCES    = concurrent_close.cpp
 dlopen_main_LDADD           = -ldl
 dlopen_lib_so_SOURCES       = dlopen_lib.c
@@ -515,10 +534,6 @@ omp_matinv_CFLAGS           = $(AM_CFLAGS) -fopenmp
 omp_matinv_LDFLAGS          = -fopenmp
 omp_matinv_LDADD            = $(LDADD) -lm
 
-if VGCONF_OS_IS_SOLARIS
-omp_matinv_CFLAGS           += -std=gnu99
-endif
-
 omp_prime_CFLAGS            = $(AM_CFLAGS) -fopenmp
 omp_prime_LDFLAGS           = -fopenmp
 omp_prime_LDADD             = $(LDADD) -lm
@@ -530,7 +545,7 @@ endif
 
 matinv_CFLAGS               = $(AM_CFLAGS)
 if VGCONF_OS_IS_SOLARIS
-matinv_CFLAGS               += -std=gnu99 -D__EXTENSIONS__
+matinv_CFLAGS               += -D__EXTENSIONS__
 endif
 if HAVE_PTHREAD_BARRIER
 matinv_LDADD                = $(LDADD) -lm
@@ -546,6 +561,9 @@ std_atomic_CXXFLAGS         = $(AM_CXXFLAGS) -std=c++0x -Wno-sign-compare
 
 std_list_SOURCES            = std_list.cpp
 std_list_CXXFLAGS           = $(AM_CXXFLAGS) -std=c++0x -Wno-sign-compare
+
+std_mutex_SOURCES           = std_mutex.cpp
+std_mutex_CXXFLAGS          = $(AM_CXXFLAGS) -std=c++0x -Wno-sign-compare
 
 std_string_SOURCES          = std_string.cpp
 std_string_CXXFLAGS         = $(AM_CXXFLAGS) -std=c++0x -Wno-sign-compare

@@ -22,9 +22,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -1053,7 +1051,7 @@ static Bool mempool_block_maybe_describe( Addr a, Bool is_metapool,
 
 /* Describe an address as best you can, for error messages,
    putting the result in ai. */
-static void describe_addr ( Addr a, /*OUT*/AddrInfo* ai )
+static void describe_addr ( DiEpoch ep, Addr a, /*OUT*/AddrInfo* ai )
 {
    MC_Chunk*  mc;
 
@@ -1121,15 +1119,15 @@ static void describe_addr ( Addr a, /*OUT*/AddrInfo* ai )
    }
 
    /* No block found. Search a non-heap block description. */
-   VG_(describe_addr) (a, ai);
+   VG_(describe_addr) (ep, a, ai);
 }
 
-void MC_(pp_describe_addr) ( Addr a )
+void MC_(pp_describe_addr) ( DiEpoch ep, Addr a )
 {
    AddrInfo ai;
 
    ai.tag = Addr_Undescribed;
-   describe_addr (a, &ai);
+   describe_addr (ep, a, &ai);
    VG_(pp_addrinfo_mc) (a, &ai, /* maybe_gcc */ False);
    VG_(clear_addrinfo) (&ai);
 }
@@ -1150,6 +1148,7 @@ static void update_origin ( /*OUT*/ExeContext** origin_ec,
 UInt MC_(update_Error_extra)( const Error* err )
 {
    MC_Error* extra = VG_(get_error_extra)(err);
+   DiEpoch   ep    = VG_(get_ExeContext_epoch)(VG_(get_error_where)(err));
 
    switch (VG_(get_error_kind)(err)) {
    // These ones don't have addresses associated with them, and so don't
@@ -1183,31 +1182,31 @@ UInt MC_(update_Error_extra)( const Error* err )
 
    // These ones always involve a memory address.
    case Err_Addr:
-      describe_addr ( VG_(get_error_address)(err),
+      describe_addr ( ep, VG_(get_error_address)(err),
                       &extra->Err.Addr.ai );
       return sizeof(MC_Error);
    case Err_MemParam:
-      describe_addr ( VG_(get_error_address)(err),
+      describe_addr ( ep, VG_(get_error_address)(err),
                       &extra->Err.MemParam.ai );
       update_origin( &extra->Err.MemParam.origin_ec,
                      extra->Err.MemParam.otag );
       return sizeof(MC_Error);
    case Err_Jump:
-      describe_addr ( VG_(get_error_address)(err),
+      describe_addr ( ep, VG_(get_error_address)(err),
                       &extra->Err.Jump.ai );
       return sizeof(MC_Error);
    case Err_User:
-      describe_addr ( VG_(get_error_address)(err),
+      describe_addr ( ep, VG_(get_error_address)(err),
                       &extra->Err.User.ai );
       update_origin( &extra->Err.User.origin_ec,
                      extra->Err.User.otag );
       return sizeof(MC_Error);
    case Err_Free:
-      describe_addr ( VG_(get_error_address)(err),
+      describe_addr ( ep, VG_(get_error_address)(err),
                       &extra->Err.Free.ai );
       return sizeof(MC_Error);
    case Err_IllegalMempool:
-      describe_addr ( VG_(get_error_address)(err),
+      describe_addr ( ep, VG_(get_error_address)(err),
                       &extra->Err.IllegalMempool.ai );
       return sizeof(MC_Error);
 
@@ -1381,6 +1380,16 @@ Bool MC_(read_extra_suppression_info) ( Int fd, HChar** bufpp,
       eof = VG_(get_line) ( fd, bufpp, nBufp, lineno );
       if (eof) return False;
       VG_(set_supp_string)(su, VG_(strdup)("mc.resi.1", *bufpp));
+      if (VG_(strcmp) (*bufpp, "preadv(vector[...])") == 0
+          || VG_(strcmp) (*bufpp, "pwritev(vector[...])") == 0) {
+         /* Report the incompatible change introduced in 3.15
+            when reading a unsupported 3.14 or before entry.
+            See bug 417075. */
+         VG_(umsg)("WARNING: %s is an obsolete suppression line "
+                   "not supported in valgrind 3.15 or later.\n"
+                   "You should replace [...] by a specific index"
+                   " such as [0] or [1] or [2] or similar\n\n", *bufpp);
+      }
    } else if (VG_(get_supp_kind)(su) == LeakSupp) {
       // We might have the optional match-leak-kinds line
       MC_LeakSuppExtra* lse;

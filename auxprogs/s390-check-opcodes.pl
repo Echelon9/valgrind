@@ -27,7 +27,114 @@ my %csv_desc = ();
 my %csv_implemented = ();
 my %toir_implemented = ();
 my %toir_decoded = ();
+my %known_arch = map {($_ => 1)}
+    qw(g5 z900 z990 z9-109 z9-ec z10 z196 zEC12 z13 arch12 arch13);
 
+# Patterns for identifying certain extended mnemonics that shall be
+# skipped in "s390-opc.txt" and "s390-opcodes.csv".
+
+my @extended_mnemonics = (
+    "bi",			# extended mnemonic for bic
+    "va[bhfgq]",
+    "vacc[bhfgq]",
+    "vacccq",
+    "vacq",
+    "vavgl*[bhfg]",
+    "vcdl*gb",
+    "vceq[bhfg]s*",
+    "vchl*[bhfg]s*",
+    "vcl*gdb",
+    "vc[lt]z[bhfg]",
+    "vecl*[bhfg]",
+    "verim[bhfg]",
+    "verllv*[bhfg]",
+    "veslv*[bhfg]",
+    "vesrav*[bhfg]",
+    "vesrlv*[bhfg]",
+    "vfaez*[bhfg]s*",
+    "vfeez*[bhfg]s*",
+    "vfenez*[bhfg]s*",
+    "vfce[sd]bs*",
+    "vfchdbs*",
+    "vfche[sd]bs*",
+    "vfchsbs*",
+    "vfd[sd]b",
+    "vfa[sd]b",
+    "vfi[sd]b",
+    "vfke[sd]bs*",
+    "vfkhe*[sd]bs*",
+    "vflc[sd]b",
+    "vfll[sd]",
+    "[vw]flr[dx]",
+    "vfl[np][sd]b",
+    "vfm[as]*[sd]b",
+    "vfmax[sd]b",
+    "vfmin[sd]b",
+    "vfnm[as][sd]b",
+    "vfpso[sd]b",
+    "vfsq*[sd]b",
+    "vftci[sd]b",
+    "vgfma*[bhfg]",
+    "vgm[bhfg]",
+    "vistr[bhfg]s*",
+    "vlc[bhfg]",
+    "[vw]ldeb",
+    "[vw]ledb",
+    "vlgv[bhfg]",
+    "vllez[bhfg]",
+    "vllezlf",
+    "vlp[bhfg]",
+    "vlrep[bhfg]",
+    "vlvg[bhfg]",
+    "vmal?[eoh][bhfg]",
+    "vmal(b|hw|f)",
+    "vml(b|hw|f)",
+    "vml?(o|e)[bhf]",
+    "vml?h[bhf]",
+    "vm[nx]l*[bhfg]",
+    "vmr[lh][bhfg]",
+    "vmslg",
+    "vnot",
+    "(vone|vzero)",
+    "vpkl*[bhfg]",
+    "vpkl*s*[bhfg]s*",
+    "vpopct[bhfg]",
+    "vrepi*[bhgf]",
+    "vs[bhfgq]",
+    "vsbcbiq",
+    "vsbiq",
+    "vscbi[bhfgq]",
+    "vseg[bfh]",
+    "vstrcz*[bhf]s*",
+    "vsum(b|gh|gf|h|qf|qg)",
+    "vuplh[bhf]",
+    "vuph[bhf]",
+    "vupl(b|hw|f)",
+    "vupll[bhf]",
+    "wcdl*gb",
+    "wcl*gdb",
+    "wfa[sdx]b",
+    "wfch*e*[sdx]bs*",
+    "wf[cdi][sdx]b",
+    "wfkh*e*[sdx]bs*",
+    "wfk[sdx]b",
+    "wfl[clnp][sdx]b*",
+    "wfmax[sdx]b",
+    "wfmin[sdx]b",
+    "wfm[as]*[sdx]b",
+    "wfnm[as][sdx]b",
+    "wfpso[sdx]b",
+    "wftci[sdx]b",
+    "wfsq*[sdx]b",
+    "vfl[lr]",
+    "prno"			# alternate mnemonic for ppno
+    );
+
+# Compile excluded mnemonics into one regular expression to optimize
+# speed.  Also it simplifies the code.
+
+my $extended_mnemonics_pattern = '^(' .
+    join('|', map "$_", @extended_mnemonics) . ')$';
 
 #----------------------------------------------------
 # Read s390-opc.txt (binutils)
@@ -37,8 +144,7 @@ while (my $line = <OPC>) {
     chomp $line;
     next if ($line =~ "^[ ]*#");   # comments
     next if ($line =~ /^\s*$/);    # blank line
-    my $description = (split /"/,$line)[1];
-    my ($encoding,$mnemonic,$format) = split /\s+/,$line;
+    my ($encoding,$mnemonic,$format) = $line =~ /^(\S+) (\S+) (\S+)/gc;
 
     # Ignore opcodes that have wildcards in them ('$', '*')
     # Those provide alternate mnemonics for specific instances of this opcode
@@ -76,41 +182,50 @@ while (my $line = <OPC>) {
     next if ($mnemonic eq "ldxbra"); # indistinguishable from ldxbr
     next if ($mnemonic eq "lexbra"); # indistinguishable from lexbr
     next if ($mnemonic eq "ledbra"); # indistinguishable from ledbr
-    next if ($mnemonic eq "cdgtra"); # indistinguishable from cdgtr
+    next if ($mnemonic eq "cdgtr");  # indistinguishable from cdgtra
     next if ($mnemonic eq "cxgtra"); # indistinguishable from cxgtr
     next if ($mnemonic eq "cgdtra"); # indistinguishable from cgdtr
     next if ($mnemonic eq "cgxtra"); # indistinguishable from cgxtr
-    next if ($mnemonic eq "fidbra"); # indistinguishable from fidbr
-    next if ($mnemonic eq "fiebra"); # indistinguishable from fiebr
-    next if ($mnemonic eq "fixbra"); # indistinguishable from fixbr
-    next if ($mnemonic eq "adtr");  # indistinguishable from adtra
-    next if ($mnemonic eq "axtr");  # indistinguishable from axtra
-    next if ($mnemonic eq "sdtr");  # indistinguishable from sdtra
-    next if ($mnemonic eq "sxtr");  # indistinguishable from sxtra
-    next if ($mnemonic eq "ddtr");  # indistinguishable from ddtra
-    next if ($mnemonic eq "dxtr");  # indistinguishable from dxtra
-    next if ($mnemonic eq "mdtr");  # indistinguishable from mdtra
-    next if ($mnemonic eq "mxtr");  # indistinguishable from mxtra
+    next if ($mnemonic eq "fidbr");  # indistinguishable from fidbra
+    next if ($mnemonic eq "fiebr");  # indistinguishable from fiebra
+    next if ($mnemonic eq "fixbr");  # indistinguishable from fixbra
+    next if ($mnemonic eq "adtr");   # indistinguishable from adtra
+    next if ($mnemonic eq "axtr");   # indistinguishable from axtra
+    next if ($mnemonic eq "sdtr");   # indistinguishable from sdtra
+    next if ($mnemonic eq "sxtr");   # indistinguishable from sxtra
+    next if ($mnemonic eq "ddtr");   # indistinguishable from ddtra
+    next if ($mnemonic eq "dxtr");   # indistinguishable from dxtra
+    next if ($mnemonic eq "mdtr");   # indistinguishable from mdtra
+    next if ($mnemonic eq "mxtr");   # indistinguishable from mxtra
+    next if ($mnemonic =~ /$extended_mnemonics_pattern/);
 
-    $description =~ s/^[\s]+//g;    # remove leading blanks
-    $description =~ s/[\s]+$//g;    # remove trailing blanks
-    $description =~ s/[ ][ ]+/ /g;  # replace multiple blanks with a single one
+    my ($description) = $line =~ /\G\s+"\s*(.*?)\s*"/gc;
+    my ($arch) = $line =~ /\G\s+(\S+)/gc;
+    unless ($known_arch{$arch}) {
+	unless (exists $known_arch{$arch}) {
+	    print "warning: unsupported arch \"$arch\" in s390-opc.txt\n";
+	    $known_arch{$arch} = 0;
+	}
+	next;
+    }
 
+    $description =~ s/\s\s+/ /g; # replace multiple blanks with a single one
 
-# Certain opcodes are listed more than once. Let the first description win
-    if ($opc_desc{$mnemonic}) {
-        # already there
+    # Certain opcodes are listed more than once. Let the first description
+    # win.
+    if (exists $opc_desc{$mnemonic}) {
+	# already there
 #        if ($opc_desc{$mnemonic} ne $description) {
 #            print "multiple description for opcode $mnemonic\n";
 #            print "  old: |" . $opc_desc{$mnemonic} . "|\n";
 #            print "  new: |" . $description . "|\n";
 #        }
     } else {
-        $opc_desc{$mnemonic} = $description;
+	$opc_desc{$mnemonic} = $description;
     }
 
     if ($description =~ /,/) {
-        print "warning: description of $mnemonic contains comma\n";
+	print "warning: description of $mnemonic contains comma\n";
     }
 }
 close(OPC);
@@ -143,32 +258,33 @@ while (my $line = <CSV>) {
     next if ($mnemonic eq "ldxbra"); # indistinguishable from ldxbr
     next if ($mnemonic eq "lexbra"); # indistinguishable from lexbr
     next if ($mnemonic eq "ledbra"); # indistinguishable from ledbr
-    next if ($mnemonic eq "cdgtra"); # indistinguishable from cdgtr
+    next if ($mnemonic eq "cdgtr");  # indistinguishable from cdgtra
     next if ($mnemonic eq "cxgtra"); # indistinguishable from cxgtr
     next if ($mnemonic eq "cgdtra"); # indistinguishable from cgdtr
     next if ($mnemonic eq "cgxtra"); # indistinguishable from cgxtr
-    next if ($mnemonic eq "fidbra"); # indistinguishable from fidbr
-    next if ($mnemonic eq "fiebra"); # indistinguishable from fiebr
-    next if ($mnemonic eq "fixbra"); # indistinguishable from fixbr
+    next if ($mnemonic eq "fidbr");  # indistinguishable from fidbra
+    next if ($mnemonic eq "fiebr");  # indistinguishable from fiebra
+    next if ($mnemonic eq "fixbr");  # indistinguishable from fixbra
     next if ($mnemonic eq "adtr");   # indistinguishable from adtra
     next if ($mnemonic eq "sdtr");   # indistinguishable from sdtra
     next if ($mnemonic eq "ddtr");   # indistinguishable from ddtra
     next if ($mnemonic eq "mdtr");   # indistinguishable from mdtra
+    next if ($mnemonic =~ /$extended_mnemonics_pattern/);
 
-# Complain about duplicate entries. We don't want them.
+    # Complain about duplicate entries. We don't want them.
     if ($csv_desc{$mnemonic}) {
-        print "$mnemonic: duplicate entry\n";
+	print "$mnemonic: duplicate entry\n";
     } else {
-        $csv_desc{$mnemonic} = $description;
+	$csv_desc{$mnemonic} = $description;
     }
-# Remember whether it is implemented or not
+    # Remember whether it is implemented or not
     next if ($line =~ /not\s+implemented/);
     next if ($line =~ /N\/A/);
     next if ($line =~ /won't do/);
     if ($line =~ /implemented/) {
-        $csv_implemented{$mnemonic} = 1;
+	$csv_implemented{$mnemonic} = 1;
     } else {
-        print "*** unknown implementation status of $mnemonic\n";
+	print "*** unknown implementation status of $mnemonic\n";
     }
 }
 close(CSV);
@@ -180,19 +296,15 @@ open(TOIR, "$toir_file") || die "cannot open $toir_file\n";
 while (my $line = <TOIR>) {
     chomp $line;
     if ($line =~ /goto\s+unimplemented/) {
-        # Assume this is in the decoder
-        if ($line =~ /\/\*\s([A-Z][A-Z0-9]+)\s\*\//) {
-            my $mnemonic = $1;
-            $mnemonic =~ tr/A-Z/a-z/;
-            $toir_decoded{$mnemonic} = 1;
-#            print "DECODED: $mnemonic\n";
-        }
+	# Assume this is in the decoder
+	if ($line =~ /\/\*\s([A-Z][A-Z0-9]*)\s\*\//) {
+	    my $mnemonic = lc $1;
+	    $toir_decoded{$mnemonic} = 1;
+	}
+    } elsif ($line =~ /^s390_irgen_([A-Z][A-Z0-9]*)\b/) {
+	my $mnemonic = lc $1;
+	$toir_implemented{$mnemonic} = 1;
     }
-    next if (! ($line =~ /^s390_irgen_[A-Z]/));
-    $line =~ /^s390_irgen_([A-Z][A-Z0-9]*)/;
-    my $op = $1;
-    $op =~ tr/A-Z/a-z/;
-    $toir_implemented{$op} = 1;
 }
 close(TOIR);
 
@@ -201,12 +313,12 @@ close(TOIR);
 #----------------------------------------------------
 foreach my $opc (keys %opc_desc) {
     if (! $csv_desc{$opc}) {
-        print "*** opcode $opc not listed in $csv_file\n";
+	print "*** opcode $opc not listed in $csv_file\n";
     }
 }
 foreach my $opc (keys %csv_desc) {
     if (! $opc_desc{$opc}) {
-        print "*** opcode $opc not listed in $opc_file\n";
+	print "*** opcode $opc not listed in $opc_file\n";
     }
 }
 
@@ -215,11 +327,11 @@ foreach my $opc (keys %csv_desc) {
 #----------------------------------------------------
 foreach my $opc (keys %opc_desc) {
     if (defined $csv_desc{$opc}) {
-        if ($opc_desc{$opc} ne $csv_desc{$opc}) {
-            print "*** opcode $opc differs:\n";
-        print "    binutils:    $opc_desc{$opc}\n";
-            print "    opcodes.csv: $csv_desc{$opc}\n";
-        }
+	if ($opc_desc{$opc} ne $csv_desc{$opc}) {
+	    print "*** opcode $opc differs:\n";
+	print "    binutils:    $opc_desc{$opc}\n";
+	    print "    opcodes.csv: $csv_desc{$opc}\n";
+	}
     }
 }
 
@@ -228,13 +340,13 @@ foreach my $opc (keys %opc_desc) {
 #----------------------------------------------------
 foreach my $opc (keys %toir_implemented) {
     if (! $csv_implemented{$opc}) {
-        print "*** opcode $opc is implemented but CSV file does not say so\n";
+	print "*** opcode $opc is implemented but CSV file does not say so\n";
     }
 }
 
 foreach my $opc (keys %csv_implemented) {
     if (! $toir_implemented{$opc}) {
-        print "*** opcode $opc is not implemented but CSV file says so\n";
+	print "*** opcode $opc is not implemented but CSV file says so\n";
     }
 }
 
@@ -246,7 +358,7 @@ foreach my $opc (keys %csv_implemented) {
 
 foreach my $opc (keys %opc_desc) {
     if (! $toir_implemented{$opc} && ! $toir_decoded{$opc}) {
-        print "*** opcode $opc is not handled by the decoder\n";
+	print "*** opcode $opc is not handled by the decoder\n";
     }
 }
 

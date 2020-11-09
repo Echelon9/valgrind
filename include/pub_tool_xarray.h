@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -141,6 +139,14 @@ extern void VG_(removeIndexXA)( XArray*, Word );
    O(N) operation, when N is the number of elements after the
    specified element, in the array. */
 extern void VG_(insertIndexXA)( XArray*, Word, const void* elem );
+
+/* Replace the element of an XArray at the given index with a copy
+   of the new element.  This is an O(1) operation.
+   Compared to the caller doing:
+          *(T*)VG_(indexXA)(arr, index) = new_value;
+   this function will also mark the array as unsorted.  */
+extern void VG_(replaceIndexXA)( XArray*, Word, const void* elem );
+
 
 /* Make a new, completely independent copy of the given XArray, using
    the existing allocation function to allocate the new space.

@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-   02110-1301, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 
@@ -2055,6 +2053,25 @@ static X86CondCode iselCondCode_wrk ( ISelEnv* env, const IRExpr* e )
       }
    }
 
+   /* And1(x,y), Or1(x,y) */
+   /* FIXME: We could (and probably should) do a lot better here.  If both args
+      are in temps already then we can just emit a reg-reg And/Or directly,
+      followed by the final Test. */
+   if (e->tag == Iex_Binop
+       && (e->Iex.Binop.op == Iop_And1 || e->Iex.Binop.op == Iop_Or1)) {
+      // We could probably be cleverer about this.  In the meantime ..
+      HReg x_as_32 = newVRegI(env);
+      X86CondCode cc_x = iselCondCode(env, e->Iex.Binop.arg1);
+      addInstr(env, X86Instr_Set32(cc_x, x_as_32));
+      HReg y_as_32 = newVRegI(env);
+      X86CondCode cc_y = iselCondCode(env, e->Iex.Binop.arg2);
+      addInstr(env, X86Instr_Set32(cc_y, y_as_32));
+      X86AluOp aop = e->Iex.Binop.op == Iop_And1 ? Xalu_AND : Xalu_OR;
+      addInstr(env, X86Instr_Alu32R(aop, X86RMI_Reg(x_as_32), y_as_32));
+      addInstr(env, X86Instr_Test32(1, X86RM_Reg(y_as_32)));
+      return Xcc_NZ;
+   }
+
    ppIRExpr(e);
    vpanic("iselCondCode");
 }
@@ -2377,6 +2394,56 @@ static void iselInt64Expr_wrk ( HReg* rHi, HReg* rLo, ISelEnv* env,
             addInstr(env, X86Instr_CMov32(Xcc_NZ, X86RM_Reg(tTemp), tHi));
             *rHi = tHi;
             *rLo = tLo;
+            return;
+         }
+
+         case Iop_Sar64: {
+            /* gcc -O2 does the following.  I don't know how it works, but it
+               does work.  Don't mess with it.  This is hard to test because the
+               x86 front end doesn't create Iop_Sar64 for any x86 instruction,
+               so it's impossible to write a test program that feeds values
+               through Iop_Sar64 and prints their results.  The implementation
+               here was tested by using psrlq on mmx registers -- that generates
+               Iop_Shr64 -- and temporarily hacking the front end to generate
+               Iop_Sar64 for that instruction instead.
+
+               movl  %amount, %ecx
+               movl  %srcHi,  %r1
+               movl  %srcLo,  %r2
+
+               movl   %r1, %r3
+               sarl   %cl, %r3
+               movl   %r2, %r4
+               shrdl  %cl, %r1, %r4
+               movl   %r3, %r2
+               sarl   $31, %r2
+               andl   $32, %ecx
+               cmovne %r3, %r4   // = resLo
+               cmovne %r2, %r3   // = resHi
+            */
+            HReg amount = iselIntExpr_R(env, e->Iex.Binop.arg2);
+            HReg srcHi = INVALID_HREG, srcLo = INVALID_HREG;
+            iselInt64Expr(&srcHi, &srcLo, env, e->Iex.Binop.arg1);
+            HReg r1 = newVRegI(env);
+            HReg r2 = newVRegI(env);
+            HReg r3 = newVRegI(env);
+            HReg r4 = newVRegI(env);
+            addInstr(env, mk_iMOVsd_RR(amount, hregX86_ECX()));
+            addInstr(env, mk_iMOVsd_RR(srcHi, r1));
+            addInstr(env, mk_iMOVsd_RR(srcLo, r2));
+
+            addInstr(env, mk_iMOVsd_RR(r1, r3));
+            addInstr(env, X86Instr_Sh32(Xsh_SAR, 0/*%cl*/, r3));
+            addInstr(env, mk_iMOVsd_RR(r2, r4));
+            addInstr(env, X86Instr_Sh3232(Xsh_SHR, 0/*%cl*/, r1, r4));
+            addInstr(env, mk_iMOVsd_RR(r3, r2));
+            addInstr(env, X86Instr_Sh32(Xsh_SAR, 31, r2));
+            addInstr(env, X86Instr_Alu32R(Xalu_AND, X86RMI_Imm(32),
+                                                    hregX86_ECX()));
+            addInstr(env, X86Instr_CMov32(Xcc_NZ, X86RM_Reg(r3), r4));
+            addInstr(env, X86Instr_CMov32(Xcc_NZ, X86RM_Reg(r2), r3));
+            *rHi = r3;
+            *rLo = r4;
             return;
          }
 

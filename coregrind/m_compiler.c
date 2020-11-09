@@ -22,9 +22,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -232,6 +230,13 @@ void __ubsan_handle_type_mismatch ( void )
    vg_assert(0);
 }
 
+void __ubsan_handle_type_mismatch_v1 ( void );
+void __ubsan_handle_type_mismatch_v1 ( void )
+{
+   VG_(debugLog)(0, "main:ubsan", "In %s", __func__);
+   vg_assert(0);
+}
+
 void __ubsan_handle_mul_overflow ( void );
 void __ubsan_handle_mul_overflow ( void )
 {
@@ -267,6 +272,13 @@ void __ubsan_handle_negate_overflow ( void )
    vg_assert(0);
 }
 
+void __ubsan_handle_pointer_overflow ( void );
+void __ubsan_handle_pointer_overflow ( void )
+{
+   VG_(debugLog)(0, "main:ubsan", "In %s", __func__);
+   vg_assert(0);
+}
+
 void __ubsan_handle_out_of_bounds ( void );
 void __ubsan_handle_out_of_bounds ( void )
 {
@@ -290,6 +302,13 @@ void __ubsan_handle_vla_bound_not_positive ( void )
 
 void __ubsan_handle_nonnull_arg ( void );
 void __ubsan_handle_nonnull_arg ( void )
+{
+   VG_(debugLog)(0, "main:ubsan", "In %s", __func__);
+   vg_assert(0);
+}
+
+void __ubsan_handle_invalid_builtin ( void );
+void __ubsan_handle_invalid_builtin ( void )
 {
    VG_(debugLog)(0, "main:ubsan", "In %s", __func__);
    vg_assert(0);

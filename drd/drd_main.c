@@ -1,7 +1,7 @@
 /*
   This file is part of drd, a thread error detector.
 
-  Copyright (C) 2006-2017 Bart Van Assche <bvanassche@acm.org>.
+  Copyright (C) 2006-2020 Bart Van Assche <bvanassche@acm.org>.
 
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License as
@@ -14,9 +14,7 @@
   General Public License for more details.
 
   You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-  02111-1307, USA.
+  along with this program; if not, see <http://www.gnu.org/licenses/>.
 
   The GNU General Public License is contained in the file COPYING.
 */
@@ -705,12 +703,11 @@ static void drd_thread_finished(ThreadId vg_tid)
          = (DRD_(thread_get_stack_max)(drd_tid)
             - DRD_(thread_get_stack_min_min)(drd_tid));
       VG_(message)(Vg_UserMsg,
-                   "thread %u%s finished and used %lu bytes out of %lu"
-                   " on its stack. Margin: %lu bytes.\n",
+                   "thread %u%s finished and used %lu bytes out of %lu on its stack. Margin: %ld bytes.\n",
                    drd_tid,
                    DRD_(thread_get_joinable)(drd_tid)
                    ? "" : " (which is a detached thread)",
-                   used_stack, stack_size, stack_size - used_stack);
+                   used_stack, stack_size, (long)(stack_size - used_stack));
 
    }
    drd_stop_using_mem(DRD_(thread_get_stack_min)(drd_tid),
@@ -761,10 +758,6 @@ static void drd_start_client_code(const ThreadId tid, const ULong bbs_done)
 static void DRD_(fini)(Int exitcode)
 {
    // thread_print_all();
-   if (VG_(clo_verbosity) == 1 && !VG_(clo_xml)) {
-      VG_(message)(Vg_UserMsg, "For counts of detected and suppressed errors, "
-                   "rerun with: -v\n");
-   }
 
    if ((VG_(clo_stats) || s_print_stats) && !VG_(clo_xml))
    {
@@ -829,7 +822,7 @@ void drd_pre_clo_init(void)
    VG_(details_name)            ("drd");
    VG_(details_version)         (NULL);
    VG_(details_description)     ("a thread error detector");
-   VG_(details_copyright_author)("Copyright (C) 2006-2017, and GNU GPL'd,"
+   VG_(details_copyright_author)("Copyright (C) 2006-2020, and GNU GPL'd,"
                                  " by Bart Van Assche.");
    VG_(details_bug_reports_to)  (VG_BUGS_TO);
 

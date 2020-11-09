@@ -13,9 +13,7 @@
  General Public License for more details.
 
  You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
- 02111-1307, USA.
+ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
  The GNU General Public License is contained in the file COPYING.
  */
@@ -1873,7 +1871,12 @@ static void test_p7_fpops ( void )
       double resd;
       unsigned long long u0;
       int i;
-      int res32 = strcmp(fp_tests[k].name, "fcfidu");
+      //  fcfids  - 64-bit fp converted to inf precise fp integer, rounded to SP. (32)
+      //  fcfidus - 64-bit fp converted to inf precise fp integer, rounded to SP. (32)
+      //  fcfidu  - 64-bit fp converted to inf precise fp integer, rounded to DP. (64)
+      int res32 = (
+                   (strcmp(fp_tests[k].name, "fcfids")==0) ||
+                   (strcmp(fp_tests[k].name, "fcfidus")==0)    );
 
       for (i = 0; i < nb_fargs; i++) {
          u0 = *(unsigned long long *) (&fargs[i]);

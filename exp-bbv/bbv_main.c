@@ -25,9 +25,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -346,6 +344,7 @@ static IRSB* bbv_instrument ( VgCallbackClosure* closure,
    IRDirty  *di;
    IRExpr   **argv, *arg1;
    Int      regparms,opcode_type;
+   DiEpoch  ep = VG_(current_DiEpoch)();
 
       /* We don't handle a host/guest word size mismatch */
    if (gWordTy != hWordTy) {
@@ -392,8 +391,8 @@ static IRSB* bbv_instrument ( VgCallbackClosure* closure,
       block_num++;
          /* get function name and entry point information */
       const HChar *fn_name;
-      VG_(get_fnname)(origAddr, &fn_name);
-      bbInfo->is_entry=VG_(get_fnname_if_entry)(origAddr, &fn_name);
+      VG_(get_fnname)(ep, origAddr, &fn_name);
+      bbInfo->is_entry=VG_(get_fnname_if_entry)(ep, origAddr, &fn_name);
       bbInfo->fn_name =VG_(strdup)("bbv_strings", fn_name);
          /* insert structure into table */
       VG_(OSetGen_Insert)( instr_info_table, bbInfo );
@@ -515,8 +514,8 @@ static void bbv_post_clo_init(void)
 
       /* Try a closer approximation of basic blocks  */
       /* This is the same as the command line option */
-      /* --vex-guest-chase-thresh=0                  */
-   VG_(clo_vex_control).guest_chase_thresh = 0;
+      /* --vex-guest-chase=no                        */
+   VG_(clo_vex_control).guest_chase = False;
 }
 
    /* Parse the command line options */

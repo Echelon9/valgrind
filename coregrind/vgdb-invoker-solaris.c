@@ -20,9 +20,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -173,8 +171,8 @@ static Bool attach(pid_t pid)
    }
 
    pstatus_t pstatus;
-   bytes = read(status_fd, &pstatus, sizeof(pstatus));
-   if ((bytes < 0) || (bytes != sizeof(pstatus))) {
+   ssize_t nread = read(status_fd, &pstatus, sizeof(pstatus));
+   if ((nread < 0) || (nread != sizeof(pstatus))) {
       ERROR(errno, "Failed to read from %s.\n", procname);
       close(status_fd);
       return False;
@@ -400,8 +398,8 @@ static Bool invoke_agent(pid_t pid, prgregset_t *regs, id_t *agent_lwpid)
    }
 
    lwpstatus_t status;
-   bytes = read(status_fd, &status, sizeof(status));
-   if ((bytes < 0) || (bytes != sizeof(status))) {
+   ssize_t nread = read(status_fd, &status, sizeof(status));
+   if ((nread < 0) || (nread != sizeof(status))) {
       ERROR(errno, "Failed to read from %s.\n", procname);
       close(status_fd);
       return False;

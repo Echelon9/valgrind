@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-   02110-1301, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 
@@ -52,9 +50,6 @@
    guest_generic_bb_to_IR.h. */
 extern
 DisResult disInstr_PPC ( IRSB*        irbb,
-                         Bool         (*resteerOkFn) ( void*, Addr ),
-                         Bool         resteerCisOk,
-                         void*        callback_opaque,
                          const UChar* guest_code,
                          Long         delta,
                          Addr         guest_IP,
@@ -156,6 +151,7 @@ extern ULong convert_to_zoned_helper( ULong src_hi, ULong src_low,
 extern ULong convert_to_national_helper( ULong src, ULong return_upper );
 extern ULong convert_from_zoned_helper( ULong src_hi, ULong src_low );
 extern ULong convert_from_national_helper( ULong src_hi, ULong src_low );
+extern ULong generate_C_FPCC_helper( ULong size, ULong src_hi, ULong src );
 
 
 /* --- DIRTY HELPERS --- */

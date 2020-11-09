@@ -22,9 +22,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -101,6 +99,9 @@
    20400 WCSCHR
    20410 WCSRCHR
    20420 STPNCPY
+   20430 WMEMCHR
+   20440 WCSNLEN
+   20450 WSTRNCMP
 */
 
 #if defined(VGO_solaris)
@@ -377,7 +378,7 @@ static inline void my_exit ( int x )
       while (m < n && *dst) { m++; dst++; } \
       if (m < n) { \
          /* Fill as far as dst_orig[n-2], then nul-terminate. */ \
-         while (m < n-1 && *src) { m++; *dst++ = *src++; } \
+         while (m+1 < n && *src) { m++; *dst++ = *src++; } \
          *dst = 0; \
       } else { \
          /* No space to copy anything to dst. m == n */ \
@@ -580,7 +581,7 @@ static inline void my_exit ( int x )
       \
       STRLCPY_CHECK_FOR_DSTSIZE_ZERO \
       \
-      while (m < n-1 && *src) { m++; *dst++ = *src++; } \
+      while (m+1 < n && *src) { m++; *dst++ = *src++; } \
       /* m non-nul bytes have now been copied, and m <= n-1. */ \
       /* Check for overlap after copying; all n bytes of dst are relevant, */ \
       /* but only m+1 bytes of src if terminator was found */ \
@@ -962,6 +963,11 @@ static inline void my_exit ( int x )
                while ((s & WM) != 0 && n >= 1) \
                   { *(UChar*)d = *(UChar*)s; s += 1; d += 1; n -= 1; } \
                /* Copy UWords. */ \
+               while (n >= WS * 4) \
+                  { *(UWord*)d = *(UWord*)s; s += WS; d += WS; n -= WS;   \
+                    *(UWord*)d = *(UWord*)s; s += WS; d += WS; n -= WS;   \
+                    *(UWord*)d = *(UWord*)s; s += WS; d += WS; n -= WS;   \
+                    *(UWord*)d = *(UWord*)s; s += WS; d += WS; n -= WS; } \
                while (n >= WS) \
                   { *(UWord*)d = *(UWord*)s; s += WS; d += WS; n -= WS; } \
                if (n == 0) \
@@ -989,6 +995,11 @@ static inline void my_exit ( int x )
                while ((s & WM) != 0 && n >= 1) \
                   { s -= 1; d -= 1; *(UChar*)d = *(UChar*)s; n -= 1; } \
                /* Copy UWords. */ \
+               while (n >= WS * 4) \
+                  { s -= WS; d -= WS; *(UWord*)d = *(UWord*)s; n -= WS;   \
+                    s -= WS; d -= WS; *(UWord*)d = *(UWord*)s; n -= WS;   \
+                    s -= WS; d -= WS; *(UWord*)d = *(UWord*)s; n -= WS;   \
+                    s -= WS; d -= WS; *(UWord*)d = *(UWord*)s; n -= WS; } \
                while (n >= WS) \
                   { s -= WS; d -= WS; *(UWord*)d = *(UWord*)s; n -= WS; } \
                if (n == 0) \
@@ -1147,6 +1158,7 @@ static inline void my_exit ( int x )
  STPCPY(VG_Z_LIBC_SONAME,          __stpcpy_sse2_unaligned)
  STPCPY(VG_Z_LD_LINUX_SO_2,        stpcpy)
  STPCPY(VG_Z_LD_LINUX_X86_64_SO_2, stpcpy)
+ STPCPY(VG_Z_LD_LINUX_AARCH64_SO_1,stpcpy)
 
 #elif defined(VGO_darwin)
  //STPCPY(VG_Z_LIBC_SONAME,          stpcpy)
@@ -1750,7 +1762,7 @@ static inline void my_exit ( int x )
       UWord len = 0; \
       while (1) { \
          UWord i; \
-         HChar sc = *s; \
+         UChar sc = *s; \
          if (sc == 0) \
             break; \
          for (i = 0; i < nacc; i++) { \
@@ -1843,9 +1855,9 @@ static inline void my_exit ( int x )
 
 #define WCSLEN(soname, fnname) \
    SizeT VG_REPLACE_FUNCTION_EZU(20370,soname,fnname) \
-      ( const UInt* str ); \
+      ( const Int* str ); \
    SizeT VG_REPLACE_FUNCTION_EZU(20370,soname,fnname) \
-      ( const UInt* str )  \
+      ( const Int* str )  \
    { \
       SizeT i = 0; \
       while (str[i] != 0) i++; \
@@ -1860,6 +1872,28 @@ static inline void my_exit ( int x )
 #elif defined(VGO_solaris)
  WCSLEN(VG_Z_LIBC_SONAME,          wcslen)
 
+#endif
+
+/*---------------------- wcsnlen ----------------------*/
+
+#define WCSNLEN(soname, fnname) \
+   SizeT VG_REPLACE_FUNCTION_EZU(20440,soname,fnname) \
+            ( const Int *s, SizeT n ); \
+   SizeT VG_REPLACE_FUNCTION_EZU(20440,soname,fnname) \
+            ( const Int *s, SizeT n ) \
+   {                                     \
+      SizeT i = 0;                       \
+      const Int* p = s;                  \
+      while (i < n && *p != 0) {         \
+         i++;                            \
+         p++;                            \
+      }                                  \
+      return i;                          \
+   }
+
+#if defined(VGO_linux)
+ WCSNLEN(VG_Z_LIBC_SONAME, wcsnlen)
+ WCSNLEN(VG_Z_LIBC_SONAME, __GI_wcsnlen)
 #endif
 
 /*---------------------- wcscmp ----------------------*/
@@ -1891,6 +1925,36 @@ static inline void my_exit ( int x )
 
 #if defined(VGO_linux)
  WCSCMP(VG_Z_LIBC_SONAME,          wcscmp)
+#endif
+
+/*---------------------- wcsncmp ----------------------*/
+
+// This is a wchar_t equivalent to strncmp.  We don't
+// have wchar_t available here, but in the GNU C Library
+// wchar_t is always 32 bits wide and wcsncmp uses signed
+// comparison, not unsigned as in strncmp function.
+
+#define WCSNCMP(soname, fnname) \
+   int VG_REPLACE_FUNCTION_EZU(20450,soname,fnname) \
+          ( const Int* s1, const Int* s2, SizeT nmax ); \
+   int VG_REPLACE_FUNCTION_EZU(20450,soname,fnname) \
+          ( const Int* s1, const Int* s2, SizeT nmax ) \
+   { \
+      SizeT n = 0; \
+      while (True) { \
+         if (n >= nmax) return 0; \
+         if (*s1 == 0 && *s2 == 0) return 0; \
+         if (*s1 == 0) return -1; \
+         if (*s2 == 0) return 1; \
+         \
+         if (*s1 < *s2) return -1; \
+         if (*s1 > *s2) return 1; \
+         \
+         s1++; s2++; n++; \
+      } \
+   }
+#if defined(VGO_linux)
+ WCSNCMP(VG_Z_LIBC_SONAME,          wcsncmp)
 #endif
 
 /*---------------------- wcscpy ----------------------*/
@@ -1969,6 +2033,32 @@ static inline void my_exit ( int x )
 
 #if defined(VGO_linux)
  WCSRCHR(VG_Z_LIBC_SONAME, wcsrchr)
+#endif
+
+ /*---------------------- wmemchr ----------------------*/
+
+// This is a wchar_t equivalent to memchr.  We don't
+// have wchar_t available here, but in the GNU C Library
+// wchar_t is always 32 bits wide.
+
+#define WMEMCHR(soname, fnname)                        \
+   Int* VG_REPLACE_FUNCTION_EZU(20430,soname,fnname) \
+            (const Int *s, Int c, SizeT n); \
+   Int* VG_REPLACE_FUNCTION_EZU(20430,soname,fnname) \
+            (const Int *s, Int c, SizeT n) \
+   { \
+      SizeT i; \
+      const Int* p = s; \
+      for (i = 0; i < n; i++) {                   \
+         if (*p == c) return CONST_CAST(Int *,p); \
+         p++;                                     \
+      }                                           \
+      return NULL; \
+   }
+
+#if defined(VGO_linux)
+ WMEMCHR(VG_Z_LIBC_SONAME, wmemchr)
+ WMEMCHR(VG_Z_LIBC_SONAME, __GI_wmemchr)
 #endif
 
 /*------------------------------------------------------------*/

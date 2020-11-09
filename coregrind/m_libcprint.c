@@ -22,13 +22,12 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
 
+#include "vgversion.h"
 #include "pub_core_basics.h"
 #include "pub_core_vki.h"
 #include "pub_core_vkiscnums.h"
@@ -52,9 +51,25 @@
 /*=== Printing the preamble                                        ===*/
 /*====================================================================*/
 
-// Print the argument, escaping any chars that require it.
-static void umsg_arg(const HChar *arg)
+// Returns a strdup'd copy of |str| in which characters which are not in the
+// obviously-harmless-ASCII range are replaced with '_'.  Not doing this has
+// been observed to cause xfce4-terminal to assert.  Caller takes ownership
+// of the returned string.
+static HChar* sanitise_arg (const HChar* arg)
 {
+   HChar* clone = VG_(strdup)("m_libcprint.sanitise_arg", arg);
+   for (HChar* p = clone; *p; p++) {
+      UInt c = * ((UChar*)p);
+      if (c < 32 || c > 127) c = '_';
+      *p = (HChar)c;
+   }
+   return clone;
+}
+
+// Print the argument, escaping any chars that require it.
+static void umsg_arg(const HChar *unsanitised_arg)
+{
+   HChar* arg = sanitise_arg(unsanitised_arg);
    SizeT len = VG_(strlen)(arg);
    const HChar *special = " \\<>";
    for (UInt i = 0; i < len; i++) {
@@ -63,12 +78,15 @@ static void umsg_arg(const HChar *arg)
       }
       VG_(umsg)("%c", arg[i]);
    }
+   VG_(free)(arg);
 }
 
 // Send output to the XML-stream and escape any XML meta-characters.
-static void xml_arg(const HChar *arg)
+static void xml_arg(const HChar *unsanitised_arg)
 {
+   HChar* arg = sanitise_arg(unsanitised_arg);
    VG_(printf_xml)("%pS", arg);
+   VG_(free)(arg);
 }
 
 // Write the name and value of log file qualifiers to the xml file.
@@ -164,7 +182,7 @@ void VG_(print_preamble)(Bool logging_to_fd)
       /* Core details */
       umsg_or_xml(
          "%sUsing Valgrind-%s and LibVEX; rerun with -h for copyright info%s\n",
-         xpre, VERSION, xpost);
+         xpre, VG_(clo_verbosity) <= 1 ? VERSION : VERSION "-" VGGIT, xpost);
 
       // Print the command line.  At one point we wrapped at 80 chars and
       // printed a '\' as a line joiner, but that makes it hard to cut and
@@ -1084,20 +1102,31 @@ void VG_(fmsg_bad_option) ( const HChar* opt, const HChar* format, ... )
 {
    va_list vargs;
    va_start(vargs,format);
-   revert_to_stderr();
-   VG_(message) (Vg_FailMsg, "Bad option: %s\n", opt);
-   VG_(vmessage)(Vg_FailMsg, format, vargs );
-   VG_(message) (Vg_FailMsg, "Use --help for more information or consult the user manual.\n");
+   Bool fatal = VG_(Clo_Mode)() & cloEP;
+   VgMsgKind mkind = fatal ? Vg_FailMsg : Vg_UserMsg;
+
+   if (fatal)
+      revert_to_stderr();
+   VG_(message) (mkind, "Bad option: %s\n", opt);
+   VG_(vmessage)(mkind, format, vargs );
+   VG_(message) (mkind, "Use --help for more information or consult the user manual.\n");
    va_end(vargs);
-   VG_(exit)(1);
+   if (fatal)
+      VG_(exit)(1);
 }
 
 void VG_(fmsg_unknown_option) ( const HChar* opt)
 {
-   revert_to_stderr();
-   VG_(message) (Vg_FailMsg, "Unknown option: %s\n", opt);
-   VG_(message) (Vg_FailMsg, "Use --help for more information or consult the user manual.\n");
-   VG_(exit)(1);
+   Bool fatal = VG_(Clo_Mode)() & cloEP;
+   VgMsgKind mkind = fatal ? Vg_FailMsg : Vg_UserMsg;
+
+   if (fatal)
+      revert_to_stderr();
+
+   VG_(message) (mkind, "Unknown option: %s\n", opt);
+   VG_(message) (mkind, "Use --help for more information or consult the user manual.\n");
+   if (fatal)
+      VG_(exit)(1);
 }
 
 UInt VG_(umsg) ( const HChar* format, ... )
@@ -1162,9 +1191,9 @@ const HChar *VG_(sr_as_string) ( SysRes sr )
    static HChar buf[7+1+2+16+1+1];   // large enough
 
    if (sr_isError(sr))
-      VG_(sprintf)(buf, "Failure(0x%lx)", sr_Err(sr));
+      VG_(sprintf)(buf, "Failure(0x%" FMT_REGWORD "x)", (RegWord)sr_Err(sr));
    else
-      VG_(sprintf)(buf, "Success(0x%lx)", sr_Res(sr));
+      VG_(sprintf)(buf, "Success(0x%" FMT_REGWORD "x)", (RegWord)sr_Res(sr));
    return buf;
 }
 

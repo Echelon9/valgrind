@@ -22,9 +22,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-   02110-1301, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -87,7 +85,8 @@ load(IREndness endian, IRType type, HWord haddr)
 
    vassert(type == Ity_I1 || sizeofIRType(type) <= 16);
 
-   if (VEX_HOST_WORDSIZE == 8) {
+   if (VEX_HOST_WORDSIZE == 8 ||
+      (VEX_HOST_WORDSIZE == 4 && sizeof(RegWord) == 8)) {
       addr = mkU64(haddr);
       next_addr = binop(Iop_Add64, addr, mkU64(8));
    } else if (VEX_HOST_WORDSIZE == 4) {
@@ -148,7 +147,8 @@ store(IRSB *irsb, IREndness endian, HWord haddr, IRExpr *data)
    IROp high, low;
    IRExpr *addr, *next_addr;
 
-   if (VEX_HOST_WORDSIZE == 8) {
+   if (VEX_HOST_WORDSIZE == 8 ||
+      (VEX_HOST_WORDSIZE == 4 && sizeof(RegWord) == 8)) {
       addr = mkU64(haddr);
       next_addr = binop(Iop_Add64, addr, mkU64(8));
    } else if (VEX_HOST_WORDSIZE == 4) {

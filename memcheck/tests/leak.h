@@ -60,6 +60,33 @@
    __asm__ __volatile__( "li 11, 0" : : :/*trash*/"r11" ); \
    __asm__ __volatile__( "li 12, 0" : : :/*trash*/"r12" ); \
   } while (0)
+#elif defined(__nanomips__)
+#define CLEAR_CALLER_SAVED_REGS                                             \
+   do {                                                                     \
+      __asm__ __volatile__ (".set push       \n\t"                          \
+                            ".set noat       \n\t"                          \
+                            "move $at, $zero \n\t"                          \
+                            "move $t4, $zero \n\t"                          \
+                            "move $t5, $zero \n\t"                          \
+                            "move $a0, $zero \n\t"                          \
+                            "move $a1, $zero \n\t"                          \
+                            "move $a2, $zero \n\t"                          \
+                            "move $a3, $zero \n\t"                          \
+                            "move $a4, $zero \n\t"                          \
+                            "move $a5, $zero \n\t"                          \
+                            "move $a6, $zero \n\t"                          \
+                            "move $a7, $zero \n\t"                          \
+                            "move $t0, $zero \n\t"                          \
+                            "move $t1, $zero \n\t"                          \
+                            "move $t2, $zero \n\t"                          \
+                            "move $t3, $zero \n\t"                          \
+                            "move $t8, $zero \n\t"                          \
+                            "move $t9, $zero \n\t"                          \
+                            ".set pop        \n\t"                          \
+                            : : : "$at", "$t4", "$t5", "$a0", "$a1", "$a2", \
+                                  "$a3", "$a4", "$a5", "$a6", "$a7", "$t0", \
+                                  "$t1", "$t2", "$t3", "$t8", "$t9");       \
+   } while (0)
 #elif (__mips == 32)
 #define CLEAR_CALLER_SAVED_REGS                                              \
    do {                                                                      \
@@ -82,10 +109,11 @@
                             "move $15, $0 \n\t"   /* t7 = 0 */               \
                             "move $24, $0 \n\t"   /* t8 = 0 */               \
                             "move $25, $0 \n\t"   /* t9 = 0 */               \
+                            "move $31, $0 \n\t"   /* ra = 0 */               \
                             ".set pop     \n\t"                              \
                             : : : "$1", "$2", "$3", "$4", "$5", "$6", "$7",  \
                                   "$8", "$9", "$10", "$11", "$12", "$13",    \
-                                  "$14", "$15", "$24", "$25");               \
+                                  "$14", "$15", "$24", "$25", "$31");        \
    } while (0)
 #elif (__mips == 64)
 #define CLEAR_CALLER_SAVED_REGS                                              \
@@ -109,10 +137,11 @@
                             "move $15, $0 \n\t"  /* t3 = 0 */                \
                             "move $24, $0 \n\t"  /* t8 = 0 */                \
                             "move $25, $0 \n\t"  /* t9 = 0 */                \
+                            "move $31, $0 \n\t"  /* ra = 0 */                \
                             ".set pop     \n\t"                              \
                             : : : "$1", "$2", "$3", "$4", "$5", "$6", "$7",  \
                                   "$8", "$9", "$10", "$11", "$12", "$13",    \
-                                  "$14", "$15", "$24", "$25");               \
+                                  "$14", "$15", "$24", "$25", "$31");        \
    } while (0)
 #else
 #define CLEAR_CALLER_SAVED_REGS  /*nothing*/

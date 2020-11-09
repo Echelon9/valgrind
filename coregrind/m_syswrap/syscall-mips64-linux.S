@@ -8,7 +8,6 @@
   framework.
 
    Copyright (C) 2010-2017 RT-RK
-      mips-valgrind@rt-rk.com
 
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as
@@ -21,9 +20,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -98,6 +95,8 @@ ML_(do_syscall_for_client_WRK):
    ld      $7, OFFSET_mips64_r7($5)  /* a3 */
    ld      $8, OFFSET_mips64_r8($5)  /* a4 */
    ld      $9, OFFSET_mips64_r9($5)  /* a5 */
+   ld      $10, OFFSET_mips64_r10($5)  /* a6 */
+   ld      $11, OFFSET_mips64_r11($5)  /* a7 */
 
    ld      $5, OFFSET_mips64_r5($5)  /* a1 */
    ld      $2, 0($29)                /* syscallno */
@@ -140,11 +139,19 @@ ML_(do_syscall_for_client_WRK):
 .globl ML_(blksys_complete)
 .globl ML_(blksys_committed)
 .globl ML_(blksys_finished)
+#if defined(VGABI_N32)
+ML_(blksys_setup):      .int 1b
+ML_(blksys_restart):    .int 2b
+ML_(blksys_complete):   .int 3b
+ML_(blksys_committed):  .int 4b
+ML_(blksys_finished):   .int 5b
+#else
 ML_(blksys_setup):      .quad 1b
 ML_(blksys_restart):    .quad 2b
 ML_(blksys_complete):   .quad 3b
 ML_(blksys_committed):  .quad 4b
 ML_(blksys_finished):   .quad 5b
+#endif
 
 #endif // defined(VGP_mips64_linux)
 

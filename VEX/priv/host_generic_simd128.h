@@ -21,9 +21,7 @@
    General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-   02110-1301, USA.
+   along with this program; if not, see <http://www.gnu.org/licenses/>.
 
    The GNU General Public License is contained in the file COPYING.
 */
@@ -85,6 +83,11 @@ extern VEX_REGPARM(3)
 
 extern VEX_REGPARM(3)
        void h_generic_calc_Perm32x4   ( /*OUT*/V128*, V128*, V128* );
+
+// This is correct and tested, but isn't used because we just generate
+// PSHUFB on amd64 instead.
+//extern VEX_REGPARM(3)
+//       void h_generic_calc_PermOrZero8x16 ( /*OUT*/V128*, V128*, V128* );
 
 extern /*not-regparm*/
        UInt  h_generic_calc_GetMSBs8x16 ( ULong w64hi, ULong w64lo );
